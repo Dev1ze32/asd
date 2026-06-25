@@ -94,7 +94,11 @@
 }
 
 html {
-  font-size: 16px;
+  /* Scale the entire UI to ~75% of default by shrinking the rem base.
+     Everything sized in rem (padding, font-size, height, gap, etc.) scales
+     proportionally — no zoom hack needed, works on all browsers & servers.
+     12px = 75% of 16px. */
+  font-size: 12px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

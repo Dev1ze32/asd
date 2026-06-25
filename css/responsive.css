@@ -8,7 +8,7 @@
    ================================================================ */
 @media (max-width: 1439px) {
   .app-content {
-    padding: 1.25rem 1.5rem;
+    padding: 1.25rem 2rem; /* keep side gutters, just smaller */
   }
 
   .page-title-bar {
@@ -16,7 +16,7 @@
   }
 
   .view-card {
-    padding: 1.5rem;
+    padding: 1.25rem 1.5rem;
   }
 
   .app-header {
@@ -73,6 +73,12 @@
    3. TABLET PORTRAIT (768px - 1023px)
    ================================================================ */
 @media (max-width: 1023px) {
+  html {
+    /* Restore normal font-size on tablets/mobile — the 80% rem scale is
+       desktop-only; small screens should render at full size. */
+    font-size: 14px;
+  }
+
   .app-header {
     height: auto;
     min-height: 4rem;
@@ -135,6 +141,7 @@
 
   .app-content {
     padding: 1rem;
+    align-items: stretch; /* restore full-width layout on tablet */
   }
 
   .view-card {
@@ -233,6 +240,10 @@
    4. LARGE MOBILE (480px - 767px)
    ================================================================ */
 @media (max-width: 767px) {
+  html {
+    font-size: 16px; /* Full size on mobile — no scaling needed */
+  }
+
   .app-header {
     min-height: 4rem;
     padding: 0.5rem 0.75rem;
