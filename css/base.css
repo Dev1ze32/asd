@@ -1,0 +1,241 @@
+/* ============================================
+   BASE.CSS - Resets, Variables, Global Styles
+   Pioneer Adhesives Routing Template System
+   ============================================ */
+
+:root {
+  /* Pioneer Brand — New Teal/Green Palette */
+  --pioneer-red: #3A8FA3;          /* primary action: teal-blue (was red) */
+  --pioneer-red-dark: #2d7a8c;     /* primary hover */
+  --pioneer-red-light: #EBFFD8;    /* lightest green tint for backgrounds */
+  --pioneer-blue: #A4CCD9;         /* mid teal */
+  --pioneer-blue-dark: #8DBCC7;    /* darker teal */
+  --pioneer-beige: #C4E1E6;        /* soft teal (was beige) */
+  --pioneer-beige-dark: #A4CCD9;
+  --pioneer-cream: #EBFFD8;        /* light green cream */
+  --pioneer-green: #3A8FA3;
+  --pioneer-green-dark: #2d7a8c;
+
+  /* New palette tokens */
+  --pal-green-light: #EBFFD8;
+  --pal-teal-soft:   #C4E1E6;
+  --pal-teal-mid:    #A4CCD9;
+  --pal-teal-dark:   #8DBCC7;
+  --pal-teal-deep:   #78aab7;
+  --pal-teal-ink:    #005c66;
+  --pal-teal-night:  #00434c;
+  --app-gradient: radial-gradient(circle at 12% 18%, rgba(235, 255, 216, 0.95), transparent 36%),
+                  linear-gradient(135deg, #EBFFD8 0%, #C4E1E6 44%, #A4CCD9 72%, #8DBCC7 100%);
+
+  /* Legacy aliases */
+  --brand-blue: #3A8FA3;
+  --brand-blue-dark: #2d7a8c;
+  --brand-green: #3A8FA3;
+  --brand-green-dark: #2d7a8c;
+
+  /* Status Colors */
+  --status-yellow: #EBFFD8;
+  --status-yellow-focus: #ffffff;
+  --status-red: #ef4444;
+  --status-green: #22c55e;
+  --activity-green: #EBFFD8;
+
+  /* Slate Neutrals */
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
+
+  /* Table Colors */
+  --bom-header: #8DBCC7;
+  --bom-cell:   #C4E1E6;
+  --bom-border: #A4CCD9;
+
+  /* Typography */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Courier New', monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  /* Borders */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-header: 0 4px 20px -10px rgba(0, 0, 0, 0.08);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--gray-800);
+  background: var(--app-gradient);
+}
+
+body.app-body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+/* Custom Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--gray-100);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--pal-teal-mid);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pal-teal-dark);
+}
+
+body.dark-mode ::-webkit-scrollbar-track {
+  background: #101b20;
+}
+body.dark-mode ::-webkit-scrollbar-thumb {
+  background: #0b5360;
+}
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+  background: #005c66;
+}
+
+body.dark-mode {
+  --pioneer-red: #42c7c7;
+  --pioneer-red-dark: #63d7d7;
+  --pal-green-light: #b8e986;
+  --pal-teal-soft: #203238;
+  --pal-teal-mid: #0b5360;
+  --pal-teal-dark: #062f38;
+  --pal-teal-deep: #03252d;
+  --pal-teal-ink: #002f39;
+  --pal-teal-night: #041014;
+  --app-gradient: radial-gradient(circle at 20% 20%, rgba(20, 61, 68, 0.75), transparent 34%),
+                  linear-gradient(135deg, #071216 0%, #0f2026 45%, #002f39 100%);
+  --gray-50: #101b20;
+  --gray-100: #142329;
+  --gray-200: #26383f;
+  --gray-300: #3a5159;
+  --gray-400: #83a0a8;
+  --gray-500: #b4c5ca;
+  --gray-600: #d0dde0;
+  --gray-700: #e4ecef;
+  --gray-800: #f0f6f7;
+  --gray-900: #ffffff;
+  --bom-cell: #203b42;
+  --bom-border: #2b5c66;
+  color: #f0f6f7;
+}
+
+::selection {
+  background-color: #3A8FA3;
+  color: #ffffff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--gray-900);
+}
+
+h1 { font-size: var(--text-2xl); }
+h2 { font-size: var(--text-xl); }
+h3 { font-size: var(--text-lg); }
+
+a {
+  color: var(--pioneer-red);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+input, select, textarea, button {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+input, select, textarea {
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  padding: 0.375rem 0.75rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--pioneer-red);
+  box-shadow: 0 0 0 2px rgba(58, 143, 163, 0.18);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled,
+button:disabled {
+  background-color: var(--gray-50) !important;
+  color: var(--gray-400);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.hidden { display: none !important; }
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.font-bold { font-weight: 700; }
+.font-semibold { font-weight: 600; }
+.font-medium { font-weight: 500; }
+.text-xs { font-size: var(--text-xs); }
+.text-sm { font-size: var(--text-sm); }
+.text-gray-500 { color: var(--gray-500); }
+.text-gray-600 { color: var(--gray-600); }
+.text-gray-700 { color: var(--gray-700); }
+
+.custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: var(--gray-100); border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
+
+.modal-backdrop { backdrop-filter: blur(4px); }

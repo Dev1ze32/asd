@@ -1,0 +1,2010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Routing Template System | Pioneer Adhesives Inc.</title>
+
+  <!-- ============================================
+       STYLESHEETS - Modular CSS Architecture
+       ============================================ -->
+  <link rel="stylesheet" href="css/main.css">
+
+  <!--
+    CSS Module Hierarchy:
+    main.css
+    ├── base.css       - CSS variables, resets, utilities
+    ├── layout.css     - Grid, flexbox, structural layouts
+    └── components.css - Tables, buttons, forms, tabs
+  -->
+
+    <style>
+      /* Hide DEL column in LOOKUP (read-only) mode */
+      #routingTable.hide-del .col-del,
+      #routingTable.hide-del .action-column {
+        display: none;
+      }
+
+      /* Green activity cell — lightest palette tone for editable inputs */
+      .bg-activity-green {
+        background-color: #EBFFD8 !important;
+      }
+
+      /* Activity dropdown: ADD / UPDATE — enough right padding for the arrow */
+      .activity-select {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background: transparent;
+        font-size: inherit;
+        font-family: inherit;
+        color: #1e293b;
+        padding: 0.25rem 1.6rem 0.25rem 0.4rem; /* right pad keeps text clear of arrow */
+        cursor: pointer;
+        outline: none;
+        appearance: auto;
+        -webkit-appearance: auto;
+        box-sizing: border-box;
+      }
+
+      /* LOOKUP mode: strip all input chrome from number/text cells */
+      #routingTable.hide-del td.bg-excel-yellow input[type="text"],
+      #routingTable.hide-del td.bg-excel-yellow input[type="number"] {
+        background: transparent !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        pointer-events: none;
+        -webkit-appearance: none;
+        appearance: none;
+        cursor: default;
+        padding: 8px 12px;
+      }
+
+      /* LOOKUP mode: force full-opacity dark text on ALL table inputs —
+         browsers gray out disabled fields by default; override that entirely */
+      #routingTable.hide-del td input[type="text"],
+      #routingTable.hide-del td input[type="number"] {
+        color: #1e293b !important;
+        -webkit-text-fill-color: #1e293b !important; /* Chrome/Safari disabled override */
+        opacity: 1 !important;
+        font-weight: 500;
+      }
+
+      /* Computed and BOM cells: full-opacity dark readable text */
+      #routingTable.hide-del .cell-computed,
+      #routingTable.hide-del .cell-bom {
+        color: #1e293b !important;
+        opacity: 1 !important;
+        font-weight: 500;
+      }
+      /* Strip yellow bg → lightest input tone in LOOKUP */
+      #routingTable.hide-del td.bg-excel-yellow {
+        background-color: #EBFFD8 !important;
+      }
+
+      /* Hide notes in ADD mode */
+      .hide-in-add { display: none; }
+      /* Shown in UPDATE/LOOKUP modes */
+      .show-notes .hide-in-add { display: flex; }
+
+      /* LOOKUP activity cell: hide the <select> widget entirely,
+         show value as plain text via the td data-value attribute */
+      #routingTable.hide-del td.bg-activity-green {
+        position: relative;
+      }
+      #routingTable.hide-del td.bg-activity-green .activity-select {
+        /* Make select invisible but keep it in the DOM */
+        opacity: 0;
+        position: absolute;
+        pointer-events: none;
+      }
+      /* Show the plain text value using a sibling span injected by JS */
+      #routingTable.hide-del td.bg-activity-green .activity-label {
+        display: inline-block;
+        width: 100%;
+        padding: 8px 12px;
+        font-size: inherit;
+        font-family: inherit;
+        color: #1e293b !important;
+        font-weight: 500;
+        opacity: 1 !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      /* In editable mode the label span is hidden */
+      td.bg-activity-green .activity-label {
+        display: none;
+      }
+
+      
+      /* ============================================
+         ROUTING TABLE — TEAL/GREEN PALETTE
+         #EBFFD8 — lightest  → editable inputs
+         #C4E1E6 — soft teal  → BOM / data cells
+         #A4CCD9 — mid teal   → accents / borders
+         #8DBCC7 — darkest    → table headers & totals
+         ============================================ */
+
+      /* Section banner — ROUTING DETAILS */
+      .section-header--routing {
+        background-color: #005c66 !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-right: 2px solid #6f9fab !important;
+        border-bottom: 2px solid #6f9fab !important;
+        padding: 0.45rem 0.6rem !important;
+      }
+      /* Section banner — ACUMATICA BOM */
+      .section-header--bom {
+        background-color: #005c66 !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-bottom: 2px solid #6f9fab !important;
+        padding: 0.45rem 0.6rem !important;
+      }
+      /* DEL header (rowspan=2) */
+      #routingTable thead .col-del {
+        background-color: #005c66 !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+      }
+      /* Column headers row 2 — Routing side */
+      #routingTable thead tr:nth-child(2) th:not(.th-bom) {
+        background-color: #A4CCD9 !important;
+        color: #1e293b !important;
+        font-weight: 600 !important;
+        border-right: 1px solid #000000 !important;
+        border-bottom: 1px solid #000000 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      /* Column headers row 2 — BOM side */
+      #routingTable thead tr:nth-child(2) th.th-bom {
+        background-color: #A4CCD9 !important;
+        color: #1e293b !important;
+        font-weight: 600 !important;
+        border-right: 1px solid #000000 !important;
+        border-bottom: 1px solid #000000 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      /* Activity cells — lightest editable tone */
+      .bg-activity-green {
+        background-color: #EBFFD8 !important;
+      }
+      #routingTable.hide-del td.bg-activity-green {
+        background-color: #EBFFD8 !important;
+      }
+      /* Editable yellow cells — lightest tone */
+      .bg-excel-yellow {
+        background-color: #EBFFD8 !important;
+      }
+      /* BOM data cells — soft teal */
+      td.cell-bom {
+        background-color: #C4E1E6 !important;
+      }
+      /* Total footer — darkest tone */
+      #routingTable tfoot tr td {
+        background-color: #005c66 !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        border-top: 2px solid #6f9fab !important;
+      }
+      /* BOM-side tfoot cells */
+      #routingTable tfoot tr td.cell-bom {
+        background-color: #005c66 !important;
+        color: #ffffff !important;
+      }
+      #routingTable th,
+      #routingTable td {
+        border-right: 1px solid #000000 !important;
+        border-bottom: 1px solid #000000 !important;
+      }
+      /* TOTAL label */
+      #routingTable tfoot .tfoot-total-label {
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        font-weight: 900 !important;
+        color: #ffffff !important;
+        letter-spacing: 0.08em;
+        text-align: right;
+        padding-right: 1rem;
+      }
+      /* LOOKUP mode BOM cells */
+      #routingTable.hide-del td.cell-bom {
+        background-color: #C4E1E6 !important;
+        color: #1e293b !important;
+        opacity: 1 !important;
+        font-weight: 500;
+      }
+
+
+
+      /* ============================================
+         MODE TOGGLE BUTTON COLORS
+         Active: #8DBCC7, Inactive: #EBFFD8
+         ============================================ */
+      .mode-btn {
+        background-color: #EBFFD8 !important;
+        color: #374151 !important;
+        border: 1px solid #A4CCD9 !important;
+        font-weight: 600;
+      }
+      .mode-btn:hover:not(:disabled) {
+        background-color: #C4E1E6 !important;
+      }
+      .mode-btn--active {
+        background-color: #8DBCC7 !important;
+        color: #1e293b !important;
+        border-color: #8DBCC7 !important;
+      }
+
+      /* ============================================
+         CLEAR BUTTON (above table)
+         ============================================ */
+      .btn-clear-form {
+        background: #EBFFD8;
+        color: #1e293b;
+        border: 1.5px solid #8DBCC7;
+        border-radius: 7px;
+        padding: 0.4rem 1.1rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+        letter-spacing: 0.02em;
+      }
+      .btn-clear-form:hover {
+        background: #8DBCC7;
+        color: #1e293b;
+      }
+
+      /* Refresh button — UPDATE tab, reloads original record from DB */
+      .btn-refresh-record {
+        background: #f0f9ff;
+        color: #0369a1;
+        border: 1.5px solid #0369a1;
+        border-radius: 7px;
+        padding: 0.45rem 1.1rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+        letter-spacing: 0.02em;
+      }
+      .btn-refresh-record:hover {
+        background: #0369a1;
+        color: #ffffff;
+      }
+      .btn-refresh-record:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      /* Archive button — UPDATE tab, opens revision history modal */
+      .btn-archive-record {
+        background: #EBFFD8;
+        color: #005c66;
+        border: 1.5px solid #005c66;
+        border-radius: 7px;
+        padding: 0.625rem 1.1rem;
+        font-size: 0.82rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+        letter-spacing: 0.02em;
+        box-shadow: 0 4px 10px rgba(0, 92, 102, 0.12);
+        white-space: nowrap;
+      }
+      .btn-archive-record:hover {
+        background: #005c66;
+        color: #ffffff;
+        box-shadow: 0 6px 14px rgba(0, 92, 102, 0.22);
+      }
+
+      /* ============================================
+         ARCHIVE MODAL
+         80vw wide, backdrop blur, browser-style ×
+         ============================================ */
+
+      /* Blur the entire page when archive modal is open */
+      body.archive-backdrop-blur > *:not(#archiveModal) {
+        filter: blur(3px);
+        pointer-events: none;
+        user-select: none;
+      }
+
+      #archiveModal {
+        position: fixed;
+        inset: 0;
+        z-index: 99990;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(15, 23, 42, 0.55);
+        padding: 1.5rem;
+        box-sizing: border-box;
+      }
+
+      .archive-modal__panel {
+        background: #ffffff;
+        border-radius: 14px;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+        width: 80vw;
+        max-width: 1100px;
+        max-height: 88vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* Header bar */
+      .archive-modal__header {
+        background: #8DBCC7;
+        padding: 0.85rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+      }
+      .archive-modal__header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .archive-modal__icon {
+        width: 32px;
+        height: 32px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .archive-modal__heading {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #1e293b;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+      }
+      .archive-modal__subtitle {
+        font-size: 0.78rem;
+        color: rgba(255,255,255,0.75);
+        font-weight: 400;
+        margin-left: 0.35rem;
+      }
+
+      /* Browser-style × close button */
+      .archive-modal__close {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255,255,255,0.18);
+        color: #ffffff;
+        font-size: 1.15rem;
+        font-weight: 700;
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.15s;
+        flex-shrink: 0;
+      }
+      .archive-modal__close:hover {
+        background: rgba(255,255,255,0.38);
+      }
+
+      /* Scrollable body */
+      .archive-modal__content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem 1.5rem 0.5rem;
+      }
+
+      /* Loading spinner area */
+      #archive-modal-spinner {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 0.85rem;
+        padding: 3.5rem 1rem;
+      }
+      .archive-spinner-ring {
+        width: 44px;
+        height: 44px;
+        position: relative;
+      }
+      .archive-spinner-ring::before,
+      .archive-spinner-ring::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 4px solid transparent;
+      }
+      .archive-spinner-ring::before {
+        border-color: rgba(141, 188, 199, 0.25);
+      }
+      .archive-spinner-ring::after {
+        border-top-color: #8DBCC7;
+        animation: archiveSpin 0.75s linear infinite;
+      }
+      @keyframes archiveSpin {
+        to { transform: rotate(360deg); }
+      }
+
+      /* Pagination footer */
+      #archive-pagination {
+        display: none;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.85rem 1.5rem;
+        border-top: 1px solid #e2e8f0;
+        background: #f8fafc;
+      }
+      #archive-page-info {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #64748b;
+      }
+      .archive-nav-btn {
+        padding: 0.42rem 1.1rem;
+        border-radius: 7px;
+        border: 1.5px solid #e2e8f0;
+        background: #ffffff;
+        color: #374151;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+      }
+      .archive-nav-btn:hover:not(:disabled) {
+        background: #8DBCC7;
+        color: #1e293b;
+        border-color: #8DBCC7;
+      }
+      .archive-nav-btn:disabled {
+        opacity: 0.38;
+        cursor: not-allowed;
+      }
+      .archive-page-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.1rem;
+        height: 2.1rem;
+        padding: 0 0.45rem;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        color: #334155;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .archive-page-btn:hover:not(:disabled) {
+        background: #8DBCC7;
+        color: #1e293b;
+        border-color: #8DBCC7;
+      }
+      .archive-page-btn.active {
+        background: #8DBCC7;
+        color: #1e293b;
+        border-color: #8DBCC7;
+        cursor: default;
+      }
+      .archive-page-btn:disabled:not(.active) {
+        opacity: 0.38;
+        cursor: not-allowed;
+      }
+      .archive-ellipsis {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.1rem;
+        height: 2.1rem;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 0.82rem;
+      }
+      .table-top-bar {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+
+      /* ============================================
+         ADMIN PANEL & LOGS SHARED STYLES
+         ============================================ */
+      .admin-section {
+        background: #ffffff;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+      }
+      .admin-section__header {
+        background: #8DBCC7;
+        border-bottom: 1px solid #A4CCD9;
+        padding: 0.9rem 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .admin-section__title {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+      }
+      .admin-section__body {
+        padding: 1.25rem;
+      }
+      .admin-input {
+        width: 100%;
+        border: 1px solid #A4CCD9;
+        border-radius: 8px;
+        padding: 0.55rem 0.8rem;
+        font-size: 0.875rem;
+        color: #0f172a;
+        background: #EBFFD8;
+        box-sizing: border-box;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+      .admin-input:focus {
+        border-color: #8DBCC7;
+        box-shadow: 0 0 0 2px rgba(141, 188, 199, 0.35);
+      }
+      .admin-label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.35rem;
+        letter-spacing: 0.02em;
+      }
+      .admin-btn {
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .admin-btn--primary {
+        background: #8DBCC7;
+        color: #1e293b;
+      }
+      .admin-btn--primary:hover {
+        background: #A4CCD9;
+      }
+      .admin-btn--primary:disabled {
+        background: #C4E1E6;
+        cursor: not-allowed;
+      }
+      .admin-btn--danger {
+        background: #dc2626;
+        color: #fff;
+      }
+      .admin-btn--danger:hover {
+        background: #CE2626;
+      }
+      .admin-btn--secondary {
+        background: #f1f5f9;
+        color: #374151;
+        border: 1px solid #e2e8f0;
+      }
+      .admin-btn--secondary:hover {
+        background: #e2e8f0;
+      }
+      .admin-alert {
+        border-radius: 8px;
+        padding: 0.6rem 0.85rem;
+        font-size: 0.82rem;
+        line-height: 1.45;
+        display: none;
+      }
+      .admin-alert--error {
+        background: #fff1f2;
+        border: 1px solid #fecdd3;
+        color: #be123c;
+      }
+      .admin-alert--success {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        color: #059669;
+      }
+      .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .admin-table thead th {
+        background: #8DBCC7;
+        border-bottom: 1px solid #A4CCD9;
+        padding: 0.6rem 0.75rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #1e293b;
+        text-align: left;
+      }
+      .admin-table tbody td {
+        padding: 0.6rem 0.75rem;
+        border-bottom: 1px solid #C4E1E6;
+        font-size: 0.82rem;
+        color: #334155;
+        background: #EBFFD8;
+      }
+      .admin-table tbody tr:hover td {
+        background: #C4E1E6;
+      }
+
+      body.dark-mode #routingTable .section-header--routing,
+      body.dark-mode #routingTable .section-header--bom,
+      body.dark-mode #routingTable thead .col-del,
+      body.dark-mode #routingTable tfoot tr td,
+      body.dark-mode #routingTable tfoot tr td.cell-bom {
+        background-color: #002f39 !important;
+        color: #ffffff !important;
+      }
+      body.dark-mode #routingTable thead tr:nth-child(2) th:not(.th-bom),
+      body.dark-mode #routingTable thead tr:nth-child(2) th.th-bom {
+        background-color: #074550 !important;
+        color: #f0f6f7 !important;
+      }
+      body.dark-mode #routingTable td.bg-excel-yellow,
+      body.dark-mode #routingTable td.bg-activity-green,
+      body.dark-mode #routingTable.hide-del td.bg-excel-yellow,
+      body.dark-mode #routingTable.hide-del td.bg-activity-green {
+        background-color: #16272d !important;
+        color: #dff5e4 !important;
+      }
+      body.dark-mode #routingTable td.cell-bom,
+      body.dark-mode #routingTable.hide-del td.cell-bom {
+        background-color: #203238 !important;
+        color: #f0f6f7 !important;
+      }
+      body.dark-mode #routingTable .cell-computed,
+      body.dark-mode #routingTable .action-column {
+        background-color: #101b20 !important;
+        color: #f0f6f7 !important;
+      }
+      body.dark-mode .mode-btn {
+        background-color: #101f24 !important;
+        color: #dff5e4 !important;
+        border-color: #6b9849 !important;
+      }
+      body.dark-mode .mode-btn:hover:not(:disabled) {
+        background-color: #173037 !important;
+        color: #ffffff !important;
+      }
+      body.dark-mode .mode-btn--active {
+        background-color: #0b6b78 !important;
+        color: #ffffff !important;
+        border-color: #42c7c7 !important;
+      }
+      body.dark-mode #revisionInput {
+        background-color: #16272d !important;
+        color: #ffffff !important;
+        border-color: #2c4851 !important;
+      }
+      body.dark-mode #lookup-display,
+      body.dark-mode #lookup-display strong,
+      body.dark-mode #lookup-display span,
+      body.dark-mode #routingTable.hide-del td,
+      body.dark-mode #routingTable.hide-del td input,
+      body.dark-mode #routingTable.hide-del .activity-label {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
+      body.dark-mode select,
+      body.dark-mode select option {
+        background-color: #101b20 !important;
+        color: #ffffff !important;
+      }
+      body.dark-mode .manage-sidebar,
+      body.dark-mode #activityEditorSection,
+      body.dark-mode .activity-add-row {
+        background: #121f24 !important;
+        border-color: #2c4851 !important;
+        color: #f0f6f7 !important;
+      }
+      body.dark-mode .manage-page-header h3,
+      body.dark-mode .manage-page-header p,
+      body.dark-mode #manageLineDesc,
+      body.dark-mode #emptyActivitiesMsg {
+        color: #f0f6f7 !important;
+      }
+      body.dark-mode #manageLineDesc {
+        background: #16272d !important;
+        border-left-color: #42c7c7 !important;
+      }
+      body.dark-mode #newActivityInput {
+        background: #0f1c21 !important;
+        border-color: #6b9849 !important;
+        color: #ffffff !important;
+      }
+      body.dark-mode #manageActivityList li,
+      body.dark-mode #manageActivityList li span {
+        background: #16272d !important;
+        border-color: #2c4851 !important;
+        color: #ffffff !important;
+      }
+      body.dark-mode .archive-modal__panel,
+      body.dark-mode .archive-modal__content,
+      body.dark-mode #archive-modal-body {
+        background: #121f24 !important;
+        color: #f0f6f7 !important;
+      }
+      body.dark-mode .archive-modal__header {
+        background: #002f39 !important;
+      }
+      body.dark-mode .archive-modal__heading,
+      body.dark-mode .archive-modal__subtitle,
+      body.dark-mode #archive-modal-body p,
+      body.dark-mode #archive-modal-spinner span {
+        color: #f0f6f7 !important;
+      }
+      /* ── Premium Modal Styling System ── */
+      .modal-backdrop {
+        backdrop-filter: blur(6px) !important;
+        background: rgba(15, 23, 42, 0.45) !important;
+        transition: all 0.25s ease;
+      }
+      body.dark-mode .modal-backdrop {
+        background: rgba(4, 16, 20, 0.65) !important;
+      }
+      
+      .modal-icon-wrap {
+        margin-bottom: 1.25rem;
+      }
+      .modal-icon-circle-success {
+        background: #f0fdf4;
+        color: #16a34a;
+        width: 3.25rem;
+        height: 3.25rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.15);
+      }
+      body.dark-mode .modal-icon-circle-success {
+        background: rgba(22, 163, 74, 0.15);
+        color: #4ade80;
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.05);
+      }
+
+      .modal-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin: 0 0 0.5rem;
+        letter-spacing: -0.01em;
+      }
+      body.dark-mode .modal-title {
+        color: #ffffff !important;
+      }
+
+      .modal-message {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        margin: 0 0 1.5rem;
+        line-height: 1.6;
+      }
+      body.dark-mode .modal-message {
+        color: #b4c5ca !important;
+      }
+
+      .modal-input {
+        width: 100%;
+        border: 1.5px solid var(--pal-teal-mid);
+        border-radius: 8px;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.875rem;
+        color: var(--gray-900);
+        box-sizing: border-box;
+        outline: none;
+        background: #ffffff;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+      .modal-input:focus {
+        border-color: var(--pal-teal-dark);
+        box-shadow: 0 0 0 3px rgba(141, 188, 199, 0.2);
+      }
+      body.dark-mode .modal-input {
+        background: #16272d !important;
+        color: #ffffff !important;
+        border-color: #2c4851 !important;
+      }
+      body.dark-mode .modal-input:focus {
+        border-color: #42c7c7 !important;
+        box-shadow: 0 0 0 3px rgba(66, 199, 199, 0.15);
+      }
+
+      .modal-btn-cancel {
+        padding: 0.6rem 1.4rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        background: var(--gray-100);
+        color: var(--gray-700);
+        border: 1px solid var(--gray-200);
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s, transform 0.1s, box-shadow 0.15s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-btn-cancel:hover {
+        background: var(--gray-200);
+        color: var(--gray-900);
+      }
+      .modal-btn-cancel:active {
+        transform: translateY(1px);
+      }
+      body.dark-mode .modal-btn-cancel {
+        background: #26383f !important;
+        color: #ffffff !important;
+        border-color: #3a5159 !important;
+      }
+      body.dark-mode .modal-btn-cancel:hover {
+        background: #3a5159 !important;
+        border-color: #47626c !important;
+      }
+
+      .modal-btn-confirm {
+        padding: 0.6rem 1.4rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        background: var(--pal-teal-dark);
+        color: #1e293b;
+        border: none;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s, transform 0.1s, box-shadow 0.15s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-btn-confirm:hover {
+        background: var(--pal-teal-mid);
+      }
+      .modal-btn-confirm:active {
+        transform: translateY(1px);
+      }
+      body.dark-mode .modal-btn-confirm {
+        background: #0b5360 !important;
+        color: #ffffff !important;
+      }
+      body.dark-mode .modal-btn-confirm:hover {
+        background: #005c66 !important;
+      }
+
+      /* Dark mode overrides for Archive Pagination & close */
+      body.dark-mode #archive-pagination {
+        background: #0a1418 !important;
+        border-top-color: #2c4851 !important;
+      }
+      body.dark-mode .archive-nav-btn,
+      body.dark-mode .archive-page-btn {
+        background: #16272d !important;
+        color: #ffffff !important;
+        border-color: #2c4851 !important;
+      }
+      body.dark-mode .archive-nav-btn:hover:not(:disabled),
+      body.dark-mode .archive-page-btn:hover:not(:disabled) {
+        background: #005c66 !important;
+        border-color: #005c66 !important;
+        color: #ffffff !important;
+      }
+      body.dark-mode .archive-page-btn.active {
+        background: #42c7c7 !important;
+        border-color: #42c7c7 !important;
+        color: #041014 !important;
+      }
+      body.dark-mode #archive-page-info {
+        color: #b4c5ca !important;
+      }
+      body.dark-mode .archive-modal__close {
+        background: #26383f !important;
+        color: #ffffff !important;
+      }
+      body.dark-mode .archive-modal__close:hover {
+        background: #3a5159 !important;
+      }
+
+      /* Dark mode overrides for Time Formula Modal */
+      body.dark-mode .formula-modal__panel {
+        background: rgba(18, 31, 36, 0.92) !important;
+        border-color: rgba(104, 144, 153, 0.48) !important;
+      }
+      body.dark-mode .formula-modal__title {
+        color: #ffffff !important;
+      }
+      body.dark-mode .formula-modal__panel p {
+        color: #b4c5ca !important;
+      }
+      body.dark-mode .formula-modal__panel p code {
+        background: #16272d !important;
+        color: #ffffff !important;
+      }
+      body.dark-mode .formula-modal__panel label,
+      body.dark-mode .formula-modal__panel span:not(.formula-modal__result) {
+        color: #83a0a8 !important;
+      }
+      body.dark-mode .formula-modal__input-wrap {
+        background: #16272d !important;
+        border-color: #2c4851 !important;
+      }
+      body.dark-mode .formula-modal__input-wrap:focus-within {
+        border-color: #42c7c7 !important;
+      }
+      body.dark-mode .formula-modal__input {
+        color: #ffffff !important;
+      }
+      body.dark-mode .formula-modal__panel div[style*="border-bottom"] {
+        border-bottom-color: #2c4851 !important;
+      }
+      body.dark-mode .formula-modal__result {
+        color: #42c7c7 !important;
+      }
+      body.dark-mode .formula-modal__result.is-empty {
+        color: #3a5159 !important;
+      }
+      body.dark-mode .formula-modal__btn-cancel {
+        background: #26383f !important;
+        color: #ffffff !important;
+      }
+      body.dark-mode .formula-modal__btn-cancel:hover {
+        background: #3a5159 !important;
+      }
+      body.dark-mode .formula-modal__btn-apply {
+        background: #0b5360 !important;
+        color: #ffffff !important;
+      }
+      body.dark-mode .formula-modal__btn-apply:hover {
+        background: #005c66 !important;
+      }
+      body.dark-mode .formula-modal__close {
+        background: #26383f !important;
+        color: #83a0a8 !important;
+      }
+      body.dark-mode .formula-modal__close:hover {
+        background: #3a5159 !important;
+        color: #ffffff !important;
+      }
+
+      /* ── Responsive Layout Classes ── */
+      .lookup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem 2.5rem; }
+      .manage-layout-grid { display: grid; grid-template-columns: 280px 1fr; gap: 1.25rem; align-items: start; }
+      .admin-layout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+      .logs-filter-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; align-items: end; }
+      .logs-filter-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; justify-content: flex-end; }
+      .admin-info-bar { display: flex; align-items: center; gap: 1.5rem; }
+      .modal-actions { display: flex; gap: 0.6rem; justify-content: flex-end; }
+      .manage-page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+      .manage-sidebar { background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid #e2e8f0; }
+      .activity-add-row { padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; background: #fafafa; display: flex; gap: 0.6rem; align-items: center; }
+
+      /* Hide ƒ formula icon in LOOKUP (read-only) mode */
+      #routingTable.hide-del .fx-indicator {
+        display: none !important;
+      }
+      /* In LOOKUP mode, time cells display as plain readable text */
+      #routingTable.hide-del td.time-input-cell input.time-input {
+        cursor: default !important;
+        padding-right: 12px !important;
+      }
+
+      /* ── Remove browser spinner arrows from number inputs in the routing table ── */
+      .pax-input::-webkit-outer-spin-button,
+      .pax-input::-webkit-inner-spin-button,
+      .machine-input::-webkit-outer-spin-button,
+      .machine-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      .pax-input,
+      .machine-input {
+        -moz-appearance: textfield; /* Firefox */
+        appearance: textfield;
+      }
+    </style>
+<base target="_blank">
+</head>
+<body class="app-body">
+
+  <!-- ============================================
+       TOP HEADER NAVIGATION
+       ============================================ -->
+  <header class="app-header">
+    <div class="app-header__left">
+      <div class="app-logo">
+        <svg viewBox="0 0 1150 120" xmlns="http://www.w3.org/2000/svg" class="app-logo__svg" aria-label="Pioneer Adhesives, Inc.">
+          <path d="M 0 5 L 360 5 C 450 5 450 105 360 105 L 0 105 Z" fill="#da291c" />
+          <g transform="skewX(-16)">
+            <text x="80" y="86" fill="#ffff" style="font-family:'Arial Black',Impact,system-ui,sans-serif;font-weight:900;font-size:96px;letter-spacing:-2px">
+              <tspan style="font-size:96px">P</tspan><tspan style="font-size:74px;letter-spacing:-1px" dy="-4">ioneer</tspan>
+            </text>
+          </g>
+          <g transform="translate(480, 0)">
+            <text x="0" y="86" fill="#ffff" style="font-family:'Arial Black',Impact,system-ui,sans-serif;font-weight:900;font-size:76px;letter-spacing:-2.5px;font-style:italic">Adhesives, Inc.</text>
+            <path d="M -10 100 L 590 100 Q 620 100 640 80 Q 620 112 590 112 L -10 112 Z" fill="#94a3b8" />
+          </g>
+        </svg>
+        <div class="app-logo__divider">
+          <span class="app-logo__brand">ROUTING</span>
+          <span class="app-logo__product">HEADQUARTERS</span>
+        </div>
+      </div>
+
+      <nav class="app-nav" id="main-nav">
+        <button id="tab-add" onclick="switchTab('ADD')" class="nav-tab nav-tab--active">Add Record</button>
+        <button id="tab-update" onclick="switchTab('UPDATE')" class="nav-tab nav-tab--inactive">Update Record</button>
+        <button id="tab-lookup" onclick="switchTab('LOOKUP')" class="nav-tab nav-tab--inactive">Look Up</button>
+        <button id="tab-alldata" onclick="switchTab('ALLDATA')" class="nav-tab nav-tab--inactive">Database</button>
+        <button id="tab-admin" onclick="switchTab('ADMIN')" class="nav-tab nav-tab--inactive" style="display:none;">Admin Panel</button>
+        <button id="tab-logs" onclick="switchTab('LOGS')" class="nav-tab nav-tab--inactive" style="display:none;">System Logs</button>
+        <button id="tab-manage" onclick="switchTab('MANAGE')" class="nav-tab nav-tab--inactive" style="display:none;">Manage Lines</button>
+      </nav>
+    </div>
+
+    <div class="app-header__right">
+      <span id="role-badge" class="role-badge hidden">Admin Access</span>
+      <button id="theme-toggle"
+              class="theme-toggle"
+              type="button"
+              aria-label="Switch to dark mode"
+              title="Dark mode">
+        <svg id="theme-icon-moon" class="theme-toggle__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"></path>
+        </svg>
+        <svg id="theme-icon-sun" class="theme-toggle__icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2"></path>
+          <path d="M12 20v2"></path>
+          <path d="m4.93 4.93 1.41 1.41"></path>
+          <path d="m17.66 17.66 1.41 1.41"></path>
+          <path d="M2 12h2"></path>
+          <path d="M20 12h2"></path>
+          <path d="m6.34 17.66-1.41 1.41"></path>
+          <path d="m19.07 4.93-1.41 1.41"></path>
+        </svg>
+      </button>
+      <div id="user-badge" style="display:none;"></div>
+    </div>
+  </header>
+
+  <!-- ============================================
+       MAIN CONTENT AREA
+       ============================================ -->
+  <main class="app-main">
+    <div class="page-title-bar">
+      <h1 id="page-title">Add New Routing</h1>
+
+    </div>
+
+    <div class="app-content custom-scrollbar">
+      <div class="app-content__inner">
+
+    <!-- ============================================
+         VIEW 1-3: ROUTING FORM (ADD / LOOKUP / UPDATE)
+         Shared form component used by 3 modes
+         ============================================ -->
+    <div id="view-routing" class="view-card">
+
+      <!-- Search Bar (LOOKUP & UPDATE modes only) -->
+      <div id="search-section" class="search-section hidden">
+        <div class="search-field">
+          <label for="searchInput">Search Database (e.g., 1AF2202L, 1KPH5A5J01)</label>
+          <div class="search-input-group">
+            <input type="text"
+                   id="searchInput"
+                   class="search-input"
+                   placeholder="Enter Item Code (e.g., 1AF2202L)"
+                   onkeypress="handleSearchKeypress(event)">
+            <button onclick="performSearch()" class="search-btn">Search</button>
+            <div id="archive-button-container" class="archive-button-container" style="display:none;">
+              <button onclick="openArchiveModal(document.getElementById('itemCode')?.value.trim())"
+                      class="btn-archive-record"
+                      title="View read-only revision history for this item">
+                Archive
+              </button>
+            </div>
+          </div>
+        </div>
+        <div id="search-status" class="search-status"></div>
+      </div>
+
+      <!-- Mode Selector (no instructions) -->
+      <div class="mode-selector">
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.65rem; width:100%;">
+          <!-- Archive Button — upper right corner, shown in ADD and UPDATE modes -->
+          <!-- Refresh / Update Buttons — shown in ADD and UPDATE modes -->
+          <div id="update-action-buttons" style="display:none; align-items:center; gap:0.75rem;">
+            <button onclick="handleRefreshItem()" class="btn-refresh-record" title="Discard unsaved changes and reload the original record from the database">
+              ↺ Refresh
+            </button>
+            <button onclick="handleUpdateItem()" class="btn-update-record">
+              Update
+            </button>
+          </div>
+
+          <div class="mode-toggle">
+            <span class="font-semibold text-gray-700">Template Mode:</span>
+            <div class="mode-buttons">
+              <button id="btn-fg"
+                      onclick="setMode('FG')"
+                      class="mode-btn mode-btn--active">
+                Finished Goods (FG)
+              </button>
+              <button id="btn-bm"
+                      onclick="setMode('BM')"
+                      class="mode-btn">
+                Bulk Material (BM)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOOKUP plain-text display (shown only in LOOKUP mode) -->
+      <div id="lookup-display" style="display:none; margin-bottom:1.25rem;">
+        <div class="lookup-grid">
+          <div>
+            <p style="margin:0 0 0.5rem;"><strong>ITEM CODE:</strong> <span id="ld-itemCode" style="font-weight:500;"></span></p>
+            <p style="margin:0 0 0.5rem;"><strong>SKU Description:</strong> <span id="ld-skuDesc" style="font-weight:500;"></span></p>
+            <p style="margin:0 0 0.5rem;"><strong>FG Qty/Unit:</strong> <span id="ld-qty" style="font-weight:500;"></span></p>
+            <p style="margin:0 0 0.5rem;"><strong>Notes:</strong> <span id="ld-notes" style="font-weight:500;"></span></p>
+            <p style="margin:0;"><strong>Revision:</strong> <span id="ld-revision" style="font-weight:500;"></span></p>
+          </div>
+          <div>
+            <p style="margin:0 0 0.5rem;"><strong>Template Mode:</strong> <span id="ld-mode" style="font-weight:500;"></span></p>
+            <p style="margin:0 0 0.5rem;"><strong>Production Line:</strong> <span id="ld-prodLine" style="font-weight:500;"></span></p>
+            <p style="margin:0;"><strong>Line Description:</strong> <span id="ld-lineDesc" style="font-weight:500;"></span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Form Section (hidden in LOOKUP mode) -->
+      <div id="form-grid-inputs">
+        <div class="form-grid">
+        <div class="space-y-3">
+          <div class="form-group">
+            <label for="itemCode">ITEM CODE</label>
+            <input type="text"
+                   id="itemCode"
+                   class="bg-excel-yellow"
+                   placeholder="Enter Item Code">
+          </div>
+          <div class="form-group">
+            <label for="skuDesc">SKU Description</label>
+            <input type="text"
+                   id="skuDesc"
+                   class="bg-excel-yellow"
+                   placeholder="Enter SKU Description">
+          </div>
+          <div class="form-group" style="margin-top:1.5rem;">
+            <label id="qtyLabel" for="qtyInput">FG Qty/Unit</label>
+            <input type="number"
+                   id="qtyInput"
+                   class="bg-excel-yellow"
+                   value="1"
+                   oninput="calculateAll()">
+          </div>
+          <!-- Notes: shown in all routing modes (ADD, UPDATE, LOOKUP) -->
+          <div class="form-group" id="notesGroup">
+            <label for="notesInput">Notes</label>
+            <input type="text"
+                   id="notesInput"
+                   class="bg-excel-yellow"
+                   placeholder="Enter notes (e.g., CRN RD23-CR055)">
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="form-group">
+            <label for="prodLine">Production Line</label>
+            <select id="prodLine"
+                    class="bg-excel-yellow"
+                    onchange="updateLineDescription()">
+              <option value="" disabled selected>-- Select Production Line --</option>
+              <!-- Populated by main.js -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="lineDesc" class="text-gray-500">Line Description</label>
+            <input type="text"
+                   id="lineDesc"
+                   readonly
+                   class="bg-gray-50 text-gray-600">
+          </div>
+          <!-- Revision: shown in UPDATE mode only — read-only display, not an input -->
+          <div class="form-group hide-in-add" id="revisionGroup">
+            <label class="text-gray-500">Revision</label>
+            <p id="revisionInput"
+               class="bg-gray-50 text-gray-600"
+               style="margin:0; padding:0.45rem 0.65rem; border:1px solid #e2e8f0;
+                      border-radius:6px; font-size:0.875rem; font-weight:500;
+                      min-height:2.25rem; display:flex; align-items:center;">
+              —
+            </p>
+          </div>
+        </div>
+        </div><!-- end form-grid -->
+
+      </div><!-- end form-grid-inputs -->
+
+      <!-- Clear Button Bar (ADD mode only) -->
+      <div class="table-top-bar" id="clear-btn-bar">
+        <button class="btn-clear-form" onclick="clearForm()">&#x21BA; Clear</button>
+      </div>
+
+      <!-- Routing Table -->
+      <div class="table-container">
+        <table class="excel-table" id="routingTable">
+          <thead>
+            <tr>
+              <th colspan="8" class="section-header--routing">ROUTING DETAILS</th>
+              <th colspan="5" class="section-header--bom">ACUMATICA BOM</th>
+              <th rowspan="2" class="action-column col-del">DEL</th>
+            </tr>
+            <tr>
+              <th class="w-activity">Activities</th>
+              <th class="w-pax">Pax</th>
+              <th class="w-machine">Machine</th>
+              <th class="w-time">Time (min)</th>
+              <th class="w-runtime" colspan="2">Run Time</th>
+              <th class="w-labor">Total Labor min</th>
+              <th class="w-mc">Total MC min</th>
+              <th class="w-bom-activity th-bom">ACTIVITIES</th>
+              <th class="w-dl-units th-bom">DL<br>(UNITS/1 MIN)</th>
+              <th class="w-dl th-bom">DL</th>
+              <th class="w-voh th-bom">VOH</th>
+              <th class="w-foh th-bom">FOH</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- Rows generated by routing-form.js -->
+          </tbody>
+          <tfoot>
+            <tr>
+              <td class="text-right pr-4 tfoot-total-label">TOTAL</td>
+              <td id="sumPax">0</td>
+              <td id="sumMachine">0</td>
+              <td id="sumTime">0.00000</td>
+              <td id="sumRunTime">0.00000</td>
+              <td></td>
+              <td id="sumLaborMin">0.00000</td>
+              <td id="sumMcMin" class="w-mc">0.00000</td>
+              <td class="cell-bom"></td>
+              <td class="cell-bom"></td>
+              <td id="sumDL" class="cell-bom">0.00000</td>
+              <td id="sumVOH" class="cell-bom">0.00000</td>
+              <td id="sumFOH" class="cell-bom">0.00000</td>
+              <td class="action-column"></td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <button id="btn-add-row"
+                onclick="addRow()"
+                class="btn btn--primary btn--add-row">
+          + Add Activity Row
+        </button>
+      </div>
+
+      <!-- Save Button (ADD mode) -->
+      <div id="save-section" class="save-section">
+        <button onclick="saveRoutingDocument()" class="btn btn--success">
+          Save Routing Record
+        </button>
+      </div>
+
+
+    </div>
+
+    <!-- ============================================
+         VIEW 4: MANAGE LINE ACTIVITIES
+         Activity CRUD for each production line
+         ============================================ -->
+    <div id="view-manage" class="hidden view-card">
+
+      <!-- Page Header -->
+      <div class="manage-page-header">
+        <div>
+          <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--gray-800); margin: 0 0 0.2rem;">Line Activity Database</h3>
+          <p style="font-size: 0.8rem; color: #64748b; margin: 0;">Manage production lines and their associated activities.</p>
+        </div>
+        <span style="display: inline-flex; align-items: center; gap: 0.35rem; background-color: #fff1f2; color: #be123c; padding: 0.3rem 0.85rem; border-radius: 9999px; font-size: 0.78rem; font-weight: 600; border: 1px solid #fecdd3; letter-spacing: 0.01em;">
+          &#9888; Sensitive Data Entry
+        </span>
+      </div>
+
+      <div class="manage-layout-grid">
+
+        <!-- LEFT SIDEBAR: Line Selector -->
+        <div style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+
+          <p style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin: 0 0 0.6rem;">Step 1</p>
+          <label for="manageLineSelect" style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">
+            Select Production Line
+          </label>
+          <select id="manageLineSelect"
+                  style="width: 100%; border: 1px solid #cbd5e1; border-radius: 7px; padding: 0.5rem 0.75rem; background: #ffffff; font-size: 0.875rem; color: #1e293b; margin-bottom: 0.75rem; appearance: auto;"
+                  onchange="renderManageActivities()">
+            <option value="" disabled selected>-- Choose Line --</option>
+          </select>
+
+          <div id="manageLineDesc" style="font-size: 0.8rem; font-weight: 500; color: #475569; background: #EBFFD8; border-left: 3px solid #8DBCC7; border-radius: 0 6px 6px 0; padding: 0.45rem 0.7rem; margin-bottom: 1rem; display: none;"></div>
+
+          <div style="border-top: 1px solid #e2e8f0; padding-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <button onclick="handleCreateLine()"
+                    style="width: 100%; padding: 0.55rem; border-radius: 7px; font-size: 0.84rem; font-weight: 600; background: #8DBCC7; color: #1e293b; border: none; cursor: pointer; transition: background 0.15s;"
+                    onmouseover="this.style.background='#A4CCD9'" onmouseout="this.style.background='#8DBCC7'">
+              + Create New Line
+            </button>
+            <button id="btnEditLine" onclick="handleEditLine()"
+                    style="width: 100%; padding: 0.55rem; border-radius: 7px; font-size: 0.84rem; font-weight: 600; background: #fff; color: #374151; border: 1px solid #d1d5db; cursor: pointer; transition: background 0.15s; display: none;"
+                    onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='#fff'">
+              Edit Line Name
+            </button>
+            <button id="btnDeleteLine" onclick="handleDeleteLine()"
+                    style="width: 100%; padding: 0.55rem; border-radius: 7px; font-size: 0.84rem; font-weight: 600; background: #fff; color: #dc2626; border: 1px solid #fca5a5; cursor: pointer; transition: background 0.15s; display: none;"
+                    onmouseover="this.style.background='#fff1f2'" onmouseout="this.style.background='#fff'">
+              Delete Line
+            </button>
+          </div>
+        </div>
+
+        <!-- RIGHT CONTENT: Activity Editor -->
+        <div id="activityEditorSection" style="display: none; background: #ffffff; border-radius: 10px; border: 1px solid #e2e8f0; overflow: hidden;">
+
+          <!-- Section Header -->
+          <div style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 0.9rem 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <p style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin: 0 0 0.15rem;">Step 2</p>
+              <p style="font-size: 0.875rem; font-weight: 600; color: #1e293b; margin: 0;">Manage Activities for Selected Line</p>
+            </div>
+            <span id="activityCountBadge" style="background: #e0f2fe; color: #0369a1; font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.65rem; border-radius: 9999px; border: 1px solid #bae6fd;">0 activities</span>
+          </div>
+
+          <!-- Add Activity Input -->
+          <div class="activity-add-row">
+            <input type="text"
+                   id="newActivityInput"
+                   style="flex: 1; border: 1px solid #cbd5e1; border-radius: 7px; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #1e293b; background: #fff; outline: none;"
+                   placeholder="Type activity name and press Enter or click Add..."
+                   onkeypress="handleActivityKeypress(event)"
+                   onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#cbd5e1'">
+            <button onclick="addActivityToLine()"
+                    style="padding: 0.5rem 1rem; border-radius: 7px; font-size: 0.84rem; font-weight: 600; background: #0f172a; color: #fff; border: none; cursor: pointer; white-space: nowrap; transition: background 0.15s;"
+                    onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+              + Add Activity
+            </button>
+          </div>
+
+          <!-- Activity List -->
+          <div style="padding: 1rem 1.25rem; min-height: 120px;">
+            <ul id="manageActivityList" style="display: flex; flex-direction: column; gap: 0.5rem; list-style: none; padding: 0; margin: 0;"></ul>
+            <div id="emptyActivitiesMsg" style="display: none; text-align: center; padding: 2rem 1rem; color: #94a3b8; font-size: 0.875rem; font-style: italic;">
+              No activities yet. Add one above to get started.
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Pending-changes banner -->
+      <div id="manage-pending-banner"
+           style="display:none; align-items:center; gap:0.5rem; margin-top:1rem;
+                  background:#fffbeb; border:1px solid #fde68a; border-radius:8px;
+                  padding:0.55rem 1rem; font-size:0.82rem; color:#92400e; font-weight:500;">
+        <span style="font-size:1rem;">⏳</span>
+        <span id="manage-pending-banner-text"></span>
+      </div>
+
+      <!-- Done button bar -->
+      <div style="display:flex; justify-content:flex-start; align-items:center;
+                  margin-top:1.5rem; padding-top:1rem; border-top:1px solid #e2e8f0; gap:0.85rem;">
+        <button id="btn-manage-done"
+                onclick="handleManageDone()"
+                style="position:relative; display:inline-flex; align-items:center; gap:0.5rem;
+                       padding:0.6rem 1.4rem; border-radius:8px; font-size:0.9rem; font-weight:700;
+                       background:#16a34a; color:#fff; border:none; cursor:pointer;
+                       box-shadow:0 2px 8px rgba(22,163,74,0.25);
+                       transition:background 0.15s, opacity 0.15s;
+                       opacity:0.55; pointer-events:none;"
+                onmouseover="this.style.background='#15803d'"
+                onmouseout="this.style.background='#16a34a'"
+                title="Save all pending changes to the server">
+          ✓ Done
+          <span id="manage-done-badge"
+                style="display:none; align-items:center; justify-content:center;
+                       background:#fff; color:#16a34a; font-size:0.72rem; font-weight:800;
+                       width:1.4rem; height:1.4rem; border-radius:50%;
+                       border:1.5px solid #bbf7d0;">
+            0
+          </span>
+        </button>
+        <span style="font-size:0.78rem; color:#94a3b8;">
+          Changes are staged locally until you click Done.
+        </span>
+      </div>
+
+    </div>
+
+    <!-- ============================================
+         VIEW 5: VIEW ALL DATA
+         Paginated table of all routing records
+         ============================================ -->
+    <div id="view-alldata" class="hidden view-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+        <h3 style="font-size:1.25rem;font-weight:700;color:var(--gray-800);margin:0;">
+          All Routing Records Database
+        </h3>
+        <button onclick="showExportModal()" class="btn btn--success" style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export to Excel
+        </button>
+      </div>
+
+      <div class="data-table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Item Code</th>
+              <th>SKU Description</th>
+              <th>Line</th>
+              <th>Type</th>
+              <th class="text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody id="allDataTableBody">
+            <!-- Populated by all-data.js -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <span class="pagination-info" id="pagination-info">
+          Showing 0 to 0 of 0 entries
+        </span>
+        <div class="pagination-buttons">
+          <button onclick="changePage(-1)"
+                  id="btn-prev-page"
+                  class="btn btn--secondary">
+            Previous
+          </button>
+          <button onclick="changePage(1)"
+                  id="btn-next-page"
+                  class="btn btn--secondary">
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================
+         VIEW 6: ADMIN PANEL
+         Admin-only user management
+         ============================================ -->
+    <div id="view-admin" class="hidden view-card">
+
+      <!-- Page Header -->
+      <div class="manage-page-header">
+        <div>
+          <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--gray-800); margin: 0 0 0.2rem;">Admin Panel</h3>
+          <p style="font-size: 0.82rem; color: #64748b; margin: 0;">System administration and user account management.</p>
+        </div>
+        <span style="display: inline-flex; align-items: center; gap: 0.35rem; background-color: #fef2f2; color: #dc2626; padding: 0.3rem 0.85rem; border-radius: 9999px; font-size: 0.78rem; font-weight: 600; border: 1px solid #fecaca; letter-spacing: 0.01em;">
+          &#9881; Admin Only
+        </span>
+      </div>
+
+      <!-- Admin Info Bar -->
+      <div class="admin-info-bar" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
+        <div>
+          <p style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin: 0 0 0.2rem;">Signed in as</p>
+          <p style="font-size: 0.95rem; font-weight: 600; color: #1e293b; margin: 0;">
+            <span id="admin-current-name">--</span>
+            <span id="admin-current-role" style="font-size: 0.72rem; background: #fef2f2; color: #dc2626; padding: 0.1rem 0.5rem; border-radius: 9999px; font-weight: 600; border: 1px solid #fecaca; margin-left: 0.4rem;">--</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="admin-layout-grid">
+
+        <!-- LEFT: Create User Account -->
+        <div class="admin-section">
+          <div class="admin-section__header">
+            <p class="admin-section__title">Create New User Account</p>
+          </div>
+          <div class="admin-section__body">
+
+            <!-- Error message -->
+            <div id="create-user-error" class="admin-alert admin-alert--error" style="margin-bottom: 1rem;"></div>
+            <!-- Success message -->
+            <div id="create-user-success" class="admin-alert admin-alert--success" style="margin-bottom: 1rem;"></div>
+
+            <form onsubmit="event.preventDefault(); handleCreateUser();" style="display: flex; flex-direction: column; gap: 0.9rem;">
+
+              <div>
+                <label class="admin-label" for="new-username">Username</label>
+                <input type="text" id="new-username" class="admin-input" placeholder="Enter username (3-50 characters)" autocomplete="off">
+              </div>
+
+              <div>
+                <label class="admin-label" for="new-password">Password</label>
+                <div style="display: flex; gap: 0.4rem;">
+                  <input type="password" id="new-password" class="admin-input" placeholder="Minimum 8 characters" style="flex: 1;">
+                  <button type="button" onclick="togglePasswordVisibility('new-password', this)"
+                          style="padding: 0.4rem 0.7rem; border-radius: 6px; border: 1px solid #d1d5db; background: #f8fafc; color: #64748b; font-size: 0.75rem; font-weight: 600; cursor: pointer; white-space: nowrap;">
+                    Show
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label class="admin-label" for="new-password-confirm">Confirm Password</label>
+                <div style="display: flex; gap: 0.4rem;">
+                  <input type="password" id="new-password-confirm" class="admin-input" placeholder="Re-enter password" style="flex: 1;">
+                  <button type="button" onclick="togglePasswordVisibility('new-password-confirm', this)"
+                          style="padding: 0.4rem 0.7rem; border-radius: 6px; border: 1px solid #d1d5db; background: #f8fafc; color: #64748b; font-size: 0.75rem; font-weight: 600; cursor: pointer; white-space: nowrap;">
+                    Show
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label class="admin-label" for="new-user-role">Role</label>
+                <select id="new-user-role" class="admin-input">
+                  <option value="user" selected>User (Read-Only)</option>
+                  <option value="superuser">Superuser (Read + Write)</option>
+                  <option value="admin">Admin (Full Access)</option>
+                </select>
+              </div>
+
+              <div style="margin-top: 0.4rem;">
+                <button type="submit" id="btn-create-user" class="admin-btn admin-btn--primary" style="width: 100%;">
+                  Create Account
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+        </div>
+
+        <!-- RIGHT: Role Permissions Info -->
+        <div class="admin-section">
+          <div class="admin-section__header">
+            <p class="admin-section__title">Role Permissions Reference</p>
+          </div>
+          <div class="admin-section__body" style="padding: 0;">
+
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Role</th>
+                  <th>Permissions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <span style="display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9999px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">USER</span>
+                  </td>
+                  <td>Read-only access. Can view routing data, search, and browse records. Cannot create, edit, or delete.</td>
+                </tr>
+                <tr>
+                  <td>
+                    <span style="display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9999px; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;">SUPERUSER</span>
+                  </td>
+                  <td>Read and write access. Can create, update, and delete routing records and production lines. Cannot manage users or view audit logs.</td>
+                </tr>
+                <tr>
+                  <td>
+                    <span style="display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9999px; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca;">ADMIN</span>
+                  </td>
+                  <td>Full access. Can do everything a Superuser can, plus: create user accounts, view audit logs, and clean up old log entries.</td>
+                </tr>
+              </tbody>
+            </table>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================
+         VIEW 7: AUDIT LOGS
+         Admin-only audit log viewer
+         ============================================ -->
+    <div id="view-logs" class="hidden view-card">
+
+      <!-- Page Header -->
+      <div class="manage-page-header">
+        <div>
+          <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--gray-800); margin: 0 0 0.2rem;">Audit Logs</h3>
+          <p style="font-size: 0.82rem; color: #64748b; margin: 0;">View and manage system audit log entries.</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button onclick="handleLogsCleanup()"
+                  class="admin-btn admin-btn--danger">
+            &#128465; Cleanup Old Logs
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters Bar -->
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
+        <p style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin: 0 0 0.7rem;">Filters</p>
+        <div class="logs-filter-grid">
+          <div>
+            <label class="admin-label" for="log-filter-username">Username</label>
+            <input type="text" id="log-filter-username" class="admin-input" placeholder="e.g., alice_smith">
+          </div>
+          <div>
+            <label class="admin-label" for="log-filter-action">Action</label>
+            <input type="text" id="log-filter-action" class="admin-input" placeholder="e.g., Updated product">
+          </div>
+          <div>
+            <label class="admin-label" for="log-filter-target">Target Type</label>
+            <select id="log-filter-target" class="admin-input">
+              <option value="">-- All --</option>
+              <option value="product">Product</option>
+              <option value="activity">Activity</option>
+              <option value="user">User</option>
+              <option value="logs">Logs</option>
+            </select>
+          </div>
+          <div>
+            <label class="admin-label" for="log-filter-from">From Date</label>
+            <input type="date" id="log-filter-from" class="admin-input">
+          </div>
+          <div>
+            <label class="admin-label" for="log-filter-to">To Date</label>
+            <input type="date" id="log-filter-to" class="admin-input">
+          </div>
+        </div>
+        <div class="logs-filter-actions">
+          <button onclick="clearLogFilters()" class="admin-btn admin-btn--secondary">
+            Clear Filters
+          </button>
+          <button onclick="applyLogFilters()" class="admin-btn admin-btn--primary">
+            Apply Filters
+          </button>
+        </div>
+      </div>
+
+      <!-- Logs Table -->
+      <div class="admin-section" style="margin-bottom: 1rem;">
+        <div class="admin-section__body" style="padding: 0; overflow-x: auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Timestamp</th>
+                <th>User</th>
+                <th>Action</th>
+                <th>Description</th>
+                <th>Target</th>
+                <th>Target ID</th>
+                <th>Days Old</th>
+                <th>IP Address</th>
+              </tr>
+            </thead>
+            <tbody id="auditLogsTableBody">
+              <!-- Populated by logs.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <span class="pagination-info" id="logs-pagination-info">
+            Showing 0 to 0 of 0 entries
+          </span>
+          <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <label style="font-size: 0.78rem; color: #64748b; font-weight: 500;">Per page:</label>
+            <select id="log-per-page" onchange="changeLogsPerPage()"
+                    style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.3rem 0.5rem; font-size: 0.78rem; color: #374151; background: #fff;">
+              <option value="20" selected>20</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="200">200</option>
+            </select>
+          </div>
+        </div>
+        <div class="pagination-buttons">
+          <button onclick="changeLogsPage(-1)"
+                  id="btn-logs-prev"
+                  class="btn btn--secondary"
+                  disabled>
+            Previous
+          </button>
+          <button onclick="changeLogsPage(1)"
+                  id="btn-logs-next"
+                  class="btn btn--secondary"
+                  disabled>
+            Next
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+      </div><!-- /.app-content__inner -->
+    </div><!-- /.app-content -->
+  </main>
+
+  <!-- ============================================
+       ARCHIVE MODAL — Read-only Revision History
+       Visible from UPDATE tab only.
+       80vw wide, full-page backdrop blur, browser-
+       style × close, version-per-page pagination.
+       ============================================ -->
+  <div id="archiveModal">
+    <div class="archive-modal__panel">
+
+      <!-- Header -->
+      <div class="archive-modal__header">
+        <div class="archive-modal__header-left">
+          <div class="archive-modal__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff"
+                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7"/>
+              <path d="M20 13v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5"/>
+              <path d="M4 13h16"/>
+              <path d="M9 17h6"/>
+            </svg>
+          </div>
+          <div>
+            <h4 class="archive-modal__heading">
+              Revision History
+              <span class="archive-modal__subtitle">— Item Code: <strong id="archive-modal-item-code"></strong></span>
+            </h4>
+          </div>
+        </div>
+        <!-- Browser-style × close button -->
+        <button class="archive-modal__close"
+                onclick="closeArchiveModal()"
+                title="Close (Esc)">
+          &times;
+        </button>
+      </div>
+
+      <!-- Scrollable body -->
+      <div class="archive-modal__content">
+
+        <!-- Loading spinner -->
+        <div id="archive-modal-spinner">
+          <div class="archive-spinner-ring"></div>
+          <span style="font-size:0.82rem;color:#64748b;font-weight:500;">Loading revision history…</span>
+        </div>
+
+        <!-- Revision content (populated by archive.js) -->
+        <div id="archive-modal-body" style="display:none;"></div>
+
+      </div><!-- /.archive-modal__content -->
+
+      <!-- Pagination footer: ← Older  |  Version N of M  |  Newer → -->
+      <div id="archive-pagination">
+        <button id="archive-btn-next"
+                class="archive-nav-btn"
+                onclick="archiveNextRevision()"
+                disabled>
+          ← Newer
+        </button>
+        <div style="display:flex; align-items:center; gap:1.25rem; flex-wrap:wrap; justify-content:center;">
+          <div id="archive-pages-list" style="display:flex; align-items:center; gap:0.35rem; flex-wrap:wrap; justify-content:center;">
+            <!-- Page buttons will be generated here dynamically -->
+          </div>
+          <span id="archive-page-info" style="font-size:0.82rem;font-weight:600;color:#64748b;">
+            Version — of —
+          </span>
+        </div>
+        <button id="archive-btn-prev"
+                class="archive-nav-btn"
+                onclick="archivePrevRevision()"
+                disabled>
+          Older →
+        </button>
+      </div>
+
+    </div><!-- /.archive-modal__panel -->
+  </div><!-- /#archiveModal -->
+
+  <!-- ============================================
+       TIME FORMULA MODAL
+       ============================================ -->
+  <div id="timeFormulaModal" class="formula-modal modal-backdrop">
+    <div class="formula-modal__panel">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+        <h4 class="formula-modal__title">
+          <span class="formula-modal__fx">&#402;</span>
+          Time Formula
+        </h4>
+        <button id="timeFormulaCloseBtn" class="formula-modal__close" type="button">&times;</button>
+      </div>
+      <p style="font-size:0.82rem; color:#64748b; margin:0 0 1.5rem; line-height:1.55; font-weight:600;">
+        Enter a formula like <code style="background:#EBFFD8;padding:0.1rem 0.35rem;border-radius:4px;color:#1e293b;font-size:0.8rem;">8/60</code> or
+        <code style="background:#EBFFD8;padding:0.1rem 0.35rem;border-radius:4px;color:#1e293b;font-size:0.8rem;">8/60+3/60</code>.
+        Supported operators: <code style="background:#f1f5f9;padding:0.1rem 0.35rem;border-radius:4px;color:#475569;font-size:0.8rem;">+ - * / ( )</code>
+      </p>
+      <label style="display:block;font-size:0.625rem;font-weight:900;text-transform:uppercase;letter-spacing:0.12em;color:#94a3b8;margin-bottom:0.5rem;">Formula Input</label>
+      <div class="formula-modal__input-wrap" style="margin-bottom:1.25rem;">
+        <span class="formula-modal__equals">=</span>
+        <input id="timeFormulaInput" type="text" class="formula-modal__input" placeholder="8/60 or 8/60+3/60">
+      </div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;border-bottom:2px solid #f1f5f9;padding-bottom:1rem;margin-bottom:2rem;">
+        <span style="font-size:0.625rem;font-weight:900;text-transform:uppercase;letter-spacing:0.12em;color:#94a3b8;">Result</span>
+        <span id="timeFormulaResult" class="formula-modal__result is-empty">0.00000</span>
+      </div>
+      <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+        <button id="timeFormulaCancelBtn" class="formula-modal__btn-cancel" type="button">Cancel</button>
+        <button id="timeFormulaApplyBtn" class="formula-modal__btn-apply" type="button">Apply to Cell</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       EXPORT CONFIRMATION MODAL
+       ============================================ -->
+  <div id="exportModal" class="custom-modal modal-backdrop">
+    <div class="custom-modal__panel">
+      <div id="exportModalIconWrap" class="modal-icon-wrap" style="display:flex; justify-content:center;">
+        <div class="modal-icon-circle-success">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </div>
+      </div>
+      <h4 class="modal-title" style="text-align:center;">Export Database</h4>
+      <p class="modal-message" style="text-align:center;">
+        Are you sure you want to export the entire routing database to Excel? This file will contain all products and line activities.
+      </p>
+      <div class="modal-actions">
+        <button id="btn-export-cancel" onclick="hideExportModal()" class="modal-btn-cancel">
+          Cancel
+        </button>
+        <button id="btn-export-confirm" onclick="handleExportConfirm()"
+                class="modal-btn-confirm"
+                style="background:#16a34a; color:#fff; display:inline-flex; align-items:center; gap:0.5rem;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Download Excel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       CUSTOM MODAL DIALOG
+       ============================================ -->
+  <!-- FIX (MEDIUM-003): role="dialog" + aria-modal tell screen readers this is a
+       modal dialog. aria-labelledby/describedby link the announced title and body. -->
+  <div id="customModal" class="custom-modal modal-backdrop"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="modalTitle"
+       aria-describedby="modalMessage">
+    <div class="custom-modal__panel">
+      <div id="modalIconWrap" class="modal-icon-wrap"></div>
+      <h4 id="modalTitle" class="modal-title"></h4>
+      <p id="modalMessage" class="modal-message"></p>
+      <div id="modalInputWrap" style="display:none; margin-bottom:1rem;">
+        <input id="modalInput" class="modal-input">
+      </div>
+      <div class="modal-actions">
+        <button id="modalCancelBtn" class="modal-btn-cancel">
+          Cancel
+        </button>
+        <button id="modalConfirmBtn" class="modal-btn-confirm">
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       JAVASCRIPT - Modular Architecture
+       FIX (LOW-001): All scripts now use `defer` so the browser can
+       download them in parallel while parsing HTML, then execute them
+       in order after the DOM is ready — no render-blocking, no race.
+       ============================================ -->
+
+  <!-- Layer 0a: Config — must load before api-service reads API_BASE_URL -->
+  <script src="js/modules/config.js" defer></script>
+
+  <script src="js/modules/auth.js" defer></script>
+
+  <!-- Layer 0b: API Service -->
+  <script src="js/modules/api-service.js" defer></script>
+
+  <!-- Layer 1: State & Data -->
+  <script src="js/modules/state.js" defer></script>
+  <script src="js/modules/mock-db.js" defer></script>
+
+  <!-- Layer 2: Utilities -->
+  <script src="js/modules/utils.js" defer></script>
+
+  <!-- Layer 3: Core Logic -->
+  <script src="js/modules/calculations.js" defer></script>
+  <script src="js/modules/view-controller.js" defer></script>
+
+  <!-- Layer 4: Feature Modules -->
+  <script src="js/modules/routing-form.js" defer></script>
+  <script src="js/modules/search.js" defer></script>
+  <script src="js/modules/manage-activities.js" defer></script>
+  <script src="js/modules/all-data.js" defer></script>
+
+  <!-- Layer 5: Admin Modules (admin only, but scripts load for all) -->
+  <script src="js/modules/admin-panel.js" defer></script>
+  <script src="js/modules/logs.js" defer></script>
+
+  <!-- Archive viewer (UPDATE tab only, read-only revision history) -->
+  <script src="js/modules/archive.js" defer></script>
+
+  <!-- Layer 6: Router & Entry Point -->
+  <script src="js/modules/tabs.js" defer></script>
+  <script src="js/main.js" defer></script>
+
+  <!-- 
+    JS Module Hierarchy:
+    main.js
+    ├── modules/auth.js              - Authentication manager (login/logout/JWT)
+    ├── modules/api-service.js       - Backend API client (all endpoints + loading)
+    ├── modules/state.js             - App state, constants, enums
+    ├── modules/mock-db.js           - In-memory data store
+    ├── modules/utils.js             - Helper functions
+    ├── modules/calculations.js      - Math engine
+    ├── modules/view-controller.js   - View state manager
+    ├── modules/routing-form.js      - Form handling
+    ├── modules/search.js            - Search engine
+    ├── modules/manage-activities.js - Activity CRUD
+    ├── modules/all-data.js          - Paginated table view
+    ├── modules/admin-panel.js       - Admin panel (user management)
+    ├── modules/logs.js              - Audit logs viewer
+    ├── modules/tabs.js              - Tab controller/router
+    └── main.js                      - Entry point
+  -->
+
+</body>
+</html>

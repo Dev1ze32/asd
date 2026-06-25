@@ -1,0 +1,693 @@
+/* ============================================
+   COMPONENTS.CSS - Tables, Forms, Buttons
+   Pioneer Adhesives Routing Template System
+   ============================================ */
+
+/* --- Excel-style Routing Table --- */
+.excel-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  min-width: 62.5rem;
+  border: 1px solid #000000;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  font-size: var(--text-sm);
+}
+
+.excel-table th,
+.excel-table td {
+  border-bottom: 1px solid #000000;
+  border-right: 1px solid #000000;
+  padding: 8px 12px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.excel-table th {
+  background-color: var(--pal-teal-mid);
+  font-weight: 700;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #1e293b;
+  white-space: nowrap;
+}
+
+.excel-table tr:last-child td { border-bottom: none; }
+.excel-table th:last-child,
+.excel-table td:last-child { border-right: none; }
+
+.excel-table tbody tr:hover td:not(.bg-red-50):not(.cell-bom):not(.cell-computed) {
+  background-color: var(--gray-100);
+}
+
+.excel-table .section-header--routing {
+  background-color: var(--pal-teal-ink);
+  text-align: left;
+  padding-left: var(--space-4);
+  color: #ffffff;
+  border-bottom: 2px solid #6f9fab;
+  text-transform: uppercase;
+}
+
+.excel-table .section-header--bom {
+  background-color: var(--pal-teal-ink);
+  border-left: 1px solid #6f9fab;
+  color: #ffffff;
+  border-bottom: 2px solid #6f9fab;
+  text-transform: uppercase;
+}
+
+.excel-table th.w-activity,
+.excel-table td.w-activity { width: 16rem; text-align: left; padding-left: var(--space-3); }
+
+.excel-table th.w-pax, .excel-table td.w-pax { width: 4rem; }
+.excel-table th.w-machine, .excel-table td.w-machine { width: 4rem; }
+.excel-table th.w-time, .excel-table td.w-time { width: 6rem; }
+.excel-table th.w-runtime, .excel-table td.w-runtime { width: 6rem; background: #fff; }
+.excel-table th.w-unit, .excel-table td.w-unit { width: 4rem; background: #fff; }
+.excel-table th.w-labor, .excel-table td.w-labor { width: 6rem; background: #fff; }
+.excel-table th.w-mc, .excel-table td.w-mc { width: 6rem; background: #fff; border-right: 1px solid #000000; }
+
+.excel-table th.w-bom-activity,
+.excel-table td.w-bom-activity {
+  width: 16rem;
+  text-align: left;
+  padding-left: var(--space-3);
+  background-color: var(--bom-cell);
+}
+
+.excel-table th.w-dl-units, .excel-table td.w-dl-units { width: 6rem; background-color: var(--bom-cell); }
+.excel-table th.w-dl, .excel-table td.w-dl { width: 5rem; background-color: var(--bom-cell); }
+.excel-table th.w-voh, .excel-table td.w-voh { width: 5rem; background-color: var(--bom-cell); }
+.excel-table th.w-foh, .excel-table td.w-foh { width: 5rem; background-color: var(--bom-cell); }
+
+.excel-table tfoot tr {
+  font-weight: 700;
+  font-size: var(--text-sm);
+  background-color: var(--pal-teal-ink);
+  color: #ffffff;
+}
+
+.excel-table tfoot td {
+  border-top: 2px solid #6f9fab;
+}
+
+.excel-table tfoot #sumTime {
+  color: var(--pioneer-red);
+  font-weight: 900;
+}
+
+.excel-table tfoot .cell-bom {
+  border-top: 2px solid var(--bom-border);
+}
+
+.excel-table tfoot #sumDL,
+.excel-table tfoot #sumVOH,
+.excel-table tfoot #sumFOH {
+  color: var(--pioneer-red);
+  font-weight: 900;
+}
+
+/* --- Excel Input Cells --- */
+.excel-table td.p-0 {
+  padding: 0 !important;
+}
+
+.excel-input {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  text-align: center;
+  padding: 8px 12px;
+  font-size: var(--text-sm);
+  color: var(--gray-800);
+  font-weight: 600;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  box-sizing: border-box;
+}
+
+.excel-input:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.excel-input.text-left {
+  text-align: left;
+  padding-left: var(--space-2);
+}
+
+.activity-select {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.activity-select:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.bg-excel-yellow {
+  background-color: var(--pal-green-light) !important;
+  transition: all 0.2s ease;
+}
+
+.bg-excel-yellow:focus-within:not(:has(input:disabled)):not(:has(select:disabled)) {
+  background-color: #ffffff !important;
+  box-shadow: inset 0 0 0 2px var(--pal-teal-dark) !important;
+  border-radius: 2px;
+}
+
+.bg-activity-green:focus-within:not(:has(select:disabled)) {
+  box-shadow: inset 0 0 0 2px var(--pal-teal-dark) !important;
+  border-radius: 2px;
+}
+
+.bg-activity-green {
+  background-color: var(--pal-green-light) !important;
+}
+
+input:disabled,
+select:disabled,
+.bg-excel-yellow:has(input:disabled),
+.bg-excel-yellow:has(select:disabled) {
+  background-color: var(--gray-50) !important;
+  color: var(--gray-400);
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+
+.time-input-cell {
+  position: relative;
+  cursor: pointer;
+}
+
+.time-input-cell input {
+  cursor: pointer;
+  color: var(--pioneer-red);
+  font-family: var(--font-mono);
+}
+
+.time-input-cell .fx-indicator {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: var(--gray-400);
+  font-style: italic;
+  pointer-events: none;
+  font-family: Georgia, serif;
+  line-height: 1;
+}
+
+.cell-computed {
+  background-color: #fff;
+  color: var(--gray-700);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.cell-bom {
+  background-color: var(--pal-teal-soft);
+  color: var(--gray-700);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.cell-bom.sync-activity-cell {
+  font-size: var(--text-xs);
+  font-weight: 900;
+  text-align: left;
+  padding-left: var(--space-3);
+}
+
+.action-column {
+  width: 3rem;
+  text-align: center;
+  background: #fff;
+  border-left: 1px solid #000000;
+}
+
+/* --- Buttons --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s, color 0.2s;
+  white-space: nowrap;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn--primary {
+  background-color: transparent;
+  color: var(--pioneer-red);
+  border: 1px solid transparent;
+  padding: 0.5rem 1rem;
+}
+
+.btn--primary:hover {
+  color: var(--pioneer-red-dark);
+  background-color: var(--pal-green-light);
+  border-color: var(--pal-teal-mid);
+}
+
+.btn--success {
+  background-color: var(--pioneer-red);
+  color: #ffffff;
+  padding: 0.75rem 2.5rem;
+  font-size: var(--text-base);
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.btn--success:hover {
+  background-color: var(--pioneer-red-dark);
+}
+
+.btn--danger {
+  background-color: transparent;
+  color: #f87171;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.25rem;
+  line-height: 1;
+  border-radius: var(--radius-md);
+}
+
+.btn--danger:hover {
+  color: var(--pioneer-red);
+  background-color: var(--pal-green-light);
+}
+
+.btn--secondary {
+  background-color: #fff;
+  color: var(--gray-700);
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+  border: 1px solid var(--gray-300);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--secondary:hover {
+  background-color: var(--gray-50);
+}
+
+.btn--secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn--dark {
+  background-color: var(--gray-800);
+  color: #ffffff;
+}
+
+.btn--dark:hover {
+  background-color: var(--gray-900);
+}
+
+.btn--add-row {
+  margin-top: var(--space-4);
+}
+
+.badge-highlight {
+  background-color: #fde68a;
+  padding: 0 4px;
+  font-weight: 700;
+  border-radius: 2px;
+}
+
+/* --- All Data Table --- */
+.data-table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  background: #ffffff;
+}
+
+.data-table thead {
+  background-color: var(--pal-teal-dark);
+  color: #1e293b;
+}
+
+.data-table thead th {
+  padding: 1rem;
+  border: 1px solid #000000;
+  font-weight: 900;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.data-table tbody tr {
+  border-bottom: 1px solid #000000;
+  transition: background-color 0.15s;
+}
+
+.data-table tbody tr:hover {
+  background-color: #f8fbfc;
+}
+
+.data-table tbody td {
+  padding: 1rem;
+  color: var(--gray-700);
+  font-weight: 500;
+  background: #ffffff;
+  border: 1px solid #000000;
+}
+
+.data-table .col-item-code {
+  font-weight: 700;
+  color: var(--pioneer-red);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.badge--fg {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.badge--bm {
+  background-color: #f3e8ff;
+  color: #6b21a8;
+}
+
+.link-action {
+  color: var(--pioneer-red);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.link-action:hover {
+  text-decoration: underline;
+}
+
+/* --- Update action buttons --- */
+.btn-update-record {
+  padding: 0.65rem 2rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: var(--pioneer-red);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  box-shadow: 0 4px 12px rgba(185, 28, 28, 0.2);
+}
+
+.btn-update-record:hover {
+  background: var(--pioneer-red-dark);
+}
+
+.btn-delete-record {
+  padding: 0.65rem 2rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: #fff;
+  color: var(--pioneer-red);
+  border: 1.5px solid var(--pal-teal-mid);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-delete-record:hover {
+  background: var(--pal-green-light);
+}
+
+/* --- Modal styling helpers --- */
+.formula-modal,
+.custom-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+
+.formula-modal.is-open,
+.custom-modal.is-open {
+  display: flex;
+}
+
+.formula-modal__panel,
+.custom-modal__panel {
+  background: #fff;
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  max-width: 440px;
+  width: 90%;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--pal-teal-mid);
+}
+
+.formula-modal__panel-header,
+.custom-modal__panel-header {
+  background: var(--pal-teal-dark);
+  color: #1e293b;
+  padding: 1rem 1.5rem;
+  font-weight: 800;
+}
+
+.formula-modal__panel-body,
+.custom-modal__panel-body {
+  padding: 1.5rem;
+}
+
+.formula-modal__input-wrap {
+  display: flex;
+  align-items: center;
+  border: 2px solid var(--pal-teal-mid);
+  border-radius: var(--radius-md);
+  transition: border-color 0.2s;
+  background: var(--pal-green-light);
+}
+
+.formula-modal__input-wrap:focus-within {
+  border-color: var(--pal-teal-dark);
+}
+
+.formula-modal__input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 0.625rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--gray-900);
+  background: transparent;
+}
+
+.formula-modal__btn-apply {
+  padding: 0.625rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  background: var(--pal-teal-dark);
+  color: #1e293b;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+}
+
+.formula-modal__btn-apply:hover {
+  background: var(--pal-teal-mid);
+}
+
+.formula-modal__title {
+  font-size: var(--text-lg);
+  font-weight: 900;
+  color: var(--gray-800);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.formula-modal__fx {
+  color: var(--pal-teal-dark);
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-size: 1.5rem;
+}
+
+.formula-modal__equals {
+  padding: 0 1rem;
+  color: var(--gray-400);
+  font-weight: 900;
+  font-size: var(--text-lg);
+}
+
+.formula-modal__result {
+  font-size: 1.875rem;
+  font-weight: 900;
+  color: var(--pal-teal-dark);
+  font-family: var(--font-mono);
+}
+
+.formula-modal__result.is-invalid {
+  color: var(--status-red);
+}
+
+.formula-modal__result.is-empty {
+  color: var(--gray-300);
+}
+
+.formula-modal__btn-cancel {
+  padding: 0.625rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  background: var(--pal-teal-soft);
+  color: #1e293b;
+  border: none;
+  cursor: pointer;
+}
+
+.formula-modal__btn-cancel:hover {
+  background: var(--pal-teal-mid);
+}
+
+.formula-modal__close {
+  background: var(--gray-100);
+  border: none;
+  cursor: pointer;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-400);
+  transition: all 0.2s;
+}
+
+.formula-modal__close:hover {
+  background: var(--gray-200);
+  color: var(--gray-700);
+}
+
+body.dark-mode .excel-table {
+  border-color: #000000;
+  background: #111f24;
+}
+
+body.dark-mode .excel-table th,
+body.dark-mode .excel-table td,
+body.dark-mode .data-table th,
+body.dark-mode .data-table td {
+  border-color: #000000;
+}
+
+body.dark-mode .excel-table th {
+  background: #074550;
+  color: #f0f6f7;
+}
+
+body.dark-mode .excel-table .section-header--routing,
+body.dark-mode .excel-table .section-header--bom,
+body.dark-mode .excel-table tfoot tr {
+  background: #002f39;
+  color: #ffffff;
+}
+
+body.dark-mode .bg-excel-yellow,
+body.dark-mode .bg-activity-green {
+  background-color: #16272d !important;
+  color: #dff5e4;
+}
+
+body.dark-mode .excel-input,
+body.dark-mode .activity-select {
+  color: #dff5e4;
+}
+
+body.dark-mode .cell-computed,
+body.dark-mode .excel-table th.w-runtime,
+body.dark-mode .excel-table td.w-runtime,
+body.dark-mode .excel-table th.w-unit,
+body.dark-mode .excel-table td.w-unit,
+body.dark-mode .excel-table th.w-labor,
+body.dark-mode .excel-table td.w-labor,
+body.dark-mode .excel-table th.w-mc,
+body.dark-mode .excel-table td.w-mc,
+body.dark-mode .action-column {
+  background: #101b20;
+  color: #f0f6f7;
+}
+
+body.dark-mode .cell-bom,
+body.dark-mode .excel-table th.w-bom-activity,
+body.dark-mode .excel-table td.w-bom-activity,
+body.dark-mode .excel-table th.w-dl-units,
+body.dark-mode .excel-table td.w-dl-units,
+body.dark-mode .excel-table th.w-dl,
+body.dark-mode .excel-table td.w-dl,
+body.dark-mode .excel-table th.w-voh,
+body.dark-mode .excel-table td.w-voh,
+body.dark-mode .excel-table th.w-foh,
+body.dark-mode .excel-table td.w-foh {
+  background: #203238;
+  color: #f0f6f7;
+}
+
+body.dark-mode .data-table {
+  background: #101b20;
+}
+
+body.dark-mode .data-table thead {
+  background: #002f39;
+  color: #ffffff;
+}
+
+body.dark-mode .data-table tbody td {
+  background: #121f24;
+  color: #f0f6f7;
+}
+
+body.dark-mode .data-table tbody tr:hover td {
+  background: #1a3037;
+}
+
+body.dark-mode .link-action,
+body.dark-mode .btn--primary,
+body.dark-mode .btn--add-row {
+  color: #42c7c7;
+}

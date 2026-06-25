@@ -1,0 +1,12 @@
+/* ============================================
+   MAIN.CSS - CSS Aggregator
+   Pioneer Adhesives Routing Template System
+   
+   This file imports all modular CSS files.
+   Use this as the single CSS entry point.
+   ============================================ */
+
+@import url('base.css');
+@import url('layout.css');
+@import url('components.css');
+@import url('responsive.css');
