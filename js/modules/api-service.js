@@ -55,9 +55,9 @@
  * Never commit a production IP/hostname here.
  */
 const API_BASE_URL = (
-  (typeof window !== 'undefined' && window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
+  (typeof window !== 'undefined' && window.APP_CONFIG && typeof window.APP_CONFIG.API_BASE_URL === 'string')
     ? window.APP_CONFIG.API_BASE_URL
-    : 'http://localhost:8080'   // ← local dev fallback only; use HTTPS in production
+    : 'http://localhost:8080'
 ).replace(/\/$/, ''); // strip trailing slash
 
 /* ============================================

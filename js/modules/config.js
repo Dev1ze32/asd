@@ -18,10 +18,12 @@ window.APP_CONFIG = {
   /* --------------------------------------------------
      API_BASE_URL
      The root address of the ACU Routing API server.
-     - No trailing slash (api-service.js strips it, but keep it clean here too).
-     - MUST be HTTPS in production to protect Bearer tokens in transit.
+     - Set to empty string ('') to use relative paths. This is the 
+       BEST approach when the frontend and backend are served together
+       (e.g., via WhiteNoise or Nginx) because it automatically adapts
+       to whatever IP/Domain the user types into their browser.
      -------------------------------------------------- */
-  API_BASE_URL: 'http://192.168.50.65:8080',   // ← replace with your server address
+  API_BASE_URL: '',   // Automatically adapts to localhost or server IP
 
   /* --------------------------------------------------
      APP_NAME

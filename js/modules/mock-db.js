@@ -57,46 +57,7 @@ function getLineActivityId(activity) {
  * Maps inventory IDs to routing records
  * @type {Object.<string, Object>}
  */
-const mockRoutingDB = {
-  '1AF2202L': {
-    inventory_id: '1AF2202L',
-    revision_descr: 'PG ANTI FOULING PAINT RED 4L',
-    revision: '03',
-    notes: 'CRN RD23-CR055',
-    production_line: 'L01 - L1 COATINGS',
-    production_line_code: 'L01',
-    activities: [
-      { type: 'Labor', item_id: 'L01 LABELING/CODING', activities: 'L01 LABELING/CODING', class: 'DL', pax: 1, machine: 1, time_min: 0.1245 },
-      { type: 'Labor', item_id: 'L01 FILLING', activities: 'L01 FILLING', class: 'DL', pax: 2, machine: 1, time_min: 0.1499 }
-    ],
-    product_type: 'Finished Good (FG)'
-  },
-  '1KPH5A5J01': {
-    inventory_id: '1KPH5A5J01',
-    revision_descr: 'FG_KOPHENOL HIGHWAY YELLOW',
-    revision: '00',
-    notes: 'PACKAGING MATERIAL: REUSE THE TIN PAIL OF KOPHENOL CREAM',
-    production_line: 'L01 - L1 COATINGS',
-    production_line_code: 'L01',
-    activities: [
-      { type: 'Labor', item_id: 'L01 LABELING/CODING', activities: 'L01 LABELING/CODING', class: 'DL', pax: 1, machine: 1, time_min: 0.1167 }
-    ],
-    product_type: 'Finished Good (FG)'
-  },
-  '1WDG5A6601': {
-    inventory_id: '1WDG5A6601',
-    revision_descr: 'COMM_PIONEER WOODGLUE D3 4KG',
-    qty: 4,
-    production_line_code: 'L11',
-    activities: [
-      { activities: 'UNBOXING', pax: 1, machine: 0, time_min: 0.1333 },
-      { activities: 'BATCH CODING', pax: 1, machine: 0, time_min: 0.0333 },
-      { activities: 'PLACING OF CODED PAIL STICKER LABEL', pax: 1, machine: 0, time_min: 0.1666 },
-      { activities: 'REBOXING', pax: 1, machine: 0, time_min: 0.1000 }
-    ],
-    product_type: 'Finished Good (FG)'
-  }
-};
+const mockRoutingDB = {};
  
 /**
  * Seed mock database with dummy data for pagination testing
