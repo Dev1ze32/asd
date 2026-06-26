@@ -227,7 +227,6 @@ function _renderLoginScreen() {
             <path d="M -10 100 L 590 100 Q 620 100 640 80 Q 620 112 590 112 L -10 112 Z" fill="rgba(255,255,255,0.2)" />
           </g>
         </svg>
-        <p class="login-screen__headline">Routing Headquarters</p>
       </div>
 
       <!-- BOTTOM: tagline block, separate from logo -->
@@ -243,8 +242,7 @@ function _renderLoginScreen() {
 
         <!-- Card heading -->
         <div class="login-screen__form-heading">
-          
-          <h1 class="login-screen__form-title">Welcome back</h1>
+          <h1 class="login-screen__form-title">Routing Headquarters</h1>
           <p class="login-screen__form-subtitle">Sign in to your account to continue.</p>
         </div>
 
@@ -294,8 +292,7 @@ function _renderLoginScreen() {
 
         <!-- Card footer -->
         <p class="login-form__footer">
-          Access is restricted to authorized personnel only.<br>
-          Contact your administrator if you need access.
+          Access is restricted to authorized personnel only.
         </p>
 
       </div>

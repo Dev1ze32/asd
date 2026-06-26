@@ -36,8 +36,10 @@ function initAdminPanel() {
 
   // Load admin info
   _loadAdminInfo();
-}
 
+  // Load users table
+  loadUsersTable();
+}
 /* ============================================
    ADMIN INFO DISPLAY
    ============================================ */
@@ -208,8 +210,133 @@ function togglePasswordVisibility(inputId, btn) {
 }
 
 /* ============================================
+   MANAGE USERS
+   ============================================ */
+
+async function loadUsersTable() {
+  const tbody = document.getElementById('admin-users-tbody');
+  if (!tbody) return;
+
+  try {
+    const res = await apiGetUsers();
+    if (res.ok && Array.isArray(res.data)) {
+      tbody.innerHTML = '';
+      if (res.data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#64748b;">No users found.</td></tr>';
+        return;
+      }
+      res.data.forEach(user => {
+        const tr = document.createElement('tr');
+        const roleHtml = user.role === 'admin' 
+          ? `<span style="display:inline-block;font-size:0.72rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:9999px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;">ADMIN</span>`
+          : user.role === 'superuser'
+          ? `<span style="display:inline-block;font-size:0.72rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:9999px;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;">SUPERUSER</span>`
+          : `<span style="display:inline-block;font-size:0.72rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:9999px;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;">USER</span>`;
+        
+        const statusHtml = user.is_active
+          ? `<span style="color:#16a34a;font-weight:600;">Active</span>`
+          : `<span style="color:#dc2626;font-weight:600;">Disabled</span>`;
+
+        tr.innerHTML = `
+          <td>${sanitizeInput(user.id)}</td>
+          <td style="font-weight:600;color:#1e293b;">${sanitizeInput(user.username)}</td>
+          <td>${roleHtml}</td>
+          <td>${statusHtml}</td>
+          <td style="text-align: right;">
+            <button class="btn btn--secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="openEditUserModal('${sanitizeInput(user.id)}', '${sanitizeInput(user.username)}', '${sanitizeInput(user.role)}', ${user.is_active})">Edit</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } else {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#dc2626;">Failed to load users.</td></tr>';
+    }
+  } catch (err) {
+    console.error("Error loading users:", err);
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#dc2626;">Error loading users.</td></tr>';
+  }
+}
+
+function openEditUserModal(id, username, role, isActive) {
+  document.getElementById('edit-user-id').value = id;
+  document.getElementById('edit-user-username').textContent = username;
+  document.getElementById('edit-user-password').value = '';
+  document.getElementById('edit-user-role').value = role;
+  document.getElementById('edit-user-active').value = isActive ? 'true' : 'false';
+  
+  const modal = document.getElementById('editUserModal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeEditUserModal() {
+  const modal = document.getElementById('editUserModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function submitEditUser() {
+  const btn = document.getElementById('editUserSaveBtn');
+  const id = document.getElementById('edit-user-id').value;
+  const password = document.getElementById('edit-user-password').value;
+  const role = document.getElementById('edit-user-role').value;
+  const isActiveStr = document.getElementById('edit-user-active').value;
+
+  const payload = {
+    role: role,
+    is_active: isActiveStr === 'true'
+  };
+  if (password.trim() !== '') {
+    if (password.length < 8) {
+      await showModal({
+        icon: 'danger',
+        title: 'Validation Error',
+        message: 'Password must be at least 8 characters long.',
+        type: 'confirm'
+      });
+      return;
+    }
+    payload.password = password;
+  }
+
+  try {
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+    const res = await apiUpdateUser(id, payload);
+    if (res.ok) {
+      closeEditUserModal();
+      loadUsersTable();
+      await showModal({
+        icon: 'success',
+        title: 'Success',
+        message: 'User updated successfully.',
+        type: 'confirm'
+      });
+    } else {
+      if (btn) { btn.disabled = false; btn.textContent = 'Save Changes'; }
+      let msg = res.data?.error || 'Failed to update user';
+      await showModal({
+        icon: 'danger',
+        title: 'Update Failed',
+        message: msg,
+        type: 'confirm'
+      });
+    }
+  } catch (err) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Save Changes'; }
+    await showModal({
+      icon: 'danger',
+      title: 'Error',
+      message: 'Network error. Please try again.',
+      type: 'confirm'
+    });
+  }
+}
+
+/* ============================================
    EXPOSE GLOBALLY
    ============================================ */
-window.initAdminPanel      = initAdminPanel;
-window.handleCreateUser    = handleCreateUser;
+window.initAdminPanel           = initAdminPanel;
+window.handleCreateUser         = handleCreateUser;
 window.togglePasswordVisibility = togglePasswordVisibility;
+window.loadUsersTable           = loadUsersTable;
+window.openEditUserModal        = openEditUserModal;
+window.closeEditUserModal       = closeEditUserModal;
+window.submitEditUser           = submitEditUser;

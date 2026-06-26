@@ -1641,6 +1641,30 @@
         </div>
 
       </div>
+
+      <!-- NEW: Manage Users Section -->
+      <div class="admin-section" style="margin-top: 1.5rem;">
+        <div class="admin-section__header">
+          <p class="admin-section__title">Manage Users</p>
+        </div>
+        <div class="admin-section__body" style="padding: 0; overflow-x: auto;">
+          <table class="admin-table" id="admin-users-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-users-tbody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
 
     <!-- ============================================
@@ -1921,7 +1945,7 @@
        ============================================ -->
   <!-- FIX (MEDIUM-003): role="dialog" + aria-modal tell screen readers this is a
        modal dialog. aria-labelledby/describedby link the announced title and body. -->
-  <div id="customModal" class="custom-modal modal-backdrop"
+  <div id="customModal" class="custom-modal modal-backdrop" style="z-index: 100000;"
        role="dialog"
        aria-modal="true"
        aria-labelledby="modalTitle"
@@ -1944,6 +1968,44 @@
     </div>
   </div>
 
+  <!-- ============================================
+       EDIT USER MODAL
+       ============================================ -->
+  <div id="editUserModal" class="custom-modal modal-backdrop" style="display:none;" role="dialog" aria-modal="true">
+    <div class="custom-modal__panel" style="max-width: 400px;">
+      <h4 class="modal-title">Edit User: <span id="edit-user-username"></span></h4>
+      <input type="hidden" id="edit-user-id">
+
+      <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.8rem;">
+        <div>
+          <label class="admin-label" for="edit-user-password">New Password (Optional)</label>
+          <input type="password" id="edit-user-password" class="admin-input" placeholder="Leave blank to keep unchanged">
+        </div>
+
+        <div>
+          <label class="admin-label" for="edit-user-role">Role</label>
+          <select id="edit-user-role" class="admin-input">
+            <option value="user">User (Read-Only)</option>
+            <option value="superuser">Superuser (Read + Write)</option>
+            <option value="admin">Admin (Full Access)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="admin-label" for="edit-user-active">Status</label>
+          <select id="edit-user-active" class="admin-input">
+            <option value="true">Active</option>
+            <option value="false">Disabled</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 1.5rem;">
+        <button id="editUserCancelBtn" onclick="closeEditUserModal()" class="modal-btn-cancel">Cancel</button>
+        <button id="editUserSaveBtn" onclick="submitEditUser()" class="modal-btn-confirm">Save Changes</button>
+      </div>
+    </div>
+  </div>
   <!-- ============================================
        JAVASCRIPT - Modular Architecture
        FIX (LOW-001): All scripts now use `defer` so the browser can

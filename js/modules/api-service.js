@@ -280,6 +280,16 @@ async function apiRegister(username, password, role) {
   return _apiFetch('/api/auth/register', 'POST', { username, password, role });
 }
 
+/** GET /api/auth/users (admin only) */
+async function apiGetUsers() {
+  return _apiFetch('/api/auth/users');
+}
+
+/** PATCH /api/auth/users/<user_id> (admin only) */
+async function apiUpdateUser(userId, data) {
+  return _apiFetch(`/api/auth/users/${encodeURIComponent(userId)}`, 'PATCH', data);
+}
+
 /* ============================================
    HEALTH
    ============================================ */
@@ -897,6 +907,8 @@ window._forceHideLoading       = _forceHideLoading;
 window.apiLogin                = apiLogin;
 window.apiGetMe                = apiGetMe;
 window.apiRegister             = apiRegister;
+window.apiGetUsers             = apiGetUsers;
+window.apiUpdateUser           = apiUpdateUser;
 window.apiHealthCheck          = apiHealthCheck;
 window.apiGetItems             = apiGetItems;
 window.apiCreateItem           = apiCreateItem;
