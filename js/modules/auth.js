@@ -236,6 +236,11 @@ function _renderLoginScreen() {
       <div class="login-screen__hero-content">
         <h2 class="login-screen__hero-title">Do it <span style="color: #14b8a6;">right.</span></h2>
         <p class="login-screen__hero-desc">Routing management center</p>
+        
+        <!-- Developer Credits -->
+        <div style="margin-top: 0.5rem; font-size: 0.55rem; color: rgba(255, 255, 255, 0.15); letter-spacing: 0.05em;">
+          Aerial Oliver (UI/UX) & Wendell Anciso (API)
+        </div>
       </div>
     </div>
 
@@ -300,7 +305,6 @@ function _renderLoginScreen() {
         <p class="login-form__footer">
           Access is restricted to authorized personnel only.
         </p>
-
       </div>
     </div>
   `;
