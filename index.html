@@ -721,6 +721,36 @@
         background-color: #101b20 !important;
         color: #ffffff !important;
       }
+      
+      body.dark-mode .dark-mode-panel {
+        background: #121f24 !important;
+        border-color: #2c4851 !important;
+        color: #f0f6f7 !important;
+      }
+      body.dark-mode .dark-mode-panel label,
+      body.dark-mode .dark-mode-panel p {
+        color: #f0f6f7 !important;
+      }
+      body.dark-mode .dark-mode-input {
+        background: #0f1c21 !important;
+        border-color: #2c4851 !important;
+        color: #ffffff !important;
+      }
+      body.dark-mode .dark-mode-input option {
+        background: #0f1c21 !important;
+        color: #ffffff !important;
+      }
+
+      
+      body.dark-mode .bg-excel-yellow:focus-within:not(:has(input:disabled)):not(:has(select:disabled)),
+      body.dark-mode .bg-activity-green:focus-within:not(:has(select:disabled)),
+      body.dark-mode input:focus,
+      body.dark-mode select:focus,
+      body.dark-mode textarea:focus {
+        background-color: #0b1417 !important;
+        color: #ffffff !important;
+      }
+
       body.dark-mode .manage-sidebar,
       body.dark-mode #activityEditorSection,
       body.dark-mode .activity-add-row {
@@ -1363,14 +1393,14 @@
       <div class="manage-layout-grid">
 
         <!-- LEFT SIDEBAR: Line Selector -->
-        <div style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+        <div class="manage-sidebar" style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid #e2e8f0;">
 
           <p style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin: 0 0 0.6rem;">Step 1</p>
           <label for="manageLineSelect" style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">
             Select Production Line
           </label>
           <select id="manageLineSelect"
-                  style="width: 100%; border: 1px solid #cbd5e1; border-radius: 7px; padding: 0.5rem 0.75rem; background: #ffffff; font-size: 0.875rem; color: #1e293b; margin-bottom: 0.75rem; appearance: auto;"
+                  class="dark-mode-input" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 7px; padding: 0.5rem 0.75rem; background: #ffffff; font-size: 0.875rem; color: #1e293b; margin-bottom: 0.75rem; appearance: auto;"
                   onchange="renderManageActivities()">
             <option value="" disabled selected>-- Choose Line --</option>
           </select>
@@ -1412,7 +1442,7 @@
           <div class="activity-add-row">
             <input type="text"
                    id="newActivityInput"
-                   style="flex: 1; border: 1px solid #cbd5e1; border-radius: 7px; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #1e293b; background: #fff; outline: none;"
+                   class="dark-mode-input" style="flex: 1; border: 1px solid #cbd5e1; border-radius: 7px; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #1e293b; background: #fff; outline: none;"
                    placeholder="Type activity name and press Enter or click Add..."
                    onkeypress="handleActivityKeypress(event)"
                    onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#cbd5e1'">
@@ -1504,7 +1534,7 @@
       </div>
 
       <!-- Filters -->
-      <div style="display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; background:#f8fafc; padding:1rem; border-radius:8px; border:1px solid #e2e8f0;">
+      <div class="dark-mode-panel" style="display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; background:#f8fafc; padding:1rem; border-radius:8px; border:1px solid #e2e8f0;">
         <div style="flex:1; min-width:200px;">
           <label style="display:block; font-size:0.75rem; font-weight:700; color:#475569; margin-bottom:0.25rem;">Search SKU / Description</label>
           <input type="text" id="alldata-filter-sku" placeholder="e.g. CLEAR..." class="form-input" style="width:100%;" oninput="applyAllDataFilters()">
@@ -1581,7 +1611,7 @@
       </div>
 
       <!-- Admin Info Bar -->
-      <div class="admin-info-bar" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
+      <div class="admin-info-bar dark-mode-panel" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
         <div>
           <p style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin: 0 0 0.2rem;">Signed in as</p>
           <p style="font-size: 0.95rem; font-weight: 600; color: #1e293b; margin: 0;">
@@ -1751,7 +1781,7 @@
       </div>
 
       <!-- Filters Bar -->
-      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
+      <div class="dark-mode-panel" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
         <p style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin: 0 0 0.7rem;">Filters</p>
         <div class="logs-filter-grid">
           <div>
@@ -1850,7 +1880,7 @@
           <div style="display: flex; align-items: center; gap: 0.4rem;">
             <label style="font-size: 0.78rem; color: #64748b; font-weight: 500;">Per page:</label>
             <select id="log-per-page" onchange="changeLogsPerPage()"
-                    style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.3rem 0.5rem; font-size: 0.78rem; color: #374151; background: #fff;">
+                    class="dark-mode-input" style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.3rem 0.5rem; font-size: 0.78rem; color: #374151; background: #fff;">
               <option value="20" selected>20</option>
               <option value="25">25</option>
               <option value="50">50</option>

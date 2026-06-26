@@ -330,6 +330,13 @@ async function saveRoutingDocument() {
   // --- Try API first ---
   try {
     if (!isUpdate) {
+      const confirmSave = await showModal({
+        icon: 'info', title: 'Confirm Save',
+        message: `Are you sure you want to create this new routing record for ${itemCode}?`,
+        type: 'confirm', confirmLabel: 'Yes, Save', confirmStyle: 'primary'
+      });
+      if (!confirmSave.confirmed) return false;
+
       // ── CREATE: single call, activities included in body ──────────────────
       const res = await apiCreateItem(record);
       if (!res.ok) {
@@ -388,6 +395,13 @@ async function saveRoutingDocument() {
         });
         return false; // Return false to skip the performSearch reload
       }
+
+      const confirmSave = await showModal({
+        icon: 'info', title: 'Confirm Update',
+        message: `Are you sure you want to save these changes to ${itemCode}?`,
+        type: 'confirm', confirmLabel: 'Yes, Save', confirmStyle: 'primary'
+      });
+      if (!confirmSave.confirmed) return false;
 
       // 2. Build Bulk Payload
       const bulkPayload = {
