@@ -334,7 +334,7 @@ async function saveRoutingDocument() {
           message: getApiErrorMessage(res, 'create item', itemCode),
           type: 'confirm', confirmLabel: 'OK',
         });
-        return;
+        return false;
       }
 
     } else {
@@ -402,7 +402,7 @@ async function saveRoutingDocument() {
             message: res.data && res.data.error ? res.data.error : 'This document was modified by another user. Please refresh to see their changes before saving yours.',
             type: 'confirm', confirmLabel: 'Got it',
           });
-          return;
+          return false;
         }
 
         // Standard API error
@@ -411,7 +411,7 @@ async function saveRoutingDocument() {
           message: res.data && res.data.error ? res.data.error : 'Failed to save. Please check your connection and try again.',
           type: 'confirm', confirmLabel: 'OK',
         });
-        return;
+        return false;
       }
 
       // 4. Re-fetch the saved record from the server so local cache is accurate
@@ -436,7 +436,7 @@ async function saveRoutingDocument() {
       message: `${itemCode} — ${skuDesc} could not reach the server and was saved locally only.`,
       duration: 5000,
     });
-    return;
+    return true;
   }
 
   // --- API success: keep local cache in sync (CREATE path) ---
@@ -451,6 +451,8 @@ async function saveRoutingDocument() {
     message: `${itemCode} — ${skuDesc} (Line: ${prodLine}) has been ${actionVerb}.`,
     duration: 4000,
   });
+
+  return true;
 }
 
 /**

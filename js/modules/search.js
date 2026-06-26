@@ -116,7 +116,8 @@ confirmLabel: 'Yes, Update',
 if (!result.confirmed) return;
 
 // ── Perform the save ──────────────────────────────────────────────────────
-await saveRoutingDocument();
+const success = await saveRoutingDocument();
+if (!success) return;
 
 // ── Auto-reload: re-fetch the saved record so the form shows the latest
 //    data (bumped revision number, server-assigned activity IDs, etc.)

@@ -213,6 +213,15 @@ const tabKey = mode === 'add'    ? AppState.ADD
 : mode === 'lookup' ? AppState.LOOKUP
 : AppState.UPDATE;
 
+const formInstructions = document.getElementById('form-instructions');
+const instAdd = document.getElementById('instructions-add');
+const instUpdate = document.getElementById('instructions-update');
+if (formInstructions) {
+  formInstructions.style.display = (mode === 'add' || mode === 'update') ? 'block' : 'none';
+  if (instAdd) instAdd.style.display = (mode === 'add') ? 'block' : 'none';
+  if (instUpdate) instUpdate.style.display = (mode === 'update') ? 'block' : 'none';
+}
+
 if (mode === 'add') {
 searchSection.classList.add('hidden');
 saveBtn.classList.remove('hidden');
