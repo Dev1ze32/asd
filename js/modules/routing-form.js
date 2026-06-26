@@ -13,18 +13,20 @@
  * @param {number|string} machine - Number of machines
  * @param {number|string} time - Time in minutes
  */
-function addRow(activityName, pax, machine, time) {
+function addRow(activityName, pax, machine, time, id) {
   // Guard against undefined values — <input type="number" value="undefined"> triggers
   // a browser parse error ("The specified value 'undefined' cannot be parsed").
   activityName = (activityName !== undefined && activityName !== null) ? activityName : '';
   pax          = (pax          !== undefined && pax          !== null) ? pax          : '';
   machine      = (machine      !== undefined && machine      !== null) ? machine      : '';
   time         = (time         !== undefined && time         !== null) ? time         : '';
+  id           = (id           !== undefined && id           !== null) ? id           : '';
 
   var tbody = document.getElementById('tableBody');
   if (!tbody) return;
 
   var tr = document.createElement('tr');
+  if (id) tr.dataset.id = id;
 
   var isDisabled  = !App.isFormEditable ? 'disabled' : '';
   var displayBtn  = App.isFormEditable  ? 'inline-flex' : 'none';
@@ -296,9 +298,11 @@ async function saveRoutingDocument() {
     var pax          = parseFloat(row.querySelector('.pax-input')?.value)     || 0;
     var machine      = parseFloat(row.querySelector('.machine-input')?.value) || 0;
     var time         = parseFloat(row.querySelector('.time-input')?.value)    || 0;
+    var actId        = row.dataset.id || '';
 
     if (activityName) {
       activities.push({
+        id:            actId ? parseInt(actId, 10) : undefined,
         activities:    activityName,  // internal name kept for local cache
         activity_name: activityName,  // API field name
         pax:           pax,
@@ -362,6 +366,28 @@ async function saveRoutingDocument() {
           return String(newVal ?? '') !== String(origVal ?? '');
         });
       });
+
+      // 1b. Check if any product-level fields changed
+      const origQty = App.currentRecord ? (parseFloat(App.currentRecord.qty) || 1) : 1;
+      const newQty  = parseFloat(record.qty) || 1;
+      
+      const productChanged = !App.currentRecord ||
+        String(record.revision_descr || '') !== String(App.currentRecord.revision_descr || '') ||
+        String(record.notes || '') !== String(App.currentRecord.notes || '') ||
+        newQty !== origQty ||
+        String(record.production_line_code || '') !== String(App.currentRecord.production_line_code || '') ||
+        String(record.product_type || '') !== String(App.currentRecord.product_type || '');
+
+      // 1c. If nothing changed at all, block the update
+      if (!productChanged && toAdd.length === 0 && toUpdate.length === 0 && toDelete.length === 0) {
+        showToast({
+          type: 'info',
+          title: 'No Changes',
+          message: 'No changes were detected. The record is already up to date.',
+          duration: 3000
+        });
+        return false; // Return false to skip the performSearch reload
+      }
 
       // 2. Build Bulk Payload
       const bulkPayload = {
@@ -496,10 +522,10 @@ function loadDataIntoForm(data) {
       var pax     = act.pax     || 0;
       var machine = act.machine || 0;
       var time    = act.time_min || act.time || 0;
-      addRow(name, pax, machine, time);
+      addRow(name, pax, machine, time, act.id);
     });
   } else {
-    addRow('', '', '', '');
+    addRow('', '', '', '', '');
   }
 
   calculateAll();

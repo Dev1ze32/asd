@@ -1697,8 +1697,11 @@
 
       <!-- NEW: Manage Users Section -->
       <div class="admin-section" style="margin-top: 1.5rem;">
-        <div class="admin-section__header">
-          <p class="admin-section__title">Manage Users</p>
+        <div class="admin-section__header" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          <p class="admin-section__title" style="margin: 0;">Manage Users</p>
+          <div style="flex: 1; max-width: 300px;">
+            <input type="text" id="admin-users-search" class="admin-input" placeholder="Search username..." oninput="handleAdminUsersSearch()">
+          </div>
         </div>
         <div class="admin-section__body" style="padding: 0; overflow-x: auto;">
           <table class="admin-table" id="admin-users-table">
@@ -1714,6 +1717,14 @@
               <!-- Populated by JS -->
             </tbody>
           </table>
+        </div>
+        <!-- Pagination Controls -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-top: 1px solid var(--border-color, #e2e8f0); background: var(--bg-card, #ffffff);">
+          <span id="admin-users-page-info" style="font-size: 0.8rem; color: #64748b; font-weight: 500;">Page 1 of 1</span>
+          <div style="display: flex; gap: 0.5rem;">
+            <button id="admin-users-prev" class="btn btn--secondary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;" onclick="prevAdminUsersPage()">Previous</button>
+            <button id="admin-users-next" class="btn btn--secondary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;" onclick="nextAdminUsersPage()">Next</button>
+          </div>
         </div>
       </div>
 
@@ -1749,7 +1760,33 @@
           </div>
           <div>
             <label class="admin-label" for="log-filter-action">Action</label>
-            <input type="text" id="log-filter-action" class="admin-input" placeholder="e.g., Updated product">
+            <select id="log-filter-action" class="admin-input">
+              <option value="">-- All Actions --</option>
+              <optgroup label="Products & Routing">
+                <option value="Created product">Created product</option>
+                <option value="Updated product">Updated product</option>
+                <option value="Bulk updated product">Bulk updated product</option>
+                <option value="Deleted product">Deleted product</option>
+                <option value="Added activity">Added activity</option>
+                <option value="Updated activity">Updated activity</option>
+                <option value="Deleted activity">Deleted activity</option>
+              </optgroup>
+              <optgroup label="Production Lines">
+                <option value="Created production line">Created production line</option>
+                <option value="Renamed production line">Renamed production line</option>
+                <option value="Deleted production line">Deleted production line</option>
+                <option value="Added line activity">Added line activity</option>
+                <option value="Updated line activity">Updated line activity</option>
+                <option value="Deleted line activity">Deleted line activity</option>
+                <option value="Replaced production line activities">Replaced line activities</option>
+              </optgroup>
+              <optgroup label="System & Admin">
+                <option value="Created user account">Created user account</option>
+                <option value="Updated user account">Updated user account</option>
+                <option value="Deleted user account">Deleted user account</option>
+                <option value="Purged old logs">Purged old logs</option>
+              </optgroup>
+            </select>
           </div>
           <div>
             <label class="admin-label" for="log-filter-target">Target Type</label>

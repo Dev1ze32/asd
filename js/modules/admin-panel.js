@@ -315,6 +315,11 @@ async function deleteUser(userId, username) {
   }
 }
 
+let adminUsersList = [];
+let adminUsersFiltered = [];
+let adminUsersCurrentPage = 1;
+const adminUsersPerPage = 20;
+
 async function loadUsersTable() {
   const tbody = document.getElementById('admin-users-tbody');
   if (!tbody) return;
@@ -322,23 +327,79 @@ async function loadUsersTable() {
   try {
     const res = await apiGetUsers();
     if (res.ok && Array.isArray(res.data)) {
-      tbody.innerHTML = '';
-      if (res.data.length === 0) {
-        tbody.innerHTML = '<tr id="admin-users-empty"><td colspan="5" style="text-align:center;color:#64748b;">No users found.</td></tr>';
-        return;
-      }
-      res.data.forEach(user => {
-        const tr = document.createElement('tr');
-        tr.setAttribute('data-user-id', user.id);
-        tr.innerHTML = _createUserRowHTML(user);
-        tbody.appendChild(tr);
-      });
+      adminUsersList = res.data;
+      const searchInput = document.getElementById('admin-users-search');
+      if (searchInput) searchInput.value = '';
+      adminUsersFiltered = [...adminUsersList];
+      adminUsersCurrentPage = 1;
+      _renderAdminUsersPage();
     } else {
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#dc2626;">Failed to load users.</td></tr>';
     }
   } catch (err) {
     console.error("Error loading users:", err);
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#dc2626;">Error loading users.</td></tr>';
+  }
+}
+
+function handleAdminUsersSearch() {
+  const query = (document.getElementById('admin-users-search')?.value || '').toLowerCase();
+  adminUsersFiltered = adminUsersList.filter(u => u.username.toLowerCase().includes(query) || String(u.id).includes(query));
+  adminUsersCurrentPage = 1;
+  _renderAdminUsersPage();
+}
+
+function _renderAdminUsersPage() {
+  const tbody = document.getElementById('admin-users-tbody');
+  const pageInfo = document.getElementById('admin-users-page-info');
+  const prevBtn = document.getElementById('admin-users-prev');
+  const nextBtn = document.getElementById('admin-users-next');
+  
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  const totalItems = adminUsersFiltered.length;
+  const totalPages = Math.ceil(totalItems / adminUsersPerPage) || 1;
+  
+  if (adminUsersCurrentPage > totalPages) adminUsersCurrentPage = totalPages;
+  if (adminUsersCurrentPage < 1) adminUsersCurrentPage = 1;
+
+  if (totalItems === 0) {
+    tbody.innerHTML = '<tr id="admin-users-empty"><td colspan="5" style="text-align:center;color:#64748b;">No users found.</td></tr>';
+    if (pageInfo) pageInfo.textContent = 'Page 1 of 1 (0 total)';
+    if (prevBtn) prevBtn.disabled = true;
+    if (nextBtn) nextBtn.disabled = true;
+    return;
+  }
+
+  const startIdx = (adminUsersCurrentPage - 1) * adminUsersPerPage;
+  const endIdx = startIdx + adminUsersPerPage;
+  const paginated = adminUsersFiltered.slice(startIdx, endIdx);
+
+  paginated.forEach(user => {
+    const tr = document.createElement('tr');
+    tr.setAttribute('data-user-id', user.id);
+    tr.innerHTML = _createUserRowHTML(user);
+    tbody.appendChild(tr);
+  });
+
+  if (pageInfo) pageInfo.textContent = `Page ${adminUsersCurrentPage} of ${totalPages} (${totalItems} total)`;
+  if (prevBtn) prevBtn.disabled = adminUsersCurrentPage <= 1;
+  if (nextBtn) nextBtn.disabled = adminUsersCurrentPage >= totalPages;
+}
+
+function prevAdminUsersPage() {
+  if (adminUsersCurrentPage > 1) {
+    adminUsersCurrentPage--;
+    _renderAdminUsersPage();
+  }
+}
+
+function nextAdminUsersPage() {
+  const totalPages = Math.ceil(adminUsersFiltered.length / adminUsersPerPage);
+  if (adminUsersCurrentPage < totalPages) {
+    adminUsersCurrentPage++;
+    _renderAdminUsersPage();
   }
 }
 
@@ -437,6 +498,9 @@ window.initAdminPanel           = initAdminPanel;
 window.handleCreateUser         = handleCreateUser;
 window.togglePasswordVisibility = togglePasswordVisibility;
 window.loadUsersTable           = loadUsersTable;
+window.handleAdminUsersSearch   = handleAdminUsersSearch;
+window.prevAdminUsersPage       = prevAdminUsersPage;
+window.nextAdminUsersPage       = nextAdminUsersPage;
 window.openEditUserModal        = openEditUserModal;
 window.closeEditUserModal       = closeEditUserModal;
 window.submitEditUser           = submitEditUser;

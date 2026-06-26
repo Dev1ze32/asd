@@ -165,6 +165,31 @@ function _calcDaysOld(timestamp) {
   return days < 0 ? '0' : String(days);
 }
 
+/**
+ * Format a timestamp into Philippine Time (Asia/Manila)
+ * @param {string} timestamp 
+ * @returns {string} Formatted string
+ */
+function _formatPhilippineTime(timestamp) {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  if (isNaN(date.getTime())) return timestamp;
+  
+  // Format explicitly as Philippine Time, avoiding internet dependency
+  const formatter = new Intl.DateTimeFormat('en-PH', {
+    timeZone: 'Asia/Manila',
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  });
+  
+  return formatter.format(date);
+}
+
 function renderAuditLogs() {
   const tbody = document.getElementById('auditLogsTableBody');
   if (!tbody) return;
@@ -206,7 +231,7 @@ function renderAuditLogs() {
 
     tr.innerHTML = `
       <td style="font-family:monospace;font-size:0.78rem;color:#475569;">${log.id || ''}</td>
-      <td style="font-size:0.78rem;color:#334155;white-space:nowrap;">${sanitizeInput(log.logged_at || '')}</td>
+      <td style="font-size:0.78rem;color:#334155;white-space:nowrap;">${sanitizeInput(_formatPhilippineTime(log.logged_at) || '')}</td>
       <td style="font-size:0.82rem;font-weight:600;color:#1e293b;">${sanitizeInput(log.username || '')}</td>
       <td><span style="display:inline-block;font-size:0.72rem;font-weight:600;padding:0.15rem 0.5rem;border-radius:9999px;${actionColor}">${sanitizeInput(log.action || '')}</span></td>
       <td style="font-size:0.8rem;color:#475569;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${sanitizeInput(log.description || '')}">${sanitizeInput(_shortenDescription(log.description || ''))}</td>
