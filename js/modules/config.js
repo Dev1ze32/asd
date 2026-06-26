@@ -21,7 +21,7 @@ window.APP_CONFIG = {
      - No trailing slash (api-service.js strips it, but keep it clean here too).
      - MUST be HTTPS in production to protect Bearer tokens in transit.
      -------------------------------------------------- */
-  API_BASE_URL: 'http://192.168.50.126:8080',   // ← replace with your server address
+  API_BASE_URL: 'http://192.168.50.65:8080',   // ← replace with your server address
 
   /* --------------------------------------------------
      APP_NAME

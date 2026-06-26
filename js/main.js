@@ -84,6 +84,9 @@ async function initApp() {
 
   // Populate production line dropdown
   populateProdLineSelect();
+  if (typeof setupProdLineChangeListener === 'function') {
+    setupProdLineChangeListener();
+  }
 
   console.log('Initialization complete.');
   console.log(`Loaded ${Object.keys(mockRoutingDB).length} routing records`);

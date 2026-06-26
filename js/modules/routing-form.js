@@ -212,6 +212,59 @@ async function removeRow(btn) {
 }
 
 /**
+ * Attaches a change listener to the prodLine dropdown.
+ * Warns the user if they change the line while activities exist,
+ * and clears the table to prevent invalid data from being saved.
+ */
+function setupProdLineChangeListener() {
+  const prodLineEl = document.getElementById('prodLine');
+  if (!prodLineEl) return;
+
+  // Store initial value
+  prodLineEl.dataset.prevVal = prodLineEl.value;
+
+  prodLineEl.addEventListener('change', async function() {
+    const newVal = this.value;
+    const oldVal = this.dataset.prevVal;
+    const tableBody = document.getElementById('tableBody');
+
+    // If there are existing rows with actual selected activities
+    const hasActivities = Array.from(tableBody.querySelectorAll('tr')).some(row => {
+      const select = row.querySelector('.activity-select');
+      return select && select.value.trim() !== '';
+    });
+
+    if (hasActivities) {
+      const res = await showModal({
+        icon: 'warning',
+        title: 'Change Production Line',
+        message: 'Changing the production line will clear your current routing activities, as they are no longer valid for this line. Proceed?',
+        type: 'confirm',
+        confirmStyle: 'danger',
+        confirmLabel: 'Yes, Clear Activities'
+      });
+
+      if (!res.confirmed) {
+        // Revert change
+        this.value = oldVal;
+        return;
+      }
+
+      // User confirmed: Wipe the table and add a blank row
+      tableBody.innerHTML = '';
+      addRow('', '', '', '');
+      calculateAll();
+    } else {
+      // No activities yet, just refresh dropdowns silently
+      refreshAllActivityDropdowns();
+    }
+
+    // Update previous value
+    this.dataset.prevVal = newVal;
+  });
+}
+
+/**
  * Save the current routing document.
  * Collects form data, calls the API, saves locally, then clears tab state.
  */
@@ -637,6 +690,15 @@ function _validateRoutingForm(itemCode, skuDesc, prodLine, qty) {
 
       if (!timeVal || isNaN(timeNum) || timeNum <= 0)
         errors.push({ section: rowLabel, field: 'Time', reason: 'must be greater than 0 — open the formula field to set a value' });
+
+      // Ensure the activity is valid for the currently selected production line
+      if (actVal && prodLine) {
+        const validActivities = getLineActivities(prodLine);
+        const isValid = validActivities.some(a => a.activity_name === actVal);
+        if (!isValid) {
+          errors.push({ section: rowLabel, field: 'Activity', reason: `"${actVal}" is not a valid activity for production line ${prodLine}. Please clear or change it.` });
+        }
+      }
     });
   }
 

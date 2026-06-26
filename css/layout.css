@@ -953,13 +953,19 @@ body.dark-mode .data-table-wrapper {
 
 /* "ROUTING HEADQUARTERS" — sits directly under the logo */
 .login-screen__headline {
-  color: rgba(0, 0, 0, 0.75);
+  /* Original properties */
   font-size: 0.900rem;
   font-weight: 1000;
   letter-spacing: 0.25em;
   text-transform: uppercase;
   padding-left: 0.1rem;
   margin: 0;
+
+  /* Text Gradient properties */
+  background: linear-gradient(to right, #42c7c7, red);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent; 
 }
 
 /* ── Hero bottom text block ── */
