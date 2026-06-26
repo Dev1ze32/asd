@@ -356,6 +356,16 @@ async function apiUpdateItem(itemCode, payload) {
 }
 
 /**
+ * PUT /api/items/{item_code}/bulk
+ * Bulk update product metadata and activities. Solves Concurrency & Rate Limiting.
+ * @param {string} itemCode
+ * @param {Object} bulkPayload
+ */
+async function apiBulkUpdateItem(itemCode, bulkPayload) {
+  return _apiFetch(`/api/items/${encodeURIComponent(itemCode)}/bulk`, 'PUT', bulkPayload);
+}
+
+/**
  * DELETE /api/items/{item_code}
  * Permanently delete a product and all its activities.
  * @param {string} itemCode
@@ -920,6 +930,7 @@ window.apiGetItems             = apiGetItems;
 window.apiCreateItem           = apiCreateItem;
 window.apiGetItem              = apiGetItem;
 window.apiUpdateItem           = apiUpdateItem;
+window.apiBulkUpdateItem       = apiBulkUpdateItem;
 window.apiDeleteItem           = apiDeleteItem;
 window.apiAddItemActivity      = apiAddItemActivity;
 window.apiUpdateItemActivity   = apiUpdateItemActivity;

@@ -338,35 +338,18 @@ async function saveRoutingDocument() {
       }
 
     } else {
-      // ── UPDATE: patch metadata first, then diff + sync activities ─────────
-
-      // 1. Patch metadata (always — revision bump happens here)
-      const metaRes = await apiUpdateItem(itemCode, record);
-      if (!metaRes.ok) {
-        await showModal({
-          icon: 'danger', title: 'Update Failed',
-          message: getApiErrorMessage(metaRes, 'update item', itemCode),
-          type: 'confirm', confirmLabel: 'OK',
-        });
-        return;
-      }
-
-      // 2. Get the original activities that are currently saved on the server
-      //    App.currentRecord is set by the search/lookup flow when UPDATE mode loads
-      const originalActivities = (App.currentRecord && App.currentRecord.activities)
-        ? App.currentRecord.activities
-        : [];
-
+      // ── UPDATE: Use the Bulk Update API to solve Concurrency & Rate Limiting ─────────
+      
+      // 1. Get the original activities that are currently saved on the server
+      const originalActivities = (App.currentRecord && App.currentRecord.activities) ? App.currentRecord.activities : [];
       const updatedActivities = record.activities || [];
 
       // Activities with no id are NEW → POST
       const toAdd = updatedActivities.filter(a => !a.id);
 
       // Activities in original but missing from updated list → DELETE
-      const updatedIds = new Set(
-        updatedActivities.filter(a => a.id).map(a => String(a.id))
-      );
-      const toDelete = originalActivities.filter(a => !updatedIds.has(String(a.id)));
+      const updatedIds = new Set(updatedActivities.filter(a => a.id).map(a => String(a.id)));
+      const toDelete = originalActivities.filter(a => !updatedIds.has(String(a.id))).map(a => a.id);
 
       // Activities present in both but with changed fields → PATCH
       const toUpdate = updatedActivities.filter(act => {
@@ -374,73 +357,64 @@ async function saveRoutingDocument() {
         const orig = originalActivities.find(a => String(a.id) === String(act.id));
         if (!orig) return false;
         return ['activity_name', 'activities', 'pax', 'machine', 'time_min'].some(f => {
-          // normalise activity_name vs activities field alias
           const newVal  = f === 'activity_name' ? (act.activity_name  || act.activities)  : act[f];
           const origVal = f === 'activity_name' ? (orig.activity_name || orig.activities) : orig[f];
           return String(newVal ?? '') !== String(origVal ?? '');
         });
       });
 
-      // 3. Add new activities
-      //    ?skip_revision=1 — the metadata PATCH (step 1) already took the one
-      //    revision bump + archive snapshot for this save operation.
-      for (const act of toAdd) {
-        const res = await apiAddItemActivity(itemCode, act, { skipRevision: true });
-        if (!res.ok) {
-          await showModal({
-            icon: 'danger', title: 'Add Activity Failed',
-            message: getApiErrorMessage(res, 'add activity', itemCode),
-            type: 'confirm', confirmLabel: 'OK',
-          });
-          // FIX (MEDIUM-001): reload server state so form reflects what actually saved
-          await _recoverAfterPartialSave(itemCode, 'add');
-          return;
-        }
-      }
-
-      // 4. Delete removed activities
-      //    ?skip_revision=1 — same reason as above; no additional revision bump needed.
-      for (const act of toDelete) {
-        const res = await apiDeleteItemActivity(itemCode, act.id, { skipRevision: true });
-        if (!res.ok) {
-          await showModal({
-            icon: 'danger', title: 'Delete Activity Failed',
-            message: getApiErrorMessage(res, 'delete activity', itemCode),
-            type: 'confirm', confirmLabel: 'OK',
-          });
-          // FIX (MEDIUM-001): reload server state
-          await _recoverAfterPartialSave(itemCode, 'delete');
-          return;
-        }
-      }
-
-      // 5. Patch changed activities
-      //    ?skip_revision=1 — same reason as above; no additional revision bump needed.
-      for (const act of toUpdate) {
-        const res = await apiUpdateItemActivity(itemCode, act.id, {
+      // 2. Build Bulk Payload
+      const bulkPayload = {
+        expected_revision: App.currentRecord ? App.currentRecord.revision : '00',
+        product_updates: {
+          revision_descr: record.revision_descr,
+          notes: record.notes,
+          quantity: record.qty,
+          bm_production_line: record.production_line,
+          bm_production_line_code: record.production_line_code,
+          fg_production_line: record.production_line,
+          fg_production_line_code: record.production_line_code,
+          product_type: record.product_type
+        },
+        activities_added: toAdd,
+        activities_updated: toUpdate.map(act => ({
+          id: act.id,
           activity_name: act.activity_name || act.activities || '',
-          pax:       act.pax,
-          machine:   act.machine,
-          time_min:  act.time_min,
-          type:      act.type      || 'Labor',
-          class:     act.class     || 'DL',
-          class_1:   act.class_1   || 'DL',
-          sort_order: act.sort_order,
-        }, { skipRevision: true });
-        if (!res.ok) {
+          pax: act.pax,
+          machine: act.machine,
+          time_min: act.time_min,
+          type: act.type || 'Labor',
+          class: act.class || 'DL',
+          class_1: act.class_1 || 'DL',
+          sort_order: act.sort_order
+        })),
+        activities_deleted: toDelete
+      };
+
+      // 3. Fire a single Bulk API request
+      const res = await apiBulkUpdateItem(itemCode, bulkPayload);
+      
+      if (!res.ok) {
+        if (res.status === 409) {
+          // Concurrency Conflict: Lost Update prevented!
           await showModal({
-            icon: 'danger', title: 'Update Activity Failed',
-            message: getApiErrorMessage(res, 'update activity', itemCode),
-            type: 'confirm', confirmLabel: 'OK',
+            icon: 'danger', title: 'Update Conflict',
+            message: res.data && res.data.error ? res.data.error : 'This document was modified by another user. Please refresh to see their changes before saving yours.',
+            type: 'confirm', confirmLabel: 'Got it',
           });
-          // FIX (MEDIUM-001): reload server state
-          await _recoverAfterPartialSave(itemCode, 'update');
           return;
         }
+
+        // Standard API error
+        await showModal({
+          icon: 'danger', title: 'Update Failed',
+          message: res.data && res.data.error ? res.data.error : 'Failed to save. Please check your connection and try again.',
+          type: 'confirm', confirmLabel: 'OK',
+        });
+        return;
       }
 
-      // 6. Re-fetch the saved record from the server so local cache is accurate
-      //    (revision bumped, activity IDs assigned, etc.)
+      // 4. Re-fetch the saved record from the server so local cache is accurate
       try {
         const fresh = await apiGetItem(itemCode);
         if (fresh.ok && fresh.data) {
