@@ -895,10 +895,8 @@ body.dark-mode .data-table-wrapper {
 
 /* ============================================
    LOGIN SCREEN
-   Split-panel: left = photo hero, right = form
    ============================================ */
-
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,900;1,900&display=swap');
 
 .login-screen {
   position: fixed;
@@ -907,6 +905,11 @@ body.dark-mode .data-table-wrapper {
   display: flex;
   align-items: stretch;
   background: #0f172a;
+}
+
+/* Prevent FOUC by hiding main app content while auth is pending */
+body.app-loading > *:not(.login-screen) {
+  display: none !important;
 }
 
 /* ── LEFT PANEL — photo hero ── */
@@ -925,11 +928,11 @@ body.dark-mode .data-table-wrapper {
   .login-screen__hero { display: block; }
 }
 
-/* Overlay: #8DBCC7 fading bottom to top */
+/* Overlay: Dark gradient to match mockup */
 .login-screen__hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, #42c7c7 0%, transparent 30%);
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 50%, rgba(15, 23, 42, 0.1) 100%);
 }
 
 /* ── Logo block — top of hero ── */
@@ -980,12 +983,13 @@ body.dark-mode .data-table-wrapper {
 }
 
 .login-screen__hero-title {
-  font-family: 'Dancing Script', 'Segoe Script', 'Brush Script MT', cursive;
+  font-family: 'Montserrat', 'Inter', system-ui, sans-serif;
   color: #fff;
-  font-size: 2.75rem;
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: 0.01em;
+  font-size: 3rem;
+  font-weight: 900;
+  font-style: italic;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
   margin-bottom: 0.85rem;
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
 }
@@ -1008,7 +1012,7 @@ body.dark-mode .data-table-wrapper {
   overflow-y: auto;
   background-color: #f8fafc;
   background-image: radial-gradient(circle, #cbd5e1 1px, transparent 1px);
-  background-size: 28px 28px;
+  background-size: 20px 20px;
 }
 
 @media (max-width: 899px) {
@@ -1045,9 +1049,9 @@ body.dark-mode .data-table-wrapper {
   border-radius: 1rem;
   overflow: hidden;
   box-shadow:
-    0 0 0 1px rgba(15, 23, 42, 0.03),
-    0 8px 32px rgba(15, 23, 42, 0.10),
-    0 2px 8px  rgba(15, 23, 42, 0.06);
+    0 20px 40px rgba(15, 23, 42, 0.08),
+    0 1px 3px  rgba(15, 23, 42, 0.04);
+  border: none;
 }
 
 /* Card top accent bar */
@@ -1055,13 +1059,15 @@ body.dark-mode .data-table-wrapper {
   content: '';
   display: block;
   height: 4px;
-  background: linear-gradient(90deg, #42c7c7 0%, #42c7c7 100%);
+  background: #14b8a6;
+  width: 40px;
+  margin: 2.25rem 0 0 2.25rem;
+  border-radius: 2px;
 }
 
 /* ── Card inner padding ── */
 .login-screen__form-heading {
-  padding: 2rem 2.25rem 1.5rem;
-  border-bottom: 1px solid #f1f5f9;
+  padding: 1.25rem 2.25rem 1.5rem;
 }
 
 .login-screen__form-eyebrow {
@@ -1161,7 +1167,7 @@ body.dark-mode .data-table-wrapper {
   padding: 0.9rem 1rem;
   border: none;
   border-radius: 0.5rem;
-  background: #42c7c7;
+  background: #14b8a6;
   color: #fff;
   font-size: 0.9375rem;
   font-weight: 800;
@@ -1169,12 +1175,12 @@ body.dark-mode .data-table-wrapper {
   text-transform: uppercase;
   cursor: pointer;
   transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
-  box-shadow: 0 4px 14px rgba(218, 41, 28, 0.30);
+  box-shadow: 0 4px 14px rgba(20, 184, 166, 0.30);
 }
 
 .login-form__submit:hover {
-  background: #42c7c7;
-  box-shadow: 0 6px 18px rgba(218, 41, 28, 0.38);
+  background: #0f766e;
+  box-shadow: 0 6px 18px rgba(20, 184, 166, 0.40);
 }
 
 .login-form__submit:active {
@@ -1189,8 +1195,7 @@ body.dark-mode .data-table-wrapper {
 
 /* ── Card footer ── */
 .login-form__footer {
-  padding: 1.125rem 2.25rem 1.75rem;
-  border-top: 1px solid #f1f5f9;
+  padding: 0.5rem 2.25rem 1.75rem;
   text-align: center;
   font-size: 0.75rem;
   color: #94a3b8;

@@ -172,26 +172,29 @@ const Auth = {
    * Resolves when the user is authenticated.
    */
   async init() {
-    _renderLoginScreen();
-
     if (this.isLoggedIn()) {
       const valid = await this.verifyToken();
       if (valid) {
-        _hideLoginScreen();
+        // We already have a valid token, no need to ever show the login screen.
         _updateUserBadge(this.getUser());
         _refreshAdminTabs();
-        return; // Token valid — proceed to app init
+        document.body.classList.remove('app-loading');
+        return; // Proceed to app init
       }
       // Token expired
       sessionStorage.removeItem(this.TOKEN_KEY);
       sessionStorage.removeItem(this.USER_KEY);
     }
 
+    // If we reach here, there is no valid token. Now we show the login screen.
+    _renderLoginScreen();
+
     // Block until login succeeds
     await _waitForLogin();
     _hideLoginScreen();
     _updateUserBadge(this.getUser());
     _refreshAdminTabs();
+    document.body.classList.remove('app-loading');
   },
 };
 
@@ -231,8 +234,8 @@ function _renderLoginScreen() {
 
       <!-- BOTTOM: tagline block, separate from logo -->
       <div class="login-screen__hero-content">
-        <h2 class="login-screen__hero-title">Do it right.</h2>
-        <p class="login-screen__hero-desc">Manage routing templates, BOM costing, and activity data — all in one place.</p>
+        <h2 class="login-screen__hero-title">Do it <span style="color: #14b8a6;">right.</span></h2>
+        <p class="login-screen__hero-desc">Routing management center</p>
       </div>
     </div>
 
@@ -242,8 +245,8 @@ function _renderLoginScreen() {
 
         <!-- Card heading -->
         <div class="login-screen__form-heading">
-          <h1 class="login-screen__form-title">Routing Headquarters</h1>
-          <p class="login-screen__form-subtitle">Sign in to your account to continue.</p>
+          <h1 class="login-screen__form-title">Welcome back</h1>
+          <p class="login-screen__form-subtitle">Sign in to your Routing HQ account to continue.</p>
         </div>
 
         <!-- Form fields -->
@@ -277,6 +280,9 @@ function _renderLoginScreen() {
                   <line x1="1" y1="1" x2="23" y2="23"/>
                 </svg>
               </button>
+            </div>
+            <div style="text-align: right; margin-top: 0.5rem;">
+              <a href="#" style="color: #14b8a6; font-size: 0.75rem; text-decoration: none; font-weight: 600;">Forgot password?</a>
             </div>
           </div>
 
