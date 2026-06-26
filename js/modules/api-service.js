@@ -290,6 +290,11 @@ async function apiUpdateUser(userId, data) {
   return _apiFetch(`/api/auth/users/${encodeURIComponent(userId)}`, 'PATCH', data);
 }
 
+/** DELETE /api/auth/users/<user_id> (admin only) */
+async function apiDeleteUser(userId) {
+  return _apiFetch(`/api/auth/users/${encodeURIComponent(userId)}`, 'DELETE');
+}
+
 /* ============================================
    HEALTH
    ============================================ */
@@ -909,6 +914,7 @@ window.apiGetMe                = apiGetMe;
 window.apiRegister             = apiRegister;
 window.apiGetUsers             = apiGetUsers;
 window.apiUpdateUser           = apiUpdateUser;
+window.apiDeleteUser           = apiDeleteUser;
 window.apiHealthCheck          = apiHealthCheck;
 window.apiGetItems             = apiGetItems;
 window.apiCreateItem           = apiCreateItem;

@@ -140,6 +140,25 @@ async function handleCreateUser() {
         `Account "${data.username || username}" created successfully with role "${data.role || role}".`
       );
       showToast({ type: 'success', title: 'User Account Created', message: `"${data.username || username}" (${data.role || role}) has been added.` });
+      // Append to DOM dynamically
+      const tbody = document.getElementById('admin-users-tbody');
+      if (tbody) {
+        const emptyRow = document.getElementById('admin-users-empty');
+        if (emptyRow) emptyRow.remove();
+
+        // data.id is returned from API if we modified it to do so, but since we don't know for sure if data.id exists or we just rely on data:
+        const user = {
+          id: data.id || 'N/A', // the real ID might need a reload, but we'll show N/A for now if it's missing, or the API might return it
+          username: data.username || username,
+          role: data.role || role,
+          is_active: true
+        };
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-user-id', user.id);
+        tr.innerHTML = _createUserRowHTML(user);
+        tbody.appendChild(tr);
+      }
+
       _resetCreateUserForm();
     } else {
       // API error
@@ -213,6 +232,89 @@ function togglePasswordVisibility(inputId, btn) {
    MANAGE USERS
    ============================================ */
 
+function _createUserRowHTML(user) {
+  const roleHtml = user.role === 'admin' 
+    ? `<span style="display:inline-block;font-size:0.72rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:9999px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;">ADMIN</span>`
+    : user.role === 'superuser'
+    ? `<span style="display:inline-block;font-size:0.72rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:9999px;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;">SUPERUSER</span>`
+    : `<span style="display:inline-block;font-size:0.72rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:9999px;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;">USER</span>`;
+  
+  const statusHtml = user.is_active
+    ? `<span style="color:#16a34a;font-weight:600;">Active</span>`
+    : `<span style="color:#dc2626;font-weight:600;">Disabled</span>`;
+
+  return `
+    <td>${sanitizeInput(user.id)}</td>
+    <td style="font-weight:600;color:#1e293b;">${sanitizeInput(user.username)}</td>
+    <td>${roleHtml}</td>
+    <td style="text-align: right; display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem; height: 100%;">
+      <span style="margin-right: 0.5rem;">${statusHtml}</span>
+      <button class="btn btn--secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="openEditUserModal('${sanitizeInput(user.id)}', '${sanitizeInput(user.username)}', '${sanitizeInput(user.role)}', ${user.is_active})">Edit</button>
+      <button class="btn btn--danger" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; background-color: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: 4px; cursor: pointer;" onclick="deleteUser('${sanitizeInput(user.id)}', '${sanitizeInput(user.username)}')">Delete</button>
+    </td>
+  `;
+}
+
+async function deleteUser(userId, username) {
+  if (typeof showModal !== 'function') {
+    if (!confirm(`Are you sure you want to delete user "${username}"? This cannot be undone.`)) return;
+  } else {
+    const result = await showModal({
+      icon: 'danger',
+      title: 'Delete User',
+      message: `Are you sure you want to delete user "${username}"? This cannot be undone.`,
+      type: 'confirm',
+      confirmStyle: 'danger',
+      confirmLabel: 'Yes, Delete',
+    });
+    if (!result.confirmed) return;
+  }
+
+  try {
+    const res = await apiDeleteUser(userId);
+    if (res.ok) {
+      showToast({ type: 'success', title: 'User Deleted', message: `User "${username}" has been deleted.` });
+      const tbody = document.getElementById('admin-users-tbody');
+      if (tbody) {
+        const row = tbody.querySelector(`tr[data-user-id="${userId}"]`);
+        if (row) row.remove();
+        if (tbody.children.length === 0) {
+          tbody.innerHTML = '<tr id="admin-users-empty"><td colspan="5" style="text-align:center;color:#64748b;">No users found.</td></tr>';
+        }
+      }
+    } else {
+      let msg = 'Failed to delete user.';
+      if (res.status === 400) msg = res.data?.error || 'Cannot delete this user.';
+      else if (res.status === 403) msg = 'You do not have permission to delete users.';
+      else if (res.data?.error) msg = res.data.error;
+      
+      if (typeof showModal === 'function') {
+        await showModal({
+          icon: 'danger',
+          title: 'Error',
+          message: msg,
+          type: 'confirm',
+          confirmLabel: 'OK',
+        });
+      } else {
+        alert(msg);
+      }
+    }
+  } catch (err) {
+    if (typeof showModal === 'function') {
+      await showModal({
+        icon: 'danger',
+        title: 'Network Error',
+        message: 'Could not connect to the server to delete the user.',
+        type: 'confirm',
+        confirmLabel: 'OK',
+      });
+    } else {
+      alert('Network error.');
+    }
+  }
+}
+
 async function loadUsersTable() {
   const tbody = document.getElementById('admin-users-tbody');
   if (!tbody) return;
@@ -222,30 +324,13 @@ async function loadUsersTable() {
     if (res.ok && Array.isArray(res.data)) {
       tbody.innerHTML = '';
       if (res.data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#64748b;">No users found.</td></tr>';
+        tbody.innerHTML = '<tr id="admin-users-empty"><td colspan="5" style="text-align:center;color:#64748b;">No users found.</td></tr>';
         return;
       }
       res.data.forEach(user => {
         const tr = document.createElement('tr');
-        const roleHtml = user.role === 'admin' 
-          ? `<span style="display:inline-block;font-size:0.72rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:9999px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;">ADMIN</span>`
-          : user.role === 'superuser'
-          ? `<span style="display:inline-block;font-size:0.72rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:9999px;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;">SUPERUSER</span>`
-          : `<span style="display:inline-block;font-size:0.72rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:9999px;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;">USER</span>`;
-        
-        const statusHtml = user.is_active
-          ? `<span style="color:#16a34a;font-weight:600;">Active</span>`
-          : `<span style="color:#dc2626;font-weight:600;">Disabled</span>`;
-
-        tr.innerHTML = `
-          <td>${sanitizeInput(user.id)}</td>
-          <td style="font-weight:600;color:#1e293b;">${sanitizeInput(user.username)}</td>
-          <td>${roleHtml}</td>
-          <td>${statusHtml}</td>
-          <td style="text-align: right;">
-            <button class="btn btn--secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="openEditUserModal('${sanitizeInput(user.id)}', '${sanitizeInput(user.username)}', '${sanitizeInput(user.role)}', ${user.is_active})">Edit</button>
-          </td>
-        `;
+        tr.setAttribute('data-user-id', user.id);
+        tr.innerHTML = _createUserRowHTML(user);
         tbody.appendChild(tr);
       });
     } else {
@@ -302,7 +387,22 @@ async function submitEditUser() {
     const res = await apiUpdateUser(id, payload);
     if (res.ok) {
       closeEditUserModal();
-      loadUsersTable();
+      
+      // Update DOM dynamically instead of fetching all users
+      const tbody = document.getElementById('admin-users-tbody');
+      if (tbody) {
+        const row = tbody.querySelector(`tr[data-user-id="${id}"]`);
+        if (row) {
+          const updatedUser = {
+            id: id,
+            username: document.getElementById('edit-user-username').textContent,
+            role: role,
+            is_active: isActiveStr === 'true'
+          };
+          row.innerHTML = _createUserRowHTML(updatedUser);
+        }
+      }
+
       await showModal({
         icon: 'success',
         title: 'Success',
@@ -340,3 +440,4 @@ window.loadUsersTable           = loadUsersTable;
 window.openEditUserModal        = openEditUserModal;
 window.closeEditUserModal       = closeEditUserModal;
 window.submitEditUser           = submitEditUser;
+window.deleteUser               = deleteUser;

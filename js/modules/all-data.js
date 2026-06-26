@@ -54,10 +54,46 @@ async function loadAndRenderAllData() {
 }
 
 /**
+ * Triggered when any filter dropdown or search input changes.
+ */
+function applyAllDataFilters() {
+  App.currentPage = 1;
+  renderAllData();
+}
+
+/**
  * Render the paginated data table from local cache.
  */
 function renderAllData() {
-  const dbArray = getAllRoutingRecords();
+  let dbArray = getAllRoutingRecords();
+
+  // Apply Filters
+  const filterSku = document.getElementById('alldata-filter-sku')?.value.trim().toUpperCase() || '';
+  const filterLine = document.getElementById('alldata-filter-line')?.value || '';
+  const filterType = document.getElementById('alldata-filter-type')?.value || '';
+
+  if (filterSku) {
+    dbArray = dbArray.filter(item => {
+      const sku = (item.revision_descr || item.skuDesc || '').toUpperCase();
+      return sku.includes(filterSku);
+    });
+  }
+  if (filterLine) {
+    dbArray = dbArray.filter(item => {
+      const line = item.production_line_code || item.fg_production_line_code || item.bm_production_line_code || item.prodLine || '';
+      return line === filterLine;
+    });
+  }
+  if (filterType) {
+    dbArray = dbArray.filter(item => {
+      // product_type usually comes in as "Finished Good (FG)" or "Base Material (BM)"
+      const type = (item.product_type || item.mode || '').toUpperCase();
+      if (filterType === 'FG') return type.includes('FG') || type.includes('FINISHED');
+      if (filterType === 'BM') return type.includes('BM') || type.includes('BASE');
+      return true;
+    });
+  }
+
   const totalItems = dbArray.length;
   const totalPages = Math.ceil(totalItems / App.itemsPerPage) || 1;
 
@@ -157,6 +193,7 @@ function viewFromAllData(itemCode) {
 }
 
 window.loadAndRenderAllData = loadAndRenderAllData;
+window.applyAllDataFilters = applyAllDataFilters;
 window.renderAllData        = renderAllData;
 window.changePage           = changePage;
 window.viewFromAllData      = viewFromAllData;

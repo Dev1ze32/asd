@@ -94,25 +94,37 @@ async function initApp() {
 }
 
 /**
- * Populate the production line select dropdown
+ * Populate the production line select dropdowns
  */
 function populateProdLineSelect() {
   const select = document.getElementById('prodLine');
-  if (!select) return;
-
-  // Keep the first option (placeholder)
-  const placeholder = select.options[0];
-  select.innerHTML = '';
-  select.appendChild(placeholder);
-
-  // Add sorted line options
+  const filterSelect = document.getElementById('alldata-filter-line');
+  
   const lineCodes = Object.keys(LINE_DESCRIPTIONS).sort();
-  lineCodes.forEach(code => {
-    const opt = document.createElement('option');
-    opt.value = code;
-    opt.textContent = code;
-    select.appendChild(opt);
-  });
+
+  if (select) {
+    const placeholder = select.options[0];
+    select.innerHTML = '';
+    select.appendChild(placeholder);
+    lineCodes.forEach(code => {
+      const opt = document.createElement('option');
+      opt.value = code;
+      opt.textContent = code;
+      select.appendChild(opt);
+    });
+  }
+
+  if (filterSelect) {
+    const placeholder = filterSelect.options[0];
+    filterSelect.innerHTML = '';
+    filterSelect.appendChild(placeholder);
+    lineCodes.forEach(code => {
+      const opt = document.createElement('option');
+      opt.value = code;
+      opt.textContent = code;
+      filterSelect.appendChild(opt);
+    });
+  }
 }
 
 /**

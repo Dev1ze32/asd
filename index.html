@@ -1459,18 +1459,51 @@
          Paginated table of all routing records
          ============================================ -->
     <div id="view-alldata" class="hidden view-card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
         <h3 style="font-size:1.25rem;font-weight:700;color:var(--gray-800);margin:0;">
           All Routing Records Database
         </h3>
-        <button onclick="showExportModal()" class="btn btn--success" style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          Export to Excel
-        </button>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <button onclick="loadAndRenderAllData()" class="btn btn--secondary" style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            Refresh Data
+          </button>
+          <button onclick="showExportModal()" class="btn btn--success" style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Export to Excel
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div style="display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; background:#f8fafc; padding:1rem; border-radius:8px; border:1px solid #e2e8f0;">
+        <div style="flex:1; min-width:200px;">
+          <label style="display:block; font-size:0.75rem; font-weight:700; color:#475569; margin-bottom:0.25rem;">Search SKU / Description</label>
+          <input type="text" id="alldata-filter-sku" placeholder="e.g. CLEAR..." class="form-input" style="width:100%;" oninput="applyAllDataFilters()">
+        </div>
+        <div style="flex:1; min-width:150px;">
+          <label style="display:block; font-size:0.75rem; font-weight:700; color:#475569; margin-bottom:0.25rem;">Production Line</label>
+          <select id="alldata-filter-line" class="form-select" style="width:100%;" onchange="applyAllDataFilters()">
+            <option value="">All Lines</option>
+            <!-- Populated by JS -->
+          </select>
+        </div>
+        <div style="flex:1; min-width:150px;">
+          <label style="display:block; font-size:0.75rem; font-weight:700; color:#475569; margin-bottom:0.25rem;">Product Type</label>
+          <select id="alldata-filter-type" class="form-select" style="width:100%;" onchange="applyAllDataFilters()">
+            <option value="">All Types</option>
+            <option value="FG">Finished Good (FG)</option>
+            <option value="BM">Base Material (BM)</option>
+          </select>
+        </div>
       </div>
 
       <div class="data-table-wrapper">
@@ -1654,8 +1687,7 @@
                 <th>ID</th>
                 <th>Username</th>
                 <th>Role</th>
-                <th>Status</th>
-                <th style="text-align: right;">Actions</th>
+                <th style="text-align: right;">Status & Actions</th>
               </tr>
             </thead>
             <tbody id="admin-users-tbody">
