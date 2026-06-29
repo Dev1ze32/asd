@@ -142,11 +142,22 @@ if (titleEl) {
 titleEl.textContent = TAB_PAGE_TITLES[tabId] || '';
 }
 
-const instructionPanel = document.getElementById('instruction-panel');
-if (instructionPanel) {
-const showInstructions = ROUTING_TABS.includes(tabId);
-instructionPanel.classList.toggle('instruction-panel--visible', showInstructions);
-}
+  const formInstructions = document.getElementById('form-instructions');
+  const instructionsAdd = document.getElementById('instructions-add');
+  const instructionsUpdate = document.getElementById('instructions-update');
+
+  if (formInstructions) {
+    const isAdd = tabId === AppState.ADD;
+    const isUpdate = tabId === AppState.UPDATE;
+    
+    if (isAdd || isUpdate) {
+      formInstructions.style.display = 'block';
+      if (instructionsAdd) instructionsAdd.style.display = isAdd ? 'block' : 'none';
+      if (instructionsUpdate) instructionsUpdate.style.display = isUpdate ? 'block' : 'none';
+    } else {
+      formInstructions.style.display = 'none';
+    }
+  }
 }
 
 /**
@@ -370,15 +381,15 @@ viewRouting.classList.remove('show-notes');
 * @param {boolean} showLookup
 */
 function _setLookupDisplayVisible(showLookup) {
-const lookupDisplay = document.getElementById('lookup-display');
-const formGrid      = document.getElementById('form-grid-inputs');
-const instructions  = document.querySelector('.mode-instructions');
-const modeToggle    = document.querySelector('.mode-toggle');
-if (lookupDisplay) lookupDisplay.style.display = showLookup ? 'block' : 'none';
-if (formGrid)      formGrid.style.display      = showLookup ? 'none'  : '';
-// Hide the instructions box and mode toggle in LOOKUP mode (read-only — not applicable)
-if (instructions)  instructions.style.display  = showLookup ? 'none'  : '';
-if (modeToggle)    modeToggle.style.display     = showLookup ? 'none'  : '';
+  const lookupDisplay = document.getElementById('lookup-display');
+  const formGrid      = document.getElementById('form-grid-inputs');
+  const formInstructions = document.getElementById('form-instructions');
+  const modeToggle    = document.querySelector('.mode-toggle');
+  if (lookupDisplay) lookupDisplay.style.display = showLookup ? 'block' : 'none';
+  if (formGrid)      formGrid.style.display      = showLookup ? 'none'  : '';
+  // Hide the instructions box and mode toggle in LOOKUP mode (read-only — not applicable)
+  if (formInstructions) formInstructions.style.display  = showLookup ? 'none'  : 'block';
+  if (modeToggle)    modeToggle.style.display     = showLookup ? 'none'  : '';
 }
 
 // Expose globally
