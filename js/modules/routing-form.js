@@ -531,6 +531,8 @@ function loadDataIntoForm(data) {
                     || data.fg_production_line_code
                     || data.bm_production_line_code
                     || '';
+    // Keep prevVal in sync so cancel always reverts to this loaded value.
+    prodLineEl.dataset.prevVal = prodLineEl.value;
     updateLineDescription();
   }
 
