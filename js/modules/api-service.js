@@ -505,6 +505,15 @@ function _mapItemPayload(record) {
     }));
   }
 
+  // Include totals so they are saved on CREATE
+  body.total_run_time  = Number(record.total_run_time)  || 0;
+  body.total_labor_min = Number(record.total_labor_min) || 0;
+  body.total_mc_min    = Number(record.total_mc_min)    || 0;
+  body.total_dl_units  = Number(record.total_dl_units)  || 0;
+  body.total_dl        = Number(record.total_dl)        || 0;
+  body.total_voh       = Number(record.total_voh)       || 0;
+  body.total_foh       = Number(record.total_foh)       || 0;
+
   return body;
 }
 
@@ -568,6 +577,14 @@ function _normalizeApiItem(apiItem) {
     // Keep raw API fields too for reference
     fg_production_line_code: apiItem.fg_production_line_code,
     bm_production_line_code: apiItem.bm_production_line_code,
+    // Totals from DB
+    total_run_time:  apiItem.total_run_time  || 0,
+    total_labor_min: apiItem.total_labor_min || 0,
+    total_mc_min:    apiItem.total_mc_min    || 0,
+    total_dl_units:  apiItem.total_dl_units  || 0,
+    total_dl:        apiItem.total_dl        || 0,
+    total_voh:       apiItem.total_voh       || 0,
+    total_foh:       apiItem.total_foh       || 0,
   };
 
   // Normalize activities: map activity_name → activities for UI compatibility

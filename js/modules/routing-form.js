@@ -336,6 +336,17 @@ async function saveRoutingDocument() {
     }
   });
 
+  // Read totals from the DOM footer
+  var totals = {
+    total_run_time:  parseFloat(document.getElementById('sumRunTime')?.textContent)  || 0,
+    total_labor_min: parseFloat(document.getElementById('sumLaborMin')?.textContent) || 0,
+    total_mc_min:    parseFloat(document.getElementById('sumMcMin')?.textContent)    || 0,
+    total_dl_units:  0,  // dl_units is per-row only; no footer total exists
+    total_dl:        parseFloat(document.getElementById('sumDL')?.textContent)       || 0,
+    total_voh:       parseFloat(document.getElementById('sumVOH')?.textContent)      || 0,
+    total_foh:       parseFloat(document.getElementById('sumFOH')?.textContent)      || 0,
+  };
+
   // Build record (internal format)
   var isBM = App.currentMode === 'BM';
   var record = {
@@ -346,7 +357,8 @@ async function saveRoutingDocument() {
     production_line_code: prodLine,
     production_line:      LINE_DESCRIPTIONS[prodLine] || prodLine,
     product_type:         isBM ? 'Base Material (BM)' : 'Finished Good (FG)',
-    activities:           activities
+    activities:           activities,
+    ...totals
   };
 
   const isUpdate = App.currentState === AppState.UPDATE;
@@ -439,7 +451,15 @@ async function saveRoutingDocument() {
           bm_production_line_code: record.production_line_code,
           fg_production_line: record.production_line,
           fg_production_line_code: record.production_line_code,
-          product_type: record.product_type
+          product_type: record.product_type,
+          // Totals — always refreshed on every save
+          total_run_time:  record.total_run_time  || 0,
+          total_labor_min: record.total_labor_min || 0,
+          total_mc_min:    record.total_mc_min    || 0,
+          total_dl_units:  record.total_dl_units  || 0,
+          total_dl:        record.total_dl        || 0,
+          total_voh:       record.total_voh       || 0,
+          total_foh:       record.total_foh       || 0,
         },
         activities_added: toAdd,
         activities_updated: toUpdate.map(act => ({
