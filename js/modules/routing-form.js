@@ -12,15 +12,17 @@
  * @param {number|string} pax - Number of workers
  * @param {number|string} machine - Number of machines
  * @param {number|string} time - Time in minutes
+ * @param {string|number} id - Row ID
+ * @param {object} computedValues - Object containing pre-calculated metrics
  */
-function addRow(activityName, pax, machine, time, id) {
-  // Guard against undefined values — <input type="number" value="undefined"> triggers
-  // a browser parse error ("The specified value 'undefined' cannot be parsed").
-  activityName = (activityName !== undefined && activityName !== null) ? activityName : '';
+function addRow(activityName, pax, machine, time, id, computedValues) {
+  // Normalize args
+  activityName = activityName || '';
   pax          = (pax          !== undefined && pax          !== null) ? pax          : '';
   machine      = (machine      !== undefined && machine      !== null) ? machine      : '';
   time         = (time         !== undefined && time         !== null) ? time         : '';
   id           = (id           !== undefined && id           !== null) ? id           : '';
+  computedValues = computedValues || {};
 
   var tbody = document.getElementById('tableBody');
   if (!tbody) return;
@@ -67,17 +69,17 @@ function addRow(activityName, pax, machine, time, id) {
     </td>
 
     <!-- Computed cells -->
-    <td class="cell-computed run-time-cell">0.00000</td>
+    <td class="cell-computed run-time-cell">${typeof computedValues.run_time === 'number' ? formatNumber(computedValues.run_time) : '0.00000'}</td>
     <td class="cell-computed">UNIT</td>
-    <td class="cell-computed labor-min-cell">0.00</td>
-    <td class="cell-computed mc-min-cell">0.00</td>
+    <td class="cell-computed labor-min-cell">${typeof computedValues.labor_min === 'number' ? formatNumber(computedValues.labor_min) : '0.00'}</td>
+    <td class="cell-computed mc-min-cell">${typeof computedValues.mc_min === 'number' ? formatNumber(computedValues.mc_min) : '0.00'}</td>
 
     <!-- BOM cells -->
     <td class="cell-bom w-bom-activity sync-activity-cell">${sanitizeInput(activityName)}</td>
-    <td class="cell-bom dl-units-cell">0</td>
-    <td class="cell-bom dl-cell">0.00000</td>
-    <td class="cell-bom voh-cell">0.00000</td>
-    <td class="cell-bom foh-cell">0.00000</td>
+    <td class="cell-bom dl-units-cell">${typeof computedValues.dl_units === 'number' ? formatNumber(computedValues.dl_units) : '0'}</td>
+    <td class="cell-bom dl-cell">${typeof computedValues.dl === 'number' ? formatNumber(computedValues.dl) : '0.00000'}</td>
+    <td class="cell-bom voh-cell">${typeof computedValues.voh === 'number' ? formatNumber(computedValues.voh) : '0.00000'}</td>
+    <td class="cell-bom foh-cell">${typeof computedValues.foh === 'number' ? formatNumber(computedValues.foh) : '0.00000'}</td>
 
     <!-- Action -->
     <td class="action-column">
@@ -302,6 +304,9 @@ async function saveRoutingDocument() {
 
   // Collect activities from table
   var activities = [];
+  var qtyInput = document.getElementById('qtyInput');
+  var currentQty = parseFloat(qtyInput?.value) || 1;
+
   document.querySelectorAll('#tableBody tr').forEach(function(row) {
     var activityName = row.querySelector('.activity-select')?.value.trim();
     var pax          = parseFloat(row.querySelector('.pax-input')?.value)     || 0;
@@ -310,13 +315,23 @@ async function saveRoutingDocument() {
     var actId        = row.dataset.id || '';
 
     if (activityName) {
+      // Recalculate precisely for payload
+      var computed = typeof calculateRow === 'function' ? calculateRow(pax, machine, time, currentQty) : {};
+      
       activities.push({
         id:            actId ? parseInt(actId, 10) : undefined,
         activities:    activityName,  // internal name kept for local cache
         activity_name: activityName,  // API field name
         pax:           pax,
         machine:       machine,
-        time_min:      time
+        time_min:      time,
+        run_time:      computed.runTime || 0,
+        labor_min:     computed.laborMin || 0,
+        mc_min:        computed.mcMin || 0,
+        dl_units:      computed.dlUnits || 0,
+        dl:            computed.dl || 0,
+        voh:           computed.voh || 0,
+        foh:           computed.foh || 0
       });
     }
   });
@@ -376,7 +391,8 @@ async function saveRoutingDocument() {
         if (!act.id) return false;
         const orig = originalActivities.find(a => String(a.id) === String(act.id));
         if (!orig) return false;
-        return ['activity_name', 'activities', 'pax', 'machine', 'time_min'].some(f => {
+        return ['activity_name', 'activities', 'pax', 'machine', 'time_min',
+                'run_time', 'labor_min', 'mc_min', 'dl_units', 'dl', 'voh', 'foh'].some(f => {
           const newVal  = f === 'activity_name' ? (act.activity_name  || act.activities)  : act[f];
           const origVal = f === 'activity_name' ? (orig.activity_name || orig.activities) : orig[f];
           return String(newVal ?? '') !== String(origVal ?? '');
@@ -432,6 +448,13 @@ async function saveRoutingDocument() {
           pax: act.pax,
           machine: act.machine,
           time_min: act.time_min,
+          run_time:  act.run_time  || 0,
+          labor_min: act.labor_min || 0,
+          mc_min:    act.mc_min    || 0,
+          dl_units:  act.dl_units  || 0,
+          dl:        act.dl        || 0,
+          voh:       act.voh       || 0,
+          foh:       act.foh       || 0,
           type: act.type || 'Labor',
           class: act.class || 'DL',
           class_1: act.class_1 || 'DL',
@@ -547,10 +570,10 @@ function loadDataIntoForm(data) {
       var pax     = act.pax     || 0;
       var machine = act.machine || 0;
       var time    = act.time_min || act.time || 0;
-      addRow(name, pax, machine, time, act.id);
+      addRow(name, pax, machine, time, act.id, act);
     });
   } else {
-    addRow('', '', '', '', '');
+    addRow('', '', '', '', '', null);
   }
 
   calculateAll();

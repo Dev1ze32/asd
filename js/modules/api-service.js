@@ -391,6 +391,13 @@ async function apiAddItemActivity(itemCode, activity, options) {
     pax: activity.pax || 0,
     machine: activity.machine || 0,
     time_min: activity.time_min || 0,
+    run_time: activity.run_time || 0,
+    labor_min: activity.labor_min || 0,
+    mc_min: activity.mc_min || 0,
+    dl_units: activity.dl_units || 0,
+    dl: activity.dl || 0,
+    voh: activity.voh || 0,
+    foh: activity.foh || 0,
     type: activity.type || 'Labor',
     item_id: activity.item_id || activity.activity_name || activity.activities || '',
     class: activity.class || 'DL',
@@ -483,6 +490,13 @@ function _mapItemPayload(record) {
       pax:        Number(act.pax)     || 0,
       machine:    Number(act.machine) || 0,
       time_min:   Number(act.time_min || act.time) || 0,
+      run_time:   Number(act.run_time)  || 0,
+      labor_min:  Number(act.labor_min) || 0,
+      mc_min:     Number(act.mc_min)    || 0,
+      dl_units:   Number(act.dl_units)  || 0,
+      dl:         Number(act.dl)        || 0,
+      voh:        Number(act.voh)       || 0,
+      foh:        Number(act.foh)       || 0,
       type:       act.type    || 'Labor',
       item_id:    act.item_id || act.activities || act.activity_name || '',
       class:      act.class   || 'DL',
@@ -557,18 +571,27 @@ function _normalizeApiItem(apiItem) {
   };
 
   // Normalize activities: map activity_name → activities for UI compatibility
+  // Preserve computed columns so loadDataIntoForm shows real saved values
   if (Array.isArray(apiItem.activities)) {
     normalized.activities = apiItem.activities.map(act => ({
-      id:           act.id,
-      activities:   act.activities || act.activity_name || act.name || '',
+      id:            act.id,
+      activities:    act.activities || act.activity_name || act.name || '',
       activity_name: act.activities || act.activity_name || act.name || '',
-      type:         act.type    || 'Labor',
-      item_id:      act.item_id || '',
-      class:        act.class   || 'DL',
-      pax:          act.pax     || 0,
-      machine:      act.machine || 0,
-      time_min:     act.time_min || 0,
-      sort_order:   act.sort_order || 0,
+      type:          act.type    || 'Labor',
+      item_id:       act.item_id || '',
+      class:         act.class   || 'DL',
+      pax:           act.pax     || 0,
+      machine:       act.machine || 0,
+      time_min:      act.time_min || 0,
+      sort_order:    act.sort_order || 0,
+      // Computed columns — stored values from DB
+      run_time:      act.run_time  || 0,
+      labor_min:     act.labor_min || 0,
+      mc_min:        act.mc_min    || 0,
+      dl_units:      act.dl_units  || 0,
+      dl:            act.dl        || 0,
+      voh:           act.voh       || 0,
+      foh:           act.foh       || 0,
     }));
   } else {
     normalized.activities = [];
