@@ -247,8 +247,9 @@ function setupProdLineChangeListener() {
       });
 
       if (!res.confirmed) {
-        // Revert change
+        // Revert change — also restore the line description to match
         this.value = oldVal;
+        updateLineDescription();
         return;
       }
 
