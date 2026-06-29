@@ -230,6 +230,12 @@ function setupProdLineChangeListener() {
     const oldVal = this.dataset.prevVal;
     const tableBody = document.getElementById('tableBody');
 
+    // Snapshot the exact lineDesc text BEFORE the modal opens,
+    // so we can restore it precisely on cancel regardless of what
+    // LINE_DESCRIPTIONS contains (API data may differ from local map).
+    const lineDescEl = document.getElementById('lineDesc');
+    const oldLineDesc = lineDescEl ? lineDescEl.value : '';
+
     // If there are existing rows with actual selected activities
     const hasActivities = Array.from(tableBody.querySelectorAll('tr')).some(row => {
       const select = row.querySelector('.activity-select');
@@ -247,9 +253,10 @@ function setupProdLineChangeListener() {
       });
 
       if (!res.confirmed) {
-        // Revert change — also restore the line description to match
+        // Revert both the dropdown and the line description to exactly
+        // what they were before the user opened the dropdown.
         this.value = oldVal;
-        updateLineDescription();
+        if (lineDescEl) lineDescEl.value = oldLineDesc;
         return;
       }
 
@@ -262,8 +269,9 @@ function setupProdLineChangeListener() {
       refreshAllActivityDropdowns();
     }
 
-    // Update previous value
+    // Update previous value and line description for the newly selected line
     this.dataset.prevVal = newVal;
+    updateLineDescription();
   });
 }
 
