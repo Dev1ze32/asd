@@ -92,16 +92,11 @@ if (role === 'user' && !userAllowedStates.includes(tabId)) {
 tabId = AppState.LOOKUP;
 }
 
-// --- Guard: if leaving MANAGE with unsaved pending changes, ask first ---
-if (previousState === AppState.MANAGE && previousState !== tabId) {
-  if (typeof confirmDiscardManageChanges === 'function') {
-    const ok = await confirmDiscardManageChanges();
-    if (!ok) return; // user chose to stay and keep editing
-  }
-}
-
 // --- Save current tab form state before leaving ---
-// Only save routing form tabs (ADD/LOOKUP/UPDATE) and only when leaving them
+// Must happen BEFORE confirmDiscardManageChanges, because that function calls
+// populateProdLineSelect() which rebuilds the #prodLine dropdown and resets
+// its selected value to blank — causing saveTabFormState to capture '' instead
+// of the real production line the user had loaded in the Update/Add/Lookup tab.
 if (
 previousState !== tabId &&
 (previousState === AppState.ADD ||
@@ -109,6 +104,14 @@ previousState === AppState.LOOKUP ||
 previousState === AppState.UPDATE)
 ) {
 saveTabFormState(previousState);
+}
+
+// --- Guard: if leaving MANAGE with unsaved pending changes, ask first ---
+if (previousState === AppState.MANAGE && previousState !== tabId) {
+  if (typeof confirmDiscardManageChanges === 'function') {
+    const ok = await confirmDiscardManageChanges();
+    if (!ok) return; // user chose to stay and keep editing
+  }
 }
 
 // Update global state
@@ -212,15 +215,6 @@ const searchStatus  = document.getElementById('search-status');
 const tabKey = mode === 'add'    ? AppState.ADD
 : mode === 'lookup' ? AppState.LOOKUP
 : AppState.UPDATE;
-
-const formInstructions = document.getElementById('form-instructions');
-const instAdd = document.getElementById('instructions-add');
-const instUpdate = document.getElementById('instructions-update');
-if (formInstructions) {
-  formInstructions.style.display = (mode === 'add' || mode === 'update') ? 'block' : 'none';
-  if (instAdd) instAdd.style.display = (mode === 'add') ? 'block' : 'none';
-  if (instUpdate) instUpdate.style.display = (mode === 'update') ? 'block' : 'none';
-}
 
 if (mode === 'add') {
 searchSection.classList.add('hidden');
