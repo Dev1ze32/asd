@@ -318,7 +318,7 @@ function _renderLoginScreen() {
           </button>
 
           <div class="about-modal__logo">
-            <svg viewBox="0 0 1150 120" xmlns="http://www.w3.org/2000/svg" aria-label="Pioneer Adhesives, Inc.">
+            <svg viewBox="0 0 460 120" xmlns="http://www.w3.org/2000/svg" aria-label="Pioneer Adhesives, Inc.">
               <path d="M 0 5 L 360 5 C 450 5 450 105 360 105 L 0 105 Z" fill="#da291c" />
               <g transform="skewX(-16)">
                 <text x="80" y="86" fill="#ffffff" style="font-family:'Arial Black',Impact,system-ui,sans-serif;font-weight:900;font-size:96px;letter-spacing:-2px">
