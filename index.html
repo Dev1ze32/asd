@@ -1168,10 +1168,11 @@
         <button id="tab-add" onclick="switchTab('ADD')" class="nav-tab nav-tab--active">Add Record</button>
         <button id="tab-update" onclick="switchTab('UPDATE')" class="nav-tab nav-tab--inactive">Update Record</button>
         <button id="tab-lookup" onclick="switchTab('LOOKUP')" class="nav-tab nav-tab--inactive">Look Up</button>
-        <button id="tab-alldata" onclick="switchTab('ALLDATA')" class="nav-tab nav-tab--inactive">Database</button>
-        <button id="tab-admin" onclick="switchTab('ADMIN')" class="nav-tab nav-tab--inactive" style="display:none;">Admin Panel</button>
-        <button id="tab-logs" onclick="switchTab('LOGS')" class="nav-tab nav-tab--inactive" style="display:none;">System Logs</button>
-        <button id="tab-manage" onclick="switchTab('MANAGE')" class="nav-tab nav-tab--inactive" style="display:none;">Manage Lines</button>
+        <button id="tab-alldata" onclick="switchTab('ALLDATA')" class="nav-tab nav-tab--inactive">View All Data</button>
+        <button id="tab-admin"    onclick="switchTab('ADMIN')"    class="nav-tab nav-tab--inactive" style="display:none;">Admin Panel</button>
+        <button id="tab-logs"     onclick="switchTab('LOGS')"     class="nav-tab nav-tab--inactive" style="display:none;">System Logs</button>
+        <button id="tab-manage"   onclick="switchTab('MANAGE')"   class="nav-tab nav-tab--inactive" style="display:none;">Manage Lines</button>
+        <button id="tab-database" onclick="switchTab('DATABASE')" class="nav-tab nav-tab--inactive" style="display:none;">Delete Product</button>
       </nav>
     </div>
 
@@ -1845,6 +1846,9 @@
       </div>
 
     </div>
+      <!-- Database Management section moved to its own tab (view-database) -->
+
+    </div>
 
     <!-- ============================================
          VIEW 7: AUDIT LOGS
@@ -1988,6 +1992,77 @@
                   disabled>
             Next
           </button>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- ============================================
+         VIEW 8: DATABASE MANAGEMENT (Admin-only)
+         Search products by item code / SKU, delete
+         ============================================ -->
+    <div id="view-database" class="hidden view-card">
+
+      <div class="manage-page-header">
+        <div>
+          <h3 style="font-size:1.25rem;font-weight:700;color:var(--gray-800);margin:0 0 0.2rem;">Product Deletion</h3>
+          <p style="font-size:0.82rem;color:#64748b;margin:0;">
+            Search by item code or SKU description. Deletion is permanent and admin-only.
+          </p>
+        </div>
+      </div>
+
+      <!-- Search bar -->
+      <div class="admin-section" style="margin-bottom:1.5rem;">
+        <div class="admin-section__body">
+          <div style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;margin-bottom:0.75rem;">
+            <div style="flex:1;min-width:280px;">
+              <label class="admin-label" for="db-search-input">Search by Item Code or SKU Description</label>
+              <input type="text"
+                     id="db-search-input"
+                     class="admin-input"
+                     placeholder="e.g. 555, or Anti Fouling Paint..."
+                     autocomplete="off"
+                     onkeydown="if(event.key==='Enter') handleDbSearch()"
+                     oninput="handleDbSearch()">
+            </div>
+            <button onclick="handleDbSearch()" class="admin-btn admin-btn--primary" style="white-space:nowrap;">
+              &#128269; Search
+            </button>
+          </div>
+
+          <!-- Alerts -->
+          <div id="db-error"   class="admin-alert admin-alert--error"   style="display:none;margin-bottom:0.5rem;"></div>
+          <div id="db-success" class="admin-alert admin-alert--success" style="display:none;margin-bottom:0.5rem;"></div>
+        </div>
+      </div>
+
+      <!-- Results table -->
+      <div class="admin-section">
+        <div class="admin-section__body" style="padding:0;overflow-x:auto;">
+          <table class="admin-table" id="db-results-table">
+            <thead>
+              <tr>
+                <th style="min-width:130px;">Item Code</th>
+                <th style="min-width:260px;">SKU Description</th>
+                <th>Type</th>
+                <th>Revision</th>
+                <th>Production Line</th>
+                <th style="text-align:center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="db-results-tbody">
+              <tr>
+                <td colspan="6" style="text-align:center;color:#94a3b8;font-style:italic;padding:2rem;">
+                  Search for a product above to see results.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:0.6rem 1rem;border-top:1px solid #e2e8f0;background:#f8fafc;">
+          <p id="db-result-count" style="font-size:0.73rem;color:#94a3b8;margin:0;"></p>
         </div>
       </div>
 
@@ -2221,13 +2296,13 @@
   <!-- Layer 0a: Config — must load before api-service reads API_BASE_URL -->
   <script src="js/modules/config.js?v=20260630140000" defer></script>
 
-  <script src="js/modules/auth.js?v=20260630140000" defer></script>
+  <script src="js/modules/auth.js?v=20260630160000" defer></script>
 
   <!-- Layer 0b: API Service -->
   <script src="js/modules/api-service.js?v=20260630140000" defer></script>
 
   <!-- Layer 1: State & Data -->
-  <script src="js/modules/state.js?v=20260630140000" defer></script>
+  <script src="js/modules/state.js?v=20260630160000" defer></script>
   <script src="js/modules/mock-db.js?v=20260630140000" defer></script>
 
   <!-- Layer 2: Utilities -->
@@ -2244,14 +2319,14 @@
   <script src="js/modules/all-data.js?v=20260630140000" defer></script>
 
   <!-- Layer 5: Admin Modules (admin only, but scripts load for all) -->
-  <script src="js/modules/admin-panel.js?v=20260630140000" defer></script>
+  <script src="js/modules/admin-panel.js?v=20260630160000" defer></script>
   <script src="js/modules/logs.js?v=20260630140000" defer></script>
 
   <!-- Archive viewer (UPDATE tab only, read-only revision history) -->
   <script src="js/modules/archive.js?v=20260630140000" defer></script>
 
   <!-- Layer 6: Router & Entry Point -->
-  <script src="js/modules/tabs.js" defer></script>
+  <script src="js/modules/tabs.js?v=20260630160000" defer></script>
   <script src="js/main.js" defer></script>
 
   <!-- 

@@ -492,6 +492,140 @@ async function submitEditUser() {
 }
 
 /* ============================================
+   DATABASE MANAGEMENT (Admin Only)
+   Search by item code / SKU, then delete
+   ============================================ */
+
+/** Live-search the API and render matching rows into the admin db table. */
+async function handleDbSearch() {
+  if (!Auth.isAdmin()) return;
+
+  const query   = (document.getElementById('db-search-input')?.value || '').trim();
+  const tbody   = document.getElementById('db-results-tbody');
+  const countEl = document.getElementById('db-result-count');
+  const errEl   = document.getElementById('db-error');
+  const okEl    = document.getElementById('db-success');
+
+  if (errEl)  { errEl.style.display  = 'none'; errEl.textContent  = ''; }
+  if (okEl)   { okEl.style.display   = 'none'; okEl.textContent   = ''; }
+
+  if (!query) {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;font-style:italic;padding:2rem;">Search for a product above to see results.</td></tr>';
+    if (countEl) countEl.textContent = '';
+    return;
+  }
+
+  if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:1.5rem;">Searching...</td></tr>';
+
+  try {
+    const res = await apiGetItems(query, 100);
+    const items = res.ok && res.data && Array.isArray(res.data.results) ? res.data.results : [];
+
+    if (items.length === 0) {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;font-style:italic;padding:2rem;">No products found matching your search.</td></tr>';
+      if (countEl) countEl.textContent = '';
+      return;
+    }
+
+    if (countEl) countEl.textContent = `${items.length} result${items.length !== 1 ? 's' : ''} found.`;
+
+    if (tbody) {
+      tbody.innerHTML = items.map(item => {
+        const code = sanitizeInput(item.inventory_id || item.item_code || '—');
+        const sku  = sanitizeInput(item.revision_descr || item.sku_desc || '—');
+        const type = sanitizeInput(item.product_type || '—');
+        const rev  = sanitizeInput(String(item.revision ?? '—').padStart(2, '0'));
+        const line = sanitizeInput(item.fg_production_line_code || item.bm_production_line_code || item.production_line_code || '—');
+        return `
+          <tr data-item-code="${code}">
+            <td style="font-weight:700;color:#1e293b;font-family:monospace;">${code}</td>
+            <td>${sku}</td>
+            <td>${type}</td>
+            <td style="text-align:center;">Rev. ${rev}</td>
+            <td>${line}</td>
+            <td style="text-align:center;">
+              <button
+                onclick="handleDeleteProduct('${code}', '${sku}')"
+                class="admin-btn admin-btn--danger"
+                style="padding:0.3rem 0.75rem;font-size:0.75rem;white-space:nowrap;">
+                &#128465; Delete
+              </button>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+  } catch (err) {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#dc2626;padding:2rem;">Error contacting server. Please try again.</td></tr>';
+  }
+}
+
+/**
+ * Confirm and permanently delete a product by item code.
+ * @param {string} itemCode
+ * @param {string} skuDesc - for display in the confirmation
+ */
+async function handleDeleteProduct(itemCode, skuDesc) {
+  if (!Auth.isAdmin()) {
+    await showModal({ icon:'danger', title:'Access Denied', message:'Only administrators can delete products.', type:'confirm', confirmLabel:'OK' });
+    return;
+  }
+
+  const errEl = document.getElementById('db-error');
+  const okEl  = document.getElementById('db-success');
+  if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+  if (okEl)  { okEl.style.display  = 'none'; okEl.textContent  = ''; }
+
+  const result = await showModal({
+    icon:         'danger',
+    title:        'Delete Product?',
+    message:      `Permanently delete "${itemCode}"${skuDesc ? ' (' + skuDesc + ')' : ''}?\n\nThis will also delete ALL its activities and revision history. This cannot be undone.`,
+    type:         'confirm',
+    confirmStyle: 'danger',
+    confirmLabel: 'Yes, Delete Permanently',
+  });
+
+  if (!result.confirmed) return;
+
+  // Disable the row button while deleting
+  const rowBtn = document.querySelector(`tr[data-item-code="${itemCode}"] .admin-btn--danger`);
+  if (rowBtn) { rowBtn.disabled = true; rowBtn.textContent = 'Deleting...'; }
+
+  try {
+    const res = await apiDeleteItem(itemCode);
+    if (res.ok) {
+      // Remove the row from the table
+      const row = document.querySelector(`tr[data-item-code="${itemCode}"]`);
+      if (row) row.remove();
+
+      const countEl = document.getElementById('db-result-count');
+      if (countEl) {
+        const remaining = document.querySelectorAll('#db-results-tbody tr[data-item-code]').length;
+        countEl.textContent = remaining > 0
+          ? `${remaining} result${remaining !== 1 ? 's' : ''} found.`
+          : '';
+        if (remaining === 0) {
+          const tbody = document.getElementById('db-results-tbody');
+          if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;font-style:italic;padding:2rem;">All matching products have been deleted.</td></tr>';
+        }
+      }
+
+      if (okEl) { okEl.textContent = `"${itemCode}" has been permanently deleted.`; okEl.style.display = 'block'; }
+      showToast({ type: 'success', title: 'Product Deleted', message: `"${itemCode}" was permanently deleted.` });
+    } else {
+      let msg = 'Failed to delete product.';
+      if (res.status === 404) msg = `"${itemCode}" was not found.`;
+      else if (res.status === 403) msg = 'You do not have permission to delete products.';
+      else if (res.data?.error) msg = res.data.error;
+      if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+      if (rowBtn) { rowBtn.disabled = false; rowBtn.textContent = '\u{1F5D1} Delete'; }
+    }
+  } catch (err) {
+    if (errEl) { errEl.textContent = 'Network error. Please try again.'; errEl.style.display = 'block'; }
+    if (rowBtn) { rowBtn.disabled = false; rowBtn.textContent = '\u{1F5D1} Delete'; }
+  }
+}
+
+/* ============================================
    EXPOSE GLOBALLY
    ============================================ */
 window.initAdminPanel           = initAdminPanel;
@@ -505,3 +639,5 @@ window.openEditUserModal        = openEditUserModal;
 window.closeEditUserModal       = closeEditUserModal;
 window.submitEditUser           = submitEditUser;
 window.deleteUser               = deleteUser;
+window.handleDbSearch           = handleDbSearch;
+window.handleDeleteProduct      = handleDeleteProduct;

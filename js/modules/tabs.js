@@ -19,31 +19,34 @@
 * Tab ID to DOM element ID mapping
 */
 const TAB_ELEMENTS = {
-[AppState.ADD]:     'tab-add',
-[AppState.LOOKUP]:  'tab-lookup',
-[AppState.UPDATE]:  'tab-update',
-[AppState.MANAGE]:  'tab-manage',
-[AppState.ALLDATA]: 'tab-alldata',
-[AppState.ADMIN]:   'tab-admin',
-[AppState.LOGS]:    'tab-logs'
+[AppState.ADD]:      'tab-add',
+[AppState.LOOKUP]:   'tab-lookup',
+[AppState.UPDATE]:   'tab-update',
+[AppState.MANAGE]:   'tab-manage',
+[AppState.ALLDATA]:  'tab-alldata',
+[AppState.ADMIN]:    'tab-admin',
+[AppState.LOGS]:     'tab-logs',
+[AppState.DATABASE]: 'tab-database'
 };
 
 /**
 * View ID to DOM element ID mapping
 */
 const VIEW_ELEMENTS = {
-[AppState.ADMIN]: 'view-admin',
-[AppState.LOGS]:  'view-logs'
+[AppState.ADMIN]:    'view-admin',
+[AppState.LOGS]:     'view-logs',
+[AppState.DATABASE]: 'view-database'
 };
 
 const TAB_PAGE_TITLES = {
-[AppState.ADD]:     'Add New Routing',
-[AppState.LOOKUP]:  'Look Up Record',
-[AppState.UPDATE]:  'Update Routing',
-[AppState.MANAGE]:  'Line Configuration',
-[AppState.ALLDATA]: 'Database',
-[AppState.ADMIN]:   'Admin Panel',
-[AppState.LOGS]:    'System Logs',
+[AppState.ADD]:      'Add New Routing',
+[AppState.LOOKUP]:   'Look Up Record',
+[AppState.UPDATE]:   'Update Routing',
+[AppState.MANAGE]:   'Line Configuration',
+[AppState.ALLDATA]:  'View All Data',
+[AppState.ADMIN]:    'Admin Panel',
+[AppState.LOGS]:     'System Logs',
+[AppState.DATABASE]: 'Database Management',
 };
 
 const ROUTING_TABS = [
@@ -65,7 +68,7 @@ const previousState = App.currentState;
 const role = (Auth.getUser() || {}).role || '';
 
 // --- Guard: admin-only tabs ---
-if ((tabId === AppState.ADMIN || tabId === AppState.LOGS) && role !== 'admin') {
+if ((tabId === AppState.ADMIN || tabId === AppState.LOGS || tabId === AppState.DATABASE) && role !== 'admin') {
 showModal({
 icon: 'danger',
 title: 'Access Denied',
@@ -166,18 +169,20 @@ titleEl.textContent = TAB_PAGE_TITLES[tabId] || '';
 * @param {string} [previousState] - The state we switched FROM
 */
 function routeToView(state, previousState) {
-const viewRouting = document.getElementById('view-routing');
-const viewManage  = document.getElementById('view-manage');
-const viewAllData = document.getElementById('view-alldata');
-const viewAdmin   = document.getElementById('view-admin');
-const viewLogs    = document.getElementById('view-logs');
+const viewRouting  = document.getElementById('view-routing');
+const viewManage   = document.getElementById('view-manage');
+const viewAllData  = document.getElementById('view-alldata');
+const viewAdmin    = document.getElementById('view-admin');
+const viewLogs     = document.getElementById('view-logs');
+const viewDatabase = document.getElementById('view-database');
 
 // Hide all views first
-if (viewRouting) viewRouting.classList.add('hidden');
-if (viewManage)  viewManage.classList.add('hidden');
-if (viewAllData) viewAllData.classList.add('hidden');
-if (viewAdmin)   viewAdmin.classList.add('hidden');
-if (viewLogs)    viewLogs.classList.add('hidden');
+if (viewRouting)  viewRouting.classList.add('hidden');
+if (viewManage)   viewManage.classList.add('hidden');
+if (viewAllData)  viewAllData.classList.add('hidden');
+if (viewAdmin)    viewAdmin.classList.add('hidden');
+if (viewLogs)     viewLogs.classList.add('hidden');
+if (viewDatabase) viewDatabase.classList.add('hidden');
 
 switch (state) {
 case AppState.ADD:
@@ -200,6 +205,9 @@ showAdminView(viewAdmin);
 break;
 case AppState.LOGS:
 showLogsView(viewLogs);
+break;
+case AppState.DATABASE:
+showDatabaseView();
 break;
 default:
 console.warn('Unknown tab state:', state);
@@ -359,6 +367,29 @@ return;
 }
 viewLogs.classList.remove('hidden');
 initAuditLogs();
+}
+
+/**
+* Show the Database Management view (admin only)
+*/
+function showDatabaseView() {
+if (!Auth.isAdmin()) {
+switchTab(AppState.ADD);
+return;
+}
+const viewDatabase = document.getElementById('view-database');
+if (viewDatabase) viewDatabase.classList.remove('hidden');
+// Clear previous search results when navigating to the tab
+const searchInput = document.getElementById('db-search-input');
+if (searchInput) searchInput.value = '';
+const tbody = document.getElementById('db-results-tbody');
+if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;font-style:italic;padding:2rem;">Search for a product above to see results.</td></tr>';
+const countEl = document.getElementById('db-result-count');
+if (countEl) countEl.textContent = '';
+const errEl = document.getElementById('db-error');
+if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+const okEl = document.getElementById('db-success');
+if (okEl) { okEl.style.display = 'none'; okEl.textContent = ''; }
 }
 
 /**

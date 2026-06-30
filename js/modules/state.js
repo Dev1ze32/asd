@@ -40,7 +40,8 @@ const AppState = Object.freeze({
   MANAGE:   'MANAGE',
   ALLDATA:  'ALLDATA',
   ADMIN:    'ADMIN',
-  LOGS:     'LOGS'
+  LOGS:     'LOGS',
+  DATABASE: 'DATABASE'   // Admin-only: search + delete products
 });
 
 /**

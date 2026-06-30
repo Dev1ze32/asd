@@ -522,13 +522,14 @@ function _refreshAdminTabs() {
 
   // Per-tab visibility map  { tabId: visibleForRoles[] }
   const tabVisibility = {
-    'tab-add':     ['superuser'],
-    'tab-lookup':  ['superuser', 'user'],
-    'tab-update':  ['superuser'],
-    'tab-manage':  ['admin'],
-    'tab-alldata': ['superuser', 'user'],
-    'tab-admin':   ['admin'],
-    'tab-logs':    ['admin'],
+    'tab-add':      ['superuser'],
+    'tab-lookup':   ['superuser', 'user'],
+    'tab-update':   ['superuser'],
+    'tab-manage':   ['admin'],
+    'tab-alldata':  ['superuser', 'user'],
+    'tab-admin':    ['admin'],
+    'tab-logs':     ['admin'],
+    'tab-database': ['admin'],
   };
 
   Object.entries(tabVisibility).forEach(([id, allowedRoles]) => {
@@ -538,7 +539,7 @@ function _refreshAdminTabs() {
 
   // Redirect if the user is on a tab their role doesn't allow
   const allowedStates = {
-    admin:     [AppState.ADMIN, AppState.MANAGE, AppState.LOGS],
+    admin:     [AppState.ADMIN, AppState.MANAGE, AppState.LOGS, AppState.DATABASE],
     superuser: [AppState.ADD, AppState.LOOKUP, AppState.UPDATE, AppState.ALLDATA],
     user:      [AppState.LOOKUP, AppState.ALLDATA],
   };
