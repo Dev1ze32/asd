@@ -177,6 +177,18 @@ body.dark-mode {
   color: #ffffff;
 }
 
+/* Dark mode: make item code text white for visibility (light mode untouched) */
+body.dark-mode #db-results-tbody tr[data-item-code] td:first-child {
+  color: #ffffff !important;
+}
+
+/* Dark mode: Admin Access badge colors matched to dark theme (light mode untouched) */
+body.dark-mode .role-badge {
+  color: var(--pal-green-light);
+  background: var(--pal-teal-mid);
+  border-color: var(--pal-teal-dark);
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   line-height: 1.2;
