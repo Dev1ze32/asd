@@ -316,24 +316,41 @@ function _renderLoginScreen() {
       <div class="about-modal__panel" role="dialog" aria-modal="true" aria-labelledby="about-modal-title">
         <button type="button" class="about-modal__close" onclick="_hideAboutModal()" aria-label="Close">&times;</button>
 
-        <h2 id="about-modal-title" class="about-modal__title">Routing Headquarters</h2>
-        <p class="about-modal__version">Version 1.0.0</p>
-
-        <p class="about-modal__desc">
-          Internal routing management system for Pioneer Adhesives, Inc.
-          Streamlines line management, BOM lookups, and production routing workflows.
-        </p>
-
-        <div class="about-modal__section">
-          <h3 class="about-modal__section-title">Developers</h3>
-          <ul class="about-modal__list">
-            <li>Aerial Oliver &mdash; UI/UX</li>
-            <li>Wendell Anciso &mdash; API</li>
-          </ul>
+        <div class="about-modal__hero">
+          <div class="about-modal__logo">RH</div>
+          <h2 id="about-modal-title" class="about-modal__title">Routing Headquarters</h2>
+          <span class="about-modal__version">Version 1.0.0</span>
         </div>
 
-        <div class="about-modal__footer">
-          &copy; 2026 Pioneer Adhesives, Inc. All rights reserved.
+        <div class="about-modal__body">
+          <p class="about-modal__desc">
+            Internal routing management system for Pioneer Adhesives, Inc.
+            Streamlines line management, BOM lookups, and production routing workflows.
+          </p>
+
+          <div class="about-modal__section">
+            <h3 class="about-modal__section-title">Developers</h3>
+            <ul class="about-modal__list">
+              <li class="about-modal__person">
+                <span class="about-modal__avatar">AO</span>
+                <span class="about-modal__person-info">
+                  <span class="about-modal__person-name">Aerial Oliver</span>
+                  <span class="about-modal__person-role">UI/UX</span>
+                </span>
+              </li>
+              <li class="about-modal__person">
+                <span class="about-modal__avatar">WA</span>
+                <span class="about-modal__person-info">
+                  <span class="about-modal__person-name">Wendell Anciso</span>
+                  <span class="about-modal__person-role">API</span>
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="about-modal__footer">
+            &copy; 2026 Pioneer Adhesives, Inc. All rights reserved.
+          </div>
         </div>
       </div>
     </div>
