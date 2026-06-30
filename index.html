@@ -791,10 +791,60 @@
         color: #ffffff !important;
       }
       body.dark-mode #manageActivityList li,
-      body.dark-mode #manageActivityList li span {
+      body.dark-mode #manageActivityList li * {
+        color: #ffffff !important;
+      }
+      body.dark-mode #manageActivityList li {
         background: #16272d !important;
         border-color: #2c4851 !important;
+      }
+      body.dark-mode #manageActivityList li button {
+        background: #2a1416 !important;
+        border-color: #7f1d1d !important;
+        color: #fca5a5 !important;
+      }
+      body.dark-mode #manageActivityList li input {
+        background: transparent !important;
         color: #ffffff !important;
+      }
+      body.dark-mode #manageActivityList li input:focus {
+        background: #0f1c21 !important;
+        border-color: #42c7c7 !important;
+      }
+      /* Manage Lines: remaining light-mode-only elements */
+      body.dark-mode #view-manage span[style*="#fff1f2"] {
+        background-color: #2a1416 !important;
+        color: #fca5a5 !important;
+        border-color: #7f1d1d !important;
+      }
+      body.dark-mode #view-manage button[onclick="handleCreateLine()"] {
+        background: #1f7a8c !important;
+        color: #ffffff !important;
+      }
+      body.dark-mode #btnEditLine {
+        background: #16272d !important;
+        border-color: #2c4851 !important;
+        color: #f0f6f7 !important;
+      }
+      body.dark-mode #btnDeleteLine {
+        background: #16272d !important;
+        border-color: #7f1d1d !important;
+        color: #fca5a5 !important;
+      }
+      body.dark-mode #activityEditorSection > div[style*="background: #f8fafc"] {
+        background: #16272d !important;
+        border-color: #2c4851 !important;
+      }
+      body.dark-mode #activityEditorSection > div[style*="background: #f8fafc"] p {
+        color: #f0f6f7 !important;
+      }
+      body.dark-mode #activityCountBadge {
+        background: #0b3a4a !important;
+        color: #7dd3fc !important;
+        border-color: #155e75 !important;
+      }
+      body.dark-mode #btn-manage-done + span {
+        color: #b9c8cc !important;
       }
       body.dark-mode .archive-modal__panel,
       body.dark-mode .archive-modal__content,
