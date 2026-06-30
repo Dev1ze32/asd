@@ -781,6 +781,243 @@ body.dark-mode .data-table-wrapper {
   border-color: #000000;
 }
 
+/* ============================================
+   AUDIT LOGS — TABLE TEXT (light mode base)
+   ============================================ */
+.log-cell {
+  font-size: 0.78rem;
+  color: #475569;
+}
+
+.log-cell--strong {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.log-cell--muted {
+  color: #64748b;
+}
+
+.log-cell--faint {
+  color: #94a3b8;
+}
+
+.log-cell--mono {
+  font-family: var(--font-mono, monospace);
+}
+
+.log-cell--empty {
+  color: #94a3b8;
+}
+
+/* ============================================
+   ADMIN PANEL — DARK MODE (full coverage)
+   ============================================ */
+body.dark-mode .admin-section__header {
+  background: #0b6b78;
+  border-bottom-color: rgba(104, 144, 153, 0.48);
+}
+
+body.dark-mode .admin-section__title {
+  color: #ffffff;
+}
+
+body.dark-mode .admin-input::placeholder {
+  color: #6b8a92;
+}
+
+body.dark-mode .admin-input:focus {
+  border-color: #42c7c7;
+  box-shadow: 0 0 0 2px rgba(66, 199, 199, 0.25);
+}
+
+body.dark-mode .admin-label {
+  color: #cbd5e1;
+}
+
+body.dark-mode .admin-btn--primary {
+  background: #0b6b78;
+  color: #ffffff;
+}
+
+body.dark-mode .admin-btn--primary:hover {
+  background: #0e8a99;
+}
+
+body.dark-mode .admin-btn--primary:disabled {
+  background: #1c3338;
+  color: #6b8a92;
+}
+
+body.dark-mode .admin-btn--secondary:hover {
+  background: #1c3338;
+}
+
+body.dark-mode .admin-btn--danger {
+  background: #7f1d1d;
+  color: #fff;
+}
+
+body.dark-mode .admin-btn--danger:hover {
+  background: #991b1b;
+}
+
+body.dark-mode .admin-alert--error {
+  background: rgba(220, 38, 38, 0.15);
+  border-color: rgba(220, 38, 38, 0.4);
+  color: #fca5a5;
+}
+
+body.dark-mode .admin-alert--success {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #6ee7b7;
+}
+
+body.dark-mode .admin-table thead th {
+  background: #0b6b78;
+  border-bottom-color: rgba(104, 144, 153, 0.48);
+  color: #ffffff;
+}
+
+body.dark-mode .admin-table tbody td {
+  background: #101b20;
+  border-bottom-color: rgba(104, 144, 153, 0.3);
+  color: #e2e8f0;
+}
+
+body.dark-mode .admin-table tbody tr:hover td {
+  background: #16272d;
+}
+
+/* Role / status badges inside the admin Manage Users table and
+   the Role Permissions Reference table use inline styles for their
+   colors — match on the inline values so the color-coding survives
+   dark mode, just with darker fills. */
+body.dark-mode #view-admin span[style*="background:#fef2f2"],
+body.dark-mode #view-admin span[style*="background: #fef2f2"],
+body.dark-mode #view-admin span[style*="background-color: #fef2f2"] {
+  background-color: rgba(220, 38, 38, 0.18) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(220, 38, 38, 0.4) !important;
+}
+
+body.dark-mode #view-admin span[style*="background:#e0f2fe"],
+body.dark-mode #view-admin span[style*="background: #e0f2fe"] {
+  background-color: rgba(56, 189, 248, 0.18) !important;
+  color: #7dd3fc !important;
+  border-color: rgba(56, 189, 248, 0.4) !important;
+}
+
+body.dark-mode #view-admin span[style*="background:#f1f5f9"],
+body.dark-mode #view-admin span[style*="background: #f1f5f9"] {
+  background-color: rgba(148, 163, 184, 0.18) !important;
+  color: #cbd5e1 !important;
+  border-color: rgba(148, 163, 184, 0.4) !important;
+}
+
+body.dark-mode #view-admin span[style*="color:#16a34a"],
+body.dark-mode #view-admin span[style*="color: #16a34a"] {
+  color: #6ee7b7 !important;
+}
+
+body.dark-mode #view-admin span[style*="color:#dc2626"],
+body.dark-mode #view-admin span[style*="color: #dc2626"] {
+  color: #fca5a5 !important;
+}
+
+body.dark-mode #view-admin td[style*="color:#1e293b"],
+body.dark-mode #view-admin td[style*="color: #1e293b"] {
+  color: #ffffff !important;
+}
+
+/* Delete button in the Manage Users table sets its colors inline */
+body.dark-mode #view-admin button[style*="background-color: #fef2f2"] {
+  background-color: rgba(220, 38, 38, 0.18) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(220, 38, 38, 0.4) !important;
+}
+
+body.dark-mode #admin-current-name {
+  color: #ffffff;
+}
+
+body.dark-mode #admin-users-page-info {
+  color: #9fb8c0;
+}
+
+body.dark-mode .admin-pagination-bar {
+  background: #101b20;
+  border-top-color: rgba(104, 144, 153, 0.3);
+}
+
+/* "Show" password-visibility toggle buttons in Create User Account form */
+body.dark-mode #view-admin button[onclick*="togglePasswordVisibility"] {
+  background: #16272d;
+  color: #b8e986;
+  border-color: #6b9849;
+}
+
+body.dark-mode #view-admin button[onclick*="togglePasswordVisibility"]:hover {
+  background: #1c3338;
+}
+
+/* ============================================
+   AUDIT LOGS — DARK MODE
+   ============================================ */
+body.dark-mode .log-cell,
+body.dark-mode .log-cell--strong,
+body.dark-mode .log-cell--muted {
+  color: #e2e8f0;
+}
+
+body.dark-mode .log-cell--faint,
+body.dark-mode .log-cell--empty {
+  color: #9fb8c0;
+}
+
+/* Action badges keep their pastel light-mode colors inline (bg/border/text),
+   which read poorly on a dark panel — re-tint them per action type while
+   preserving the color-coding (green=create, blue=update, red=delete,
+   yellow=login/auth, purple=purge/cleanup, gray=default). */
+body.dark-mode .log-action-badge[style*="background:#ecfdf5"] {
+  background: rgba(16, 185, 129, 0.18) !important;
+  color: #6ee7b7 !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+body.dark-mode .log-action-badge[style*="background:#eff6ff"] {
+  background: rgba(56, 189, 248, 0.18) !important;
+  color: #7dd3fc !important;
+  border-color: rgba(56, 189, 248, 0.4) !important;
+}
+
+body.dark-mode .log-action-badge[style*="background:#fef2f2"] {
+  background: rgba(220, 38, 38, 0.18) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(220, 38, 38, 0.4) !important;
+}
+
+body.dark-mode .log-action-badge[style*="background:#fefce8"] {
+  background: rgba(234, 179, 8, 0.18) !important;
+  color: #fde047 !important;
+  border-color: rgba(234, 179, 8, 0.4) !important;
+}
+
+body.dark-mode .log-action-badge[style*="background:#fdf4ff"] {
+  background: rgba(168, 85, 247, 0.18) !important;
+  color: #d8b4fe !important;
+  border-color: rgba(168, 85, 247, 0.4) !important;
+}
+
+body.dark-mode .log-action-badge[style*="background:#f1f5f9"] {
+  background: rgba(148, 163, 184, 0.18) !important;
+  color: #cbd5e1 !important;
+  border-color: rgba(148, 163, 184, 0.4) !important;
+}
+
+
 .pagination {
   display: flex;
   justify-content: space-between;
