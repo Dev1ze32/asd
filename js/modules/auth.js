@@ -303,6 +303,38 @@ function _renderLoginScreen() {
           Routing Headquarters Internal System.<br>
           Authorized personnel only.
         </div>
+
+        <button type="button" id="about-btn" onclick="_showAboutModal()" class="login-screen__about-btn">
+          About
+        </button>
+      </div>
+    </div>
+
+    <!-- ABOUT MODAL -->
+    <div id="about-modal" class="about-modal" style="display:none;">
+      <div class="about-modal__backdrop" onclick="_hideAboutModal()"></div>
+      <div class="about-modal__panel" role="dialog" aria-modal="true" aria-labelledby="about-modal-title">
+        <button type="button" class="about-modal__close" onclick="_hideAboutModal()" aria-label="Close">&times;</button>
+
+        <h2 id="about-modal-title" class="about-modal__title">Routing Headquarters</h2>
+        <p class="about-modal__version">Version 1.0.0</p>
+
+        <p class="about-modal__desc">
+          Internal routing management system for Pioneer Adhesives, Inc.
+          Streamlines line management, BOM lookups, and production routing workflows.
+        </p>
+
+        <div class="about-modal__section">
+          <h3 class="about-modal__section-title">Developers</h3>
+          <ul class="about-modal__list">
+            <li>Aerial Oliver &mdash; UI/UX</li>
+            <li>Wendell Anciso &mdash; API</li>
+          </ul>
+        </div>
+
+        <div class="about-modal__footer">
+          &copy; 2026 Pioneer Adhesives, Inc. All rights reserved.
+        </div>
       </div>
     </div>
   `;
@@ -323,6 +355,16 @@ function _showLoginScreen() {
     screen.style.display = 'flex';
     setTimeout(() => document.getElementById('login-username')?.focus(), 100);
   }
+}
+
+function _showAboutModal() {
+  const modal = document.getElementById('about-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function _hideAboutModal() {
+  const modal = document.getElementById('about-modal');
+  if (modal) modal.style.display = 'none';
 }
 
 function _hideLoginScreen() {

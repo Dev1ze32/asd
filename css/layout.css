@@ -1440,6 +1440,27 @@ body.app-loading > *:not(.login-screen) {
   line-height: 1.6;
 }
 
+/* ── About button ── */
+.login-screen__about-btn {
+  display: block;
+  margin: 0 auto 1.5rem;
+  padding: 0.4rem 1.25rem;
+  background: transparent;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  color: var(--gray-500);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.login-screen__about-btn:hover {
+  background: var(--pal-green-light);
+  border-color: var(--pal-teal-mid);
+  color: var(--pal-teal-ink);
+}
+
 /* Keep login ALWAYS in light mode — override body.dark-mode */
 body.dark-mode #login-screen {
   background: #0f172a !important;

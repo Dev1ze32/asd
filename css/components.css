@@ -604,6 +604,109 @@ select:disabled,
   color: var(--gray-700);
 }
 
+/* ── About Modal ── */
+.about-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+
+.about-modal__backdrop {
+  position: absolute;
+  inset: 0;
+}
+
+.about-modal__panel {
+  position: relative;
+  background: #fff;
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  max-width: 380px;
+  width: 90%;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--pal-teal-mid);
+  text-align: center;
+}
+
+.about-modal__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: var(--gray-100);
+  border: none;
+  cursor: pointer;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-400);
+  font-size: 1.25rem;
+  line-height: 1;
+  transition: all 0.2s;
+}
+
+.about-modal__close:hover {
+  background: var(--gray-200);
+  color: var(--gray-700);
+}
+
+.about-modal__title {
+  font-size: var(--text-xl);
+  font-weight: 900;
+  color: var(--gray-900);
+  margin-bottom: 0.25rem;
+}
+
+.about-modal__version {
+  font-size: var(--text-xs);
+  color: var(--gray-400);
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+}
+
+.about-modal__desc {
+  font-size: var(--text-sm);
+  color: var(--gray-600);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.about-modal__section {
+  border-top: 1px solid var(--gray-200);
+  padding-top: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.about-modal__section-title {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-400);
+  margin-bottom: 0.5rem;
+}
+
+.about-modal__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--gray-700);
+  font-weight: 600;
+  line-height: 1.8;
+}
+
+.about-modal__footer {
+  font-size: 0.6875rem;
+  color: var(--gray-400);
+}
+
 body.dark-mode .excel-table {
   border-color: #000000;
   background: #111f24;
