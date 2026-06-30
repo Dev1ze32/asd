@@ -314,35 +314,56 @@ function _renderLoginScreen() {
     <div id="about-modal" class="about-modal" style="display:none;">
       <div class="about-modal__backdrop" onclick="_hideAboutModal()"></div>
       <div class="about-modal__panel" role="dialog" aria-modal="true" aria-labelledby="about-modal-title">
-        <button type="button" class="about-modal__close" onclick="_hideAboutModal()" aria-label="Close">&times;</button>
-
         <div class="about-modal__hero">
-          <div class="about-modal__logo">RH</div>
+          <div class="about-modal__hero-blob about-modal__hero-blob--1"></div>
+          <div class="about-modal__hero-blob about-modal__hero-blob--2"></div>
+
+          <button type="button" class="about-modal__close" onclick="_hideAboutModal()" aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+
+          <div class="about-modal__logo">
+            <svg viewBox="0 0 1150 120" xmlns="http://www.w3.org/2000/svg" aria-label="Pioneer Adhesives, Inc.">
+              <path d="M 0 5 L 360 5 C 450 5 450 105 360 105 L 0 105 Z" fill="#da291c" />
+              <g transform="skewX(-16)">
+                <text x="80" y="86" fill="#ffffff" style="font-family:'Arial Black',Impact,system-ui,sans-serif;font-weight:900;font-size:96px;letter-spacing:-2px">
+                  <tspan style="font-size:96px">P</tspan><tspan style="font-size:74px;letter-spacing:-1px" dy="-4">ioneer</tspan>
+                </text>
+              </g>
+            </svg>
+          </div>
+
           <h2 id="about-modal-title" class="about-modal__title">Routing Headquarters</h2>
           <span class="about-modal__version">Version 1.0.0</span>
+
+          <div class="about-modal__hero-curve"></div>
         </div>
 
         <div class="about-modal__body">
           <p class="about-modal__desc">
             Internal routing management system for Pioneer Adhesives, Inc.
-            Streamlines line management, BOM lookups, and production routing workflows.
+            <span class="about-modal__desc-sub">Streamlines line management, BOM lookups, and production routing workflows.</span>
           </p>
 
           <div class="about-modal__section">
-            <h3 class="about-modal__section-title">Developers</h3>
+            <h3 class="about-modal__section-title">
+              <span class="about-modal__section-line"></span>
+              Developers
+              <span class="about-modal__section-line"></span>
+            </h3>
             <ul class="about-modal__list">
               <li class="about-modal__person">
                 <span class="about-modal__avatar">AO</span>
                 <span class="about-modal__person-info">
                   <span class="about-modal__person-name">Aerial Oliver</span>
-                  <span class="about-modal__person-role">UI/UX</span>
+                  <span class="about-modal__person-role">UI/UX Design</span>
                 </span>
               </li>
               <li class="about-modal__person">
                 <span class="about-modal__avatar">WA</span>
                 <span class="about-modal__person-info">
                   <span class="about-modal__person-name">Wendell Anciso</span>
-                  <span class="about-modal__person-role">API</span>
+                  <span class="about-modal__person-role">API Development</span>
                 </span>
               </li>
             </ul>
