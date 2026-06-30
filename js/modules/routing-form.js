@@ -783,6 +783,11 @@ function _validateRoutingForm(itemCode, skuDesc, prodLine, qty) {
  * @returns {string} HTML string safe to assign to element.innerHTML
  */
 function _buildValidationHtml(errors) {
+  const isDark = document.body.classList.contains('dark-mode');
+  const textColor    = isDark ? '#e4ecef' : '#374151';
+  const headerColor  = isDark ? '#5b9bf2' : '#1d4ed8';
+  const rowColor     = isDark ? '#fb923c' : '#b45309';
+
   // Group errors by section
   const sections = {};
   errors.forEach(function(err) {
@@ -790,7 +795,7 @@ function _buildValidationHtml(errors) {
     sections[err.section].push(err);
   });
 
-  let html = '<p style="margin:0 0 0.65rem;font-size:0.875rem;color:#374151;">'
+  let html = '<p style="margin:0 0 0.65rem;font-size:0.875rem;color:' + textColor + ';">'
     + 'Please fill in the highlighted fields before saving:'
     + '</p>';
 
@@ -801,14 +806,14 @@ function _buildValidationHtml(errors) {
     // Section heading
     html += '<p style="margin:0.55rem 0 0.2rem;font-size:0.78rem;font-weight:700;'
           + 'text-transform:uppercase;letter-spacing:0.05em;'
-          + 'color:' + (isHeader ? '#1d4ed8' : '#b45309') + ';">'
+          + 'color:' + (isHeader ? headerColor : rowColor) + ';">'
           + _sanitizeHtml(sectionName)
           + '</p>';
 
     // Bullet list for this section
     html += '<ul style="margin:0 0 0.1rem;padding:0 0 0 1.1rem;list-style:disc;">';
     sections[sectionName].forEach(function(err) {
-      html += '<li style="font-size:0.84rem;color:#374151;margin-bottom:0.18rem;">'
+      html += '<li style="font-size:0.84rem;color:' + textColor + ';margin-bottom:0.18rem;">'
             + '<strong>' + _sanitizeHtml(err.field) + '</strong>'
             + ' — ' + _sanitizeHtml(err.reason)
             + '</li>';
