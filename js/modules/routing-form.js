@@ -620,9 +620,10 @@ function openTimeFormulaModal(inputEl) {
 
   if (!modal) return;
 
-  // Pre-fill with existing raw formula or value
+  // Pre-fill with existing raw formula or value (treat a bare "0" as empty
+  // so the user isn't forced to backspace before typing a new formula)
   const existing = inputEl.dataset.rawFormula || inputEl.value || '';
-  formulaInput.value = existing;
+  formulaInput.value = (existing === '0') ? '' : existing;
   resultEl.textContent = '0.00000';
 
   // Evaluate on every keystroke
