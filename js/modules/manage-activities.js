@@ -478,6 +478,65 @@ function initManageLines(preselectCode = null) {
 }
 
 /**
+ * Refresh the Manage Lines dropdown — re-fetches production lines (and their
+ * activities) from the API into the local cache, then rebuilds the selector.
+ * Falls back gracefully to the existing local cache if the API is unreachable.
+ * Preserves the currently selected line (if any) after refreshing.
+ */
+async function refreshManageLines() {
+  const btn = document.getElementById('btn-refresh-manage-lines');
+  const select = document.getElementById('manageLineSelect');
+  const currentSelection = select ? select.value : null;
+
+  if (btn) {
+    btn.disabled = true;
+    btn.dataset.originalHtml = btn.dataset.originalHtml || btn.innerHTML;
+    btn.innerHTML = 'Refreshing…';
+  }
+
+  try {
+    const res = await apiGetProductionLines();
+    if (res.ok && Array.isArray(res.data)) {
+      res.data.forEach(line => {
+        const code = line.production_line_code || line.line_code || line.code;
+        const desc = line.production_line_name || line.description || line.desc || code;
+        if (!code) return;
+
+        LINE_DESCRIPTIONS[code] = desc;
+
+        if (Array.isArray(line.activities) && line.activities.length > 0) {
+          lineActivitiesDB[code] = line.activities.map(a => {
+            if (typeof normalizeLineActivity === 'function') {
+              return normalizeLineActivity(a);
+            }
+            return a.activity_name || a.name || String(a);
+          });
+        } else if (!lineActivitiesDB[code]) {
+          lineActivitiesDB[code] = [];
+        }
+      });
+      showToast({ type: 'success', title: 'Lines Refreshed', message: `Loaded ${res.data.length} production line(s) from the server.` });
+    } else {
+      showToast({ type: 'warning', title: 'Refresh Limited', message: 'Could not reach the server — showing locally cached lines.' });
+    }
+  } catch (_) {
+    showToast({ type: 'warning', title: 'Refresh Limited', message: 'Could not reach the server — showing locally cached lines.' });
+  }
+
+  // Keep the production line dropdown on the routing form in sync too
+  if (typeof populateProdLineSelect === 'function') {
+    populateProdLineSelect();
+  }
+
+  initManageLines(currentSelection || null);
+
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML = btn.dataset.originalHtml;
+  }
+}
+
+/**
  * Render the activities list and toggle UI visibility
  */
 function renderManageActivities() {
@@ -1041,6 +1100,7 @@ async function confirmDiscardManageChanges() {
 
 // Expose globally
 window.initManageLines              = initManageLines;
+window.refreshManageLines           = refreshManageLines;
 window.renderManageActivities       = renderManageActivities;
 window.addActivityToLine            = addActivityToLine;
 window.deleteActivity               = deleteActivity;

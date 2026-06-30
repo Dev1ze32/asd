@@ -1402,9 +1402,19 @@
           <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--gray-800); margin: 0 0 0.2rem;">Line Activity Database</h3>
           <p style="font-size: 0.8rem; color: #64748b; margin: 0;">Manage production lines and their associated activities.</p>
         </div>
-        <span style="display: inline-flex; align-items: center; gap: 0.35rem; background-color: #fff1f2; color: #be123c; padding: 0.3rem 0.85rem; border-radius: 9999px; font-size: 0.78rem; font-weight: 600; border: 1px solid #fecdd3; letter-spacing: 0.01em;">
-          &#9888; Sensitive Data Entry
-        </span>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
+          <span style="display: inline-flex; align-items: center; gap: 0.35rem; background-color: #fff1f2; color: #be123c; padding: 0.3rem 0.85rem; border-radius: 9999px; font-size: 0.78rem; font-weight: 600; border: 1px solid #fecdd3; letter-spacing: 0.01em;">
+            &#9888; Sensitive Data Entry
+          </span>
+          <button id="btn-refresh-manage-lines" onclick="refreshManageLines()" class="btn btn--secondary" style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.4rem 0.85rem; font-size:0.8rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            Refresh Lines
+          </button>
+        </div>
       </div>
 
       <div class="manage-layout-grid">
@@ -2179,7 +2189,7 @@
   <script src="js/modules/logs.js" defer></script>
 
   <!-- Archive viewer (UPDATE tab only, read-only revision history) -->
-  <script src="js/modules/archive.js?v=20260630130000" defer></script>
+  <script src="js/modules/archive.js" defer></script>
 
   <!-- Layer 6: Router & Entry Point -->
   <script src="js/modules/tabs.js" defer></script>
