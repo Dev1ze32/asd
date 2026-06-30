@@ -6,7 +6,7 @@
    Use this as the single CSS entry point.
    ============================================ */
 
-@import url('base.css');
-@import url('layout.css');
-@import url('components.css');
-@import url('responsive.css');
+@import url('base.css?v=2');
+@import url('layout.css?v=2');
+@import url('components.css?v=2');
+@import url('responsive.css?v=2');
