@@ -201,7 +201,7 @@ function renderAuditLogs() {
   if (logs.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="9" class="text-center" style="padding:2rem;color:#94a3b8;font-style:italic;">
+        <td colspan="9" class="text-center log-cell--empty" style="padding:2rem;font-style:italic;">
           No audit log entries found.
         </td>
       </tr>`;
@@ -230,15 +230,15 @@ function renderAuditLogs() {
     }
 
     tr.innerHTML = `
-      <td style="font-family:monospace;font-size:0.78rem;color:#475569;">${log.id || ''}</td>
-      <td style="font-size:0.78rem;color:#334155;white-space:nowrap;">${sanitizeInput(_formatPhilippineTime(log.logged_at) || '')}</td>
-      <td style="font-size:0.82rem;font-weight:600;color:#1e293b;">${sanitizeInput(log.username || '')}</td>
-      <td><span style="display:inline-block;font-size:0.72rem;font-weight:600;padding:0.15rem 0.5rem;border-radius:9999px;${actionColor}">${sanitizeInput(log.action || '')}</span></td>
-      <td style="font-size:0.8rem;color:#475569;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${sanitizeInput(log.description || '')}">${sanitizeInput(_shortenDescription(log.description || ''))}</td>
-      <td style="font-size:0.78rem;color:#64748b;">${sanitizeInput(log.target_type || '')}</td>
-      <td style="font-size:0.78rem;color:#64748b;">${sanitizeInput(log.target_id || '')}</td>
-      <td style="font-size:0.78rem;color:#64748b;text-align:center;">${sanitizeInput(daysOld)}</td>
-      <td style="font-size:0.75rem;color:#94a3b8;font-family:monospace;">${sanitizeInput(log.ip_address || '')}</td>
+      <td class="log-cell log-cell--mono">${log.id || ''}</td>
+      <td class="log-cell" style="white-space:nowrap;">${sanitizeInput(_formatPhilippineTime(log.logged_at) || '')}</td>
+      <td class="log-cell log-cell--strong">${sanitizeInput(log.username || '')}</td>
+      <td><span class="log-action-badge" style="display:inline-block;font-size:0.72rem;font-weight:600;padding:0.15rem 0.5rem;border-radius:9999px;${actionColor}">${sanitizeInput(log.action || '')}</span></td>
+      <td class="log-cell" style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${sanitizeInput(log.description || '')}">${sanitizeInput(_shortenDescription(log.description || ''))}</td>
+      <td class="log-cell log-cell--muted">${sanitizeInput(log.target_type || '')}</td>
+      <td class="log-cell log-cell--muted">${sanitizeInput(log.target_id || '')}</td>
+      <td class="log-cell log-cell--muted" style="text-align:center;">${sanitizeInput(daysOld)}</td>
+      <td class="log-cell log-cell--faint log-cell--mono">${sanitizeInput(log.ip_address || '')}</td>
     `;
     tbody.appendChild(tr);
   });

@@ -782,6 +782,36 @@ body.dark-mode .data-table-wrapper {
 }
 
 /* ============================================
+   AUDIT LOGS — TABLE TEXT (light mode base)
+   ============================================ */
+.log-cell {
+  font-size: 0.78rem;
+  color: #475569;
+}
+
+.log-cell--strong {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.log-cell--muted {
+  color: #64748b;
+}
+
+.log-cell--faint {
+  color: #94a3b8;
+}
+
+.log-cell--mono {
+  font-family: var(--font-mono, monospace);
+}
+
+.log-cell--empty {
+  color: #94a3b8;
+}
+
+/* ============================================
    ADMIN PANEL — DARK MODE (full coverage)
    ============================================ */
 body.dark-mode .admin-section__header {
@@ -931,6 +961,60 @@ body.dark-mode #view-admin button[onclick*="togglePasswordVisibility"] {
 
 body.dark-mode #view-admin button[onclick*="togglePasswordVisibility"]:hover {
   background: #1c3338;
+}
+
+/* ============================================
+   AUDIT LOGS — DARK MODE
+   ============================================ */
+body.dark-mode .log-cell,
+body.dark-mode .log-cell--strong,
+body.dark-mode .log-cell--muted {
+  color: #e2e8f0;
+}
+
+body.dark-mode .log-cell--faint,
+body.dark-mode .log-cell--empty {
+  color: #9fb8c0;
+}
+
+/* Action badges keep their pastel light-mode colors inline (bg/border/text),
+   which read poorly on a dark panel — re-tint them per action type while
+   preserving the color-coding (green=create, blue=update, red=delete,
+   yellow=login/auth, purple=purge/cleanup, gray=default). */
+body.dark-mode .log-action-badge[style*="background:#ecfdf5"] {
+  background: rgba(16, 185, 129, 0.18) !important;
+  color: #6ee7b7 !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+body.dark-mode .log-action-badge[style*="background:#eff6ff"] {
+  background: rgba(56, 189, 248, 0.18) !important;
+  color: #7dd3fc !important;
+  border-color: rgba(56, 189, 248, 0.4) !important;
+}
+
+body.dark-mode .log-action-badge[style*="background:#fef2f2"] {
+  background: rgba(220, 38, 38, 0.18) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(220, 38, 38, 0.4) !important;
+}
+
+body.dark-mode .log-action-badge[style*="background:#fefce8"] {
+  background: rgba(234, 179, 8, 0.18) !important;
+  color: #fde047 !important;
+  border-color: rgba(234, 179, 8, 0.4) !important;
+}
+
+body.dark-mode .log-action-badge[style*="background:#fdf4ff"] {
+  background: rgba(168, 85, 247, 0.18) !important;
+  color: #d8b4fe !important;
+  border-color: rgba(168, 85, 247, 0.4) !important;
+}
+
+body.dark-mode .log-action-badge[style*="background:#f1f5f9"] {
+  background: rgba(148, 163, 184, 0.18) !important;
+  color: #cbd5e1 !important;
+  border-color: rgba(148, 163, 184, 0.4) !important;
 }
 
 .pagination {
