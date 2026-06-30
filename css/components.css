@@ -685,19 +685,17 @@ select:disabled,
 }
 
 .about-modal__logo {
-  width: 9rem;
+  width: 12rem;
+  max-width: 70%;
   height: auto;
-  margin: 0 auto 1.1rem;
+  margin: 0 auto 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   z-index: 1;
-  transition: transform 0.3s;
-}
-
-.about-modal__logo:hover {
-  transform: scale(1.05);
+  pointer-events: none;
+  user-select: none;
 }
 
 .about-modal__logo svg {
