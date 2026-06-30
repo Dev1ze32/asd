@@ -305,7 +305,7 @@ function _renderLoginScreen() {
         </div>
 
         <button type="button" id="about-btn" onclick="_showAboutModal()" class="login-screen__about-btn">
-          About
+          About us
         </button>
       </div>
     </div>
