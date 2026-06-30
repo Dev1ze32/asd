@@ -234,7 +234,7 @@ function _renderLoginScreen() {
 
       <!-- BOTTOM: tagline block, separate from logo -->
       <div class="login-screen__hero-content">
-        <h2 class="login-screen__hero-title">Do it <span style="color: #14b8a6;">right.</span></h2>
+        <h2 class="login-screen__hero-title">Do it right.</h2>
         <p class="login-screen__hero-desc">Routing management center</p>
         
         <!-- Developer Credits -->
@@ -250,8 +250,8 @@ function _renderLoginScreen() {
 
         <!-- Card heading -->
         <div class="login-screen__form-heading">
-          <h1 class="login-screen__form-title">Welcome back</h1>
-          <p class="login-screen__form-subtitle">Sign in to your Routing HQ account to continue.</p>
+          <h1 class="login-screen__form-title">Routing Headquarters</h1>
+          <p class="login-screen__form-subtitle">Sign in to your account to continue.</p>
         </div>
 
         <!-- Form fields -->
@@ -286,9 +286,6 @@ function _renderLoginScreen() {
                 </svg>
               </button>
             </div>
-            <div style="text-align: right; margin-top: 0.5rem;">
-              <a href="#" style="color: #14b8a6; font-size: 0.75rem; text-decoration: none; font-weight: 600;">Forgot password?</a>
-            </div>
           </div>
 
           <div id="login-error" class="login-form__error hidden"></div>
@@ -302,9 +299,10 @@ function _renderLoginScreen() {
         </div>
 
         <!-- Card footer -->
-        <p class="login-form__footer">
-          Access is restricted to authorized personnel only.
-        </p>
+        <div class="login-form__footer">
+          Routing Headquarters Internal System.<br>
+          Authorized personnel only.
+        </div>
       </div>
     </div>
   `;

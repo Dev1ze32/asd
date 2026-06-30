@@ -1164,11 +1164,11 @@ body.app-loading > *:not(.login-screen) {
   .login-screen__hero { display: block; }
 }
 
-/* Overlay: Dark gradient to match mockup */
+/* Overlay: #8DBCC7 fading bottom to top */
 .login-screen__hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 50%, rgba(15, 23, 42, 0.1) 100%);
+  background: linear-gradient(to top, #42c7c7 0%, transparent 30%);
 }
 
 /* ── Logo block — top of hero ── */
@@ -1248,7 +1248,7 @@ body.app-loading > *:not(.login-screen) {
   overflow-y: auto;
   background-color: #f8fafc;
   background-image: radial-gradient(circle, #cbd5e1 1px, transparent 1px);
-  background-size: 20px 20px;
+  background-size: 28px 28px;
 }
 
 @media (max-width: 899px) {
@@ -1285,9 +1285,9 @@ body.app-loading > *:not(.login-screen) {
   border-radius: 1rem;
   overflow: hidden;
   box-shadow:
-    0 20px 40px rgba(15, 23, 42, 0.08),
-    0 1px 3px  rgba(15, 23, 42, 0.04);
-  border: none;
+    0 0 0 1px rgba(15, 23, 42, 0.03),
+    0 8px 32px rgba(15, 23, 42, 0.10),
+    0 2px 8px  rgba(15, 23, 42, 0.06);
 }
 
 /* Card top accent bar */
@@ -1295,15 +1295,13 @@ body.app-loading > *:not(.login-screen) {
   content: '';
   display: block;
   height: 4px;
-  background: #14b8a6;
-  width: 40px;
-  margin: 2.25rem 0 0 2.25rem;
-  border-radius: 2px;
+  background: linear-gradient(90deg, #42c7c7 0%, #42c7c7 100%);
 }
 
 /* ── Card inner padding ── */
 .login-screen__form-heading {
-  padding: 1.25rem 2.25rem 1.5rem;
+  padding: 2rem 2.25rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .login-screen__form-eyebrow {
@@ -1403,7 +1401,7 @@ body.app-loading > *:not(.login-screen) {
   padding: 0.9rem 1rem;
   border: none;
   border-radius: 0.5rem;
-  background: #14b8a6;
+  background: #42c7c7;
   color: #fff;
   font-size: 0.9375rem;
   font-weight: 800;
@@ -1411,12 +1409,12 @@ body.app-loading > *:not(.login-screen) {
   text-transform: uppercase;
   cursor: pointer;
   transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
-  box-shadow: 0 4px 14px rgba(20, 184, 166, 0.30);
+  box-shadow: 0 4px 14px rgba(218, 41, 28, 0.30);
 }
 
 .login-form__submit:hover {
-  background: #0f766e;
-  box-shadow: 0 6px 18px rgba(20, 184, 166, 0.40);
+  background: #42c7c7;
+  box-shadow: 0 6px 18px rgba(218, 41, 28, 0.38);
 }
 
 .login-form__submit:active {
@@ -1431,7 +1429,8 @@ body.app-loading > *:not(.login-screen) {
 
 /* ── Card footer ── */
 .login-form__footer {
-  padding: 0.5rem 2.25rem 1.75rem;
+  padding: 1.125rem 2.25rem 1.75rem;
+  border-top: 1px solid #f1f5f9;
   text-align: center;
   font-size: 0.75rem;
   color: #94a3b8;

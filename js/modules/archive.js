@@ -285,45 +285,113 @@ function _archiveRenderPage(idx) {
   let   activitiesHtml;
 
   if (activities.length > 0) {
+    let sumPax = 0, sumMachine = 0, sumTime = 0, sumRunTime = 0, sumLabor = 0, sumMc = 0, sumDL = 0, sumVOH = 0, sumFOH = 0;
+
     const rows = activities.map((act, i) => {
       const name    = act.activities || act.activity_name || act.name || '—';
-      const pax     = act.pax     !== undefined ? act.pax     : '—';
-      const machine = act.machine !== undefined ? act.machine : '—';
+      const pax     = parseFloat(act.pax) || 0;
+      const machine = parseFloat(act.machine) || 0;
       const timeRaw = act.time_min !== undefined ? act.time_min : (act.time || 0);
-      const timeStr = !isNaN(parseFloat(timeRaw)) ? Number(timeRaw).toFixed(5) : '—';
-      const runTime = qtyNum > 0 && !isNaN(parseFloat(timeRaw))
-        ? (parseFloat(timeRaw) / qtyNum).toFixed(5)
-        : '—';
-      const type = act.type  || 'Labor';
-      const cls  = act.class || 'DL';
+      const timeNum = parseFloat(timeRaw) || 0;
+
+      // Gracefully use saved data if it exists, otherwise calculate it dynamically
+      const runTimeNum = parseFloat(act.run_time) || (qtyNum > 0 ? timeNum / qtyNum : 0);
+      const laborNum   = parseFloat(act.labor_min) || (pax * timeNum);
+      const mcNum      = parseFloat(act.mc_min) || (machine * timeNum);
+      const dlUnitsNum = (() => {
+        // Mirror calculateRow() formula: ROUNDUP(1 / ROUND(runTime * pax, 5), 0)
+        if (parseFloat(act.dl_units) > 0) return parseFloat(act.dl_units);
+        if (timeNum <= 0) return 0;
+        const roundedBase = Math.round((runTimeNum * pax) * 1e5) / 1e5;
+        return roundedBase > 0 ? Math.ceil(1 / roundedBase) : 0;
+      })();
+      const dlNum      = parseFloat(act.dl) || (runTimeNum * pax);
+      const vohNum     = parseFloat(act.voh) || runTimeNum;
+      const fohNum     = parseFloat(act.foh) || runTimeNum;
+
+      sumPax     += pax;
+      sumMachine += machine;
+      sumTime    += timeNum;
+      sumRunTime += runTimeNum;
+      sumLabor   += laborNum;
+      sumMc      += mcNum;
+      sumDL      += dlNum;
+      sumVOH     += vohNum;
+      sumFOH     += fohNum;
+
       const rowBg = i % 2 === 0 ? '#ffffff' : '#f8fafc';
+      const tdStyle = 'padding:0.42rem 0.7rem;border-bottom:1px solid #f1f5f9;font-size:0.79rem;color:#374151;';
+      const tdNum = tdStyle + 'text-align:right;font-family:monospace;';
 
       return `<tr style="background:${rowBg};">
-        <td style="padding:0.42rem 0.7rem;border-bottom:1px solid #f1f5f9;font-size:0.79rem;color:#1e293b;font-weight:500;">${_archiveSanitize(name)}</td>
-        <td style="padding:0.42rem 0.7rem;border-bottom:1px solid #f1f5f9;font-size:0.79rem;color:#374151;text-align:center;">${pax}</td>
-        <td style="padding:0.42rem 0.7rem;border-bottom:1px solid #f1f5f9;font-size:0.79rem;color:#374151;text-align:center;">${machine}</td>
-        <td style="padding:0.42rem 0.7rem;border-bottom:1px solid #f1f5f9;font-size:0.79rem;color:#374151;text-align:right;font-family:monospace;">${timeStr}</td>
-        <td style="padding:0.42rem 0.7rem;border-bottom:1px solid #f1f5f9;font-size:0.79rem;color:#374151;text-align:right;font-family:monospace;">${runTime}</td>
-        <td style="padding:0.42rem 0.7rem;border-bottom:1px solid #f1f5f9;font-size:0.79rem;color:#374151;text-align:center;">${_archiveSanitize(type)}</td>
-        <td style="padding:0.42rem 0.7rem;border-bottom:1px solid #f1f5f9;font-size:0.79rem;color:#374151;text-align:center;">${_archiveSanitize(cls)}</td>
+        <td style="${tdStyle}color:#1e293b;font-weight:500;">${_archiveSanitize(name)}</td>
+        <td style="${tdStyle}text-align:center;">${pax}</td>
+        <td style="${tdStyle}text-align:center;">${machine}</td>
+        <td style="${tdNum}">${timeNum.toFixed(5)}</td>
+        <td style="${tdNum}">${runTimeNum.toFixed(5)}</td>
+        <td style="${tdStyle}text-align:center;font-size:0.65rem;font-weight:700;">UNIT</td>
+        <td style="${tdNum}">${laborNum.toFixed(5)}</td>
+        <td style="${tdNum}border-right:1px solid #e2e8f0;">${mcNum.toFixed(5)}</td>
+        <td style="${tdStyle}color:#1e293b;font-weight:500;text-transform:uppercase;">${_archiveSanitize(name)}</td>
+        <td style="${tdNum}">${dlUnitsNum > 0 ? dlUnitsNum : ''}</td>
+        <td style="${tdNum}">${dlNum.toFixed(5)}</td>
+        <td style="${tdNum}">${vohNum.toFixed(5)}</td>
+        <td style="${tdNum}">${fohNum.toFixed(5)}</td>
       </tr>`;
     }).join('');
 
+    const thStyle = 'padding:0.42rem 0.7rem;font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#1e293b;';
+    const thGroup = 'padding:0.5rem 0.7rem;font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:#fff;background:#5B97A6;';
+
+    // Override totals with product-level saved totals if they exist in the snapshot
+    if (data.total_labor_min !== undefined) sumLabor = parseFloat(data.total_labor_min) || sumLabor;
+    if (data.total_mc_min !== undefined)    sumMc = parseFloat(data.total_mc_min) || sumMc;
+    if (data.total_run_time !== undefined)  sumRunTime = parseFloat(data.total_run_time) || sumRunTime;
+    if (data.total_dl !== undefined)        sumDL = parseFloat(data.total_dl) || sumDL;
+    if (data.total_voh !== undefined)       sumVOH = parseFloat(data.total_voh) || sumVOH;
+    if (data.total_foh !== undefined)       sumFOH = parseFloat(data.total_foh) || sumFOH;
+
     activitiesHtml = `
-      <div style="overflow-x:auto;border-radius:8px;border:1px solid #e2e8f0;margin-top:0.5rem;">
-        <table style="width:100%;border-collapse:collapse;min-width:520px;">
+      <div style="overflow-x:auto;border-radius:8px;border:1px solid #e2e8f0;margin-top:0.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+        <table style="width:100%;border-collapse:collapse;min-width:1000px;">
           <thead>
+            <tr>
+              <th colspan="8" style="${thGroup}text-align:left;border-right:1px solid #437d8c;">ROUTING DETAILS</th>
+              <th colspan="5" style="${thGroup}text-align:center;">ACUMATICA BOM</th>
+            </tr>
             <tr style="background:#8DBCC7;">
-              <th style="padding:0.42rem 0.7rem;text-align:left;font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#1e293b;border-right:1px solid #A4CCD9;">Activity</th>
-              <th style="padding:0.42rem 0.7rem;text-align:center;font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#1e293b;border-right:1px solid #A4CCD9;">Pax</th>
-              <th style="padding:0.42rem 0.7rem;text-align:center;font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#1e293b;border-right:1px solid #A4CCD9;">Machine</th>
-              <th style="padding:0.42rem 0.7rem;text-align:right;font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#1e293b;border-right:1px solid #A4CCD9;">Time (min)</th>
-              <th style="padding:0.42rem 0.7rem;text-align:right;font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#1e293b;border-right:1px solid #A4CCD9;">Run Time</th>
-              <th style="padding:0.42rem 0.7rem;text-align:center;font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#1e293b;border-right:1px solid #A4CCD9;">Type</th>
-              <th style="padding:0.42rem 0.7rem;text-align:center;font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#1e293b;">Class</th>
+              <th style="${thStyle}text-align:left;">Activity</th>
+              <th style="${thStyle}text-align:center;">Pax</th>
+              <th style="${thStyle}text-align:center;">Machine</th>
+              <th style="${thStyle}text-align:right;">Time (min)</th>
+              <th style="${thStyle}text-align:right;" colspan="2">Run Time</th>
+              <th style="${thStyle}text-align:right;">Total Labor min</th>
+              <th style="${thStyle}text-align:right;border-right:1px solid #73a7b5;">Total MC min</th>
+              <th style="${thStyle}text-align:left;">ACTIVITIES</th>
+              <th style="${thStyle}text-align:right;">DL (Units/1 min)</th>
+              <th style="${thStyle}text-align:right;">DL</th>
+              <th style="${thStyle}text-align:right;">VOH</th>
+              <th style="${thStyle}text-align:right;">FOH</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
+          <tfoot>
+            <tr style="background:#f1f5f9;font-weight:700;color:#0f172a;font-size:0.75rem;border-top:2px solid #cbd5e1;">
+              <td style="padding:0.6rem 0.7rem;text-align:right;">TOTAL</td>
+              <td style="padding:0.6rem 0.7rem;text-align:center;">${sumPax}</td>
+              <td style="padding:0.6rem 0.7rem;text-align:center;">${sumMachine}</td>
+              <td style="padding:0.6rem 0.7rem;text-align:right;font-family:monospace;">${sumTime.toFixed(5)}</td>
+              <td style="padding:0.6rem 0.7rem;text-align:right;font-family:monospace;">${sumRunTime.toFixed(5)}</td>
+              <td></td>
+              <td style="padding:0.6rem 0.7rem;text-align:right;font-family:monospace;">${sumLabor.toFixed(5)}</td>
+              <td style="padding:0.6rem 0.7rem;text-align:right;font-family:monospace;border-right:1px solid #e2e8f0;">${sumMc.toFixed(5)}</td>
+              <td></td>
+              <td></td>
+              <td style="padding:0.6rem 0.7rem;text-align:right;font-family:monospace;">${sumDL.toFixed(5)}</td>
+              <td style="padding:0.6rem 0.7rem;text-align:right;font-family:monospace;">${sumVOH.toFixed(5)}</td>
+              <td style="padding:0.6rem 0.7rem;text-align:right;font-family:monospace;">${sumFOH.toFixed(5)}</td>
+            </tr>
+          </tfoot>
         </table>
       </div>`;
   } else {
