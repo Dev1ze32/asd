@@ -1133,3 +1133,30 @@ body.dark-mode .line-selector-card__info {
   border-left-color: var(--pal-teal-dark);
   color: var(--pal-green-light);
 }
+
+/* Dark mode: Edit Line Name — dark slate panel, not the light gray-100 token
+   used in light mode, to match the reference design. */
+body.dark-mode .line-selector-btn--secondary {
+  background: #1e2936;
+  color: #e2e8f0;
+  border-color: #2a3b4a;
+}
+
+body.dark-mode .line-selector-btn--secondary:hover {
+  background: #26333f;
+  border-color: #35485a;
+}
+
+/* Dark mode: Delete Line — transparent panel with a rose outline/text,
+   matching the reference design instead of the plain red used in light mode. */
+body.dark-mode .line-selector-btn--danger {
+  background: transparent;
+  color: #fb7185;
+  border-color: rgba(244, 63, 94, 0.3);
+}
+
+body.dark-mode .line-selector-btn--danger:hover {
+  background: rgba(244, 63, 94, 0.1);
+  border-color: rgba(244, 63, 94, 0.5);
+  color: #fda4af;
+}
