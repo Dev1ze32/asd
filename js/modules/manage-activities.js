@@ -977,7 +977,8 @@ async function _commitPendingChanges() {
           if (!res.ok) { failCount++; errors.push(`Add "${change.activityName}": ${_apiErrMsg(res)}`); }
           else {
             // Sync the server-returned activity object (with real id) into local cache
-            const savedActivity = res.data || { activity_name: change.activityName };
+            // Ensure activity_name is present because the API response might not echo it back
+            const savedActivity = Object.assign({ activity_name: change.activityName }, res.data || {});
             const lineActs = lineActivitiesDB[change.lineCode];
             if (lineActs) {
               // Find the locally-added entry (still a plain string or id-less object) and replace
@@ -1007,10 +1008,16 @@ async function _commitPendingChanges() {
         }
 
         case 'delete_activity': {
-          // The activity has already been removed from local cache; we only have its name.
-          // Use index from the original snapshot to derive the id, or fall back to index.
-          // Best effort: pass the recorded index to the API.
-          res = await apiDeleteLineActivity(change.lineCode, change.index);
+          // Retrieve the original activity from the snapshot because it was already removed from local cache
+          const snapshotActs = _manageSnapshot && _manageSnapshot.activities ? _manageSnapshot.activities[change.lineCode] || [] : [];
+          const target = snapshotActs.find(a =>
+            (typeof getLineActivityName === 'function' ? getLineActivityName(a) : String(a)) === change.activityName
+          );
+          const activityId = target && typeof getLineActivityId === 'function'
+            ? getLineActivityId(target)
+            : null;
+            
+          res = await apiDeleteLineActivity(change.lineCode, activityId ?? change.index);
           if (!res.ok) { failCount++; errors.push(`Delete "${change.activityName}": ${_apiErrMsg(res)}`); }
           else successCount++;
           break;

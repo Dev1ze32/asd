@@ -100,3 +100,127 @@ window.AppState          = AppState;
 window.TemplateMode      = TemplateMode;
 window.App               = App;
 window.TabFormState      = TabFormState;
+
+/* ===================================================
+   LOCAL CACHE STATE & HELPERS (MIGRATED FROM MOCK-DB)
+   =================================================== */
+
+const lineActivitiesDB = {};
+
+function normalizeLineActivity(activity) {
+  if (activity && typeof activity === 'object') {
+    return {
+      id: activity.id ?? activity.activity_id ?? activity.line_activity_id ?? activity.production_line_activity_id ?? null,
+      activity_name: (activity.activity_name || activity.name || activity.activities || '').toString().toUpperCase(),
+      sort_order: activity.sort_order,
+      stage: activity.stage,
+    };
+  }
+
+  return {
+    id: null,
+    activity_name: String(activity || '').toUpperCase(),
+  };
+}
+
+function getLineActivityName(activity) {
+  return activity && typeof activity === 'object'
+    ? (activity.activity_name || activity.name || activity.activities || '').toString()
+    : String(activity || '');
+}
+
+function getLineActivityId(activity) {
+  if (!activity || typeof activity !== 'object') return null;
+  return activity.id ?? activity.activity_id ?? activity.line_activity_id ?? activity.production_line_activity_id ?? null;
+}
+
+const mockRoutingDB = {};
+
+function seedMockData(count = 25) {}
+
+function getRoutingRecord(itemCode) {
+  return mockRoutingDB[itemCode.toUpperCase()] || null;
+}
+
+function getAllRoutingRecords() {
+  return Object.values(mockRoutingDB);
+}
+
+function saveRoutingRecord(itemCode, data) {
+  mockRoutingDB[itemCode.toUpperCase()] = data;
+}
+
+function getLineActivities(lineCode) {
+  return lineActivitiesDB[lineCode] || [];
+}
+
+function addLineActivity(lineCode, activity) {
+  if (!lineActivitiesDB[lineCode]) {
+    lineActivitiesDB[lineCode] = [];
+  }
+  lineActivitiesDB[lineCode].push(normalizeLineActivity(activity));
+}
+
+function removeLineActivity(lineCode, index) {
+  if (lineActivitiesDB[lineCode]) {
+    lineActivitiesDB[lineCode].splice(index, 1);
+  }
+}
+
+function updateLineActivity(lineCode, index, newValue) {
+  if (lineActivitiesDB[lineCode]) {
+    const existing = normalizeLineActivity(lineActivitiesDB[lineCode][index]);
+    existing.activity_name = newValue.trim().toUpperCase();
+    lineActivitiesDB[lineCode][index] = existing;
+  }
+}
+
+function addProductionLine(code, description) {
+  LINE_DESCRIPTIONS[code] = description;
+  lineActivitiesDB[code] = [];
+}
+
+function updateProductionLine(code, newDescription) {
+  if (LINE_DESCRIPTIONS[code]) {
+    LINE_DESCRIPTIONS[code] = newDescription;
+  }
+}
+
+function renameProductionLine(oldCode, newCode, newDescription) {
+  if (!LINE_DESCRIPTIONS[oldCode]) return;
+  LINE_DESCRIPTIONS[newCode] = newDescription;
+  if (newCode !== oldCode) delete LINE_DESCRIPTIONS[oldCode];
+  if (lineActivitiesDB[oldCode]) {
+    lineActivitiesDB[newCode] = lineActivitiesDB[oldCode];
+    if (newCode !== oldCode) delete lineActivitiesDB[oldCode];
+  }
+  Object.keys(mockRoutingDB).forEach(key => {
+    const record = mockRoutingDB[key];
+    if (record.production_line_code === oldCode) {
+      record.production_line_code = newCode;
+    }
+  });
+}
+
+function deleteProductionLine(code) {
+  delete LINE_DESCRIPTIONS[code];
+  delete lineActivitiesDB[code];
+}
+
+window.lineActivitiesDB = lineActivitiesDB;
+window.mockRoutingDB = mockRoutingDB;
+window.seedMockData = seedMockData;
+window.getRoutingRecord = getRoutingRecord;
+window.getAllRoutingRecords = getAllRoutingRecords;
+window.saveRoutingRecord = saveRoutingRecord;
+window.getLineActivities = getLineActivities;
+window.normalizeLineActivity = normalizeLineActivity;
+window.getLineActivityName = getLineActivityName;
+window.getLineActivityId = getLineActivityId;
+window.addLineActivity = addLineActivity;
+window.removeLineActivity = removeLineActivity;
+window.updateLineActivity = updateLineActivity;
+window.addProductionLine = addProductionLine;
+window.updateProductionLine = updateProductionLine;
+window.renameProductionLine = renameProductionLine;
+window.deleteProductionLine = deleteProductionLine;
