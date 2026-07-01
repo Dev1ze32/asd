@@ -288,11 +288,14 @@ function showDualInputModal(opts) {
     const input2 = document.getElementById('modalDualInput2');
     setTimeout(() => input1.focus(), 50);
 
-    // Confirm button
+    // Confirm button — no inline color override so it follows the
+    // theme-aware .modal-btn-confirm CSS class (bright vs dark mode),
+    // instead of always looking dark regardless of theme.
     confirmBtn.textContent = opts.confirmLabel || 'Done';
-    confirmBtn.style.background = '#005c66';
-    confirmBtn.onmouseover = () => { confirmBtn.style.background = '#0b5360'; };
-    confirmBtn.onmouseout  = () => { confirmBtn.style.background = '#005c66'; };
+    confirmBtn.style.background = '';
+    confirmBtn.style.color = '';
+    confirmBtn.onmouseover = null;
+    confirmBtn.onmouseout  = null;
 
     modal.style.display = 'flex';
 

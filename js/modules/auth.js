@@ -135,7 +135,6 @@ const Auth = {
       title: 'Log Out',
       message: 'Are you sure you want to log out?',
       type: 'confirm',
-      confirmStyle: 'danger',
       confirmLabel: 'Log Out',
     });
 
