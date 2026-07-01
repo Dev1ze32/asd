@@ -266,6 +266,15 @@ function _getLoadingMessage(path, method) {
 /* ── Auth endpoints ── */
 
 /** POST /api/auth/login */
+/**
+ * POST /api/auth/verify-password
+ * Verify the currently authenticated user's password before a destructive action.
+ * @param {string} password
+ */
+async function apiVerifyPassword(password) {
+  return _apiFetch('/api/auth/verify-password', 'POST', { password });
+}
+
 async function apiLogin(username, password) {
   return _apiFetch('/api/auth/login', 'POST', { username, password });
 }

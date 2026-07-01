@@ -174,8 +174,9 @@ function showModal(opts) {
     }
 
     // Input field
-    if (opts.type === 'prompt') {
+    if (opts.type === 'prompt' || opts.type === 'password_prompt') {
       inputWrap.style.display = 'block';
+      inputEl.type = opts.type === 'password_prompt' ? 'password' : 'text';
       inputEl.value = opts.inputDefault || '';
       inputEl.placeholder = opts.inputPlaceholder || '';
       setTimeout(() => inputEl.focus(), 50);
@@ -944,11 +945,28 @@ async function handleManageDone() {
     icon:         'warn',
     title:        'Save All Changes?',
     messageHtml,
-    type:         'confirm',
+    type:         'password_prompt',
+    inputPlaceholder: 'Enter your password to confirm',
     confirmLabel: 'Save All Changes',
   });
 
   if (!result.confirmed) return;
+
+  if (!result.value) {
+    showModal({ icon: 'danger', title: 'Error', message: 'Password is required to save changes.', type: 'confirm', confirmLabel: 'OK' });
+    return;
+  }
+
+  // Disable the button temporarily to prevent double clicks during network request
+  const btn = document.getElementById('btn-manage-done');
+  if (btn) { btn.disabled = true; btn.textContent = 'Verifying...'; }
+
+  const verifyRes = await apiVerifyPassword(result.value);
+  if (!verifyRes.ok) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Done'; }
+    showModal({ icon: 'danger', title: 'Access Denied', message: 'Incorrect password.', type: 'confirm', confirmLabel: 'OK' });
+    return;
+  }
 
   // --- Commit all pending changes to the API ---
   await _commitPendingChanges();
