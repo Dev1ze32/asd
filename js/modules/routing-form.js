@@ -706,7 +706,7 @@ function openTimeFormulaModal(inputEl) {
  *   - Activity         — must have a selection (not blank)
  *   - Pax              — must have a value entered (not empty; 0 is allowed)
  *   - Machine          — must have a value entered (not empty; 0 is allowed)
- *   - Time             — must be greater than 0
+ *   - Time             — must have a value entered (not empty; 0 is allowed)
  *
  * @param {string} itemCode
  * @param {string} skuDesc
@@ -759,8 +759,8 @@ function _validateRoutingForm(itemCode, skuDesc, prodLine, qty) {
       if (mcVal === '' || mcVal === null || mcVal === undefined)
         errors.push({ section: rowLabel, field: 'Machine', reason: 'machine count not entered' });
 
-      if (!timeVal || isNaN(timeNum) || timeNum <= 0)
-        errors.push({ section: rowLabel, field: 'Time', reason: 'must be greater than 0 — open the formula field to set a value' });
+      if (timeVal === '' || timeVal === null || timeVal === undefined || isNaN(timeNum) || timeNum < 0)
+        errors.push({ section: rowLabel, field: 'Time', reason: 'time not entered — open the formula field to set a value' });
 
       // Ensure the activity is valid for the currently selected production line
       if (actVal && prodLine) {
