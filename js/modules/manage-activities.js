@@ -149,6 +149,7 @@ function showModal(opts) {
     const msgEl       = document.getElementById('modalMessage');
     const inputWrap   = document.getElementById('modalInputWrap');
     const inputEl     = document.getElementById('modalInput');
+    const selectEl    = document.getElementById('modalSelect');
     const confirmBtn  = document.getElementById('modalConfirmBtn');
     const cancelBtn   = document.getElementById('modalCancelBtn');
     const iconWrap    = document.getElementById('modalIconWrap');
@@ -176,10 +177,22 @@ function showModal(opts) {
     // Input field
     if (opts.type === 'prompt' || opts.type === 'password_prompt') {
       inputWrap.style.display = 'block';
+      inputEl.style.display = 'block';
+      if (selectEl) selectEl.style.display = 'none';
+      
       inputEl.type = opts.type === 'password_prompt' ? 'password' : 'text';
       inputEl.value = opts.inputDefault || '';
       inputEl.placeholder = opts.inputPlaceholder || '';
       setTimeout(() => inputEl.focus(), 50);
+    } else if (opts.type === 'select') {
+      inputWrap.style.display = 'block';
+      inputEl.style.display = 'none';
+      if (selectEl) {
+        selectEl.style.display = 'block';
+        selectEl.innerHTML = (opts.selectOptions || []).map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+        if (opts.inputDefault) selectEl.value = opts.inputDefault;
+        setTimeout(() => selectEl.focus(), 50);
+      }
     } else {
       inputWrap.style.display = 'none';
     }
@@ -210,7 +223,10 @@ function showModal(opts) {
 
     function handleConfirm() {
       cleanup();
-      resolve({ confirmed: true, value: inputEl.value.trim() });
+      let val = '';
+      if (opts.type === 'select') val = selectEl ? selectEl.value : '';
+      else val = inputEl.value.trim();
+      resolve({ confirmed: true, value: val });
     }
     function handleCancel() {
       cleanup();
