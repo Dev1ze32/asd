@@ -256,18 +256,28 @@ function _createUserRowHTML(user) {
 }
 
 async function deleteUser(userId, username) {
-  if (typeof showModal !== 'function') {
-    if (!confirm(`Are you sure you want to delete user "${username}"? This cannot be undone.`)) return;
-  } else {
-    const result = await showModal({
-      icon: 'danger',
-      title: 'Delete User',
-      message: `Are you sure you want to delete user "${username}"? This cannot be undone.`,
-      type: 'confirm',
-      confirmStyle: 'danger',
-      confirmLabel: 'Yes, Delete',
-    });
-    if (!result.confirmed) return;
+  if (typeof showModal !== 'function') return;
+
+  const result = await showModal({
+    icon: 'danger',
+    title: 'Delete User',
+    message: `Are you sure you want to delete user "${username}"? This cannot be undone.`,
+    type: 'password_prompt',
+    inputPlaceholder: 'Enter your admin password to confirm',
+    confirmStyle: 'danger',
+    confirmLabel: 'Yes, Delete',
+  });
+  if (!result.confirmed) return;
+
+  if (!result.value) {
+    showModal({ icon: 'danger', title: 'Error', message: 'Password is required to delete a user.', type: 'confirm', confirmLabel: 'OK' });
+    return;
+  }
+
+  const verifyRes = await apiVerifyPassword(result.value);
+  if (!verifyRes.ok) {
+    showModal({ icon: 'danger', title: 'Access Denied', message: 'Incorrect password.', type: 'confirm', confirmLabel: 'OK' });
+    return;
   }
 
   try {

@@ -446,12 +446,24 @@ async function handleLogsCleanup() {
     icon: 'danger',
     title: 'Confirm Permanent Deletion',
     message: `Are you sure you want to delete all audit log entries older than ${days} days?\n\nThis action is irreversible.`,
-    type: 'confirm',
+    type: 'password_prompt',
+    inputPlaceholder: 'Enter your admin password to confirm',
     confirmStyle: 'danger',
     confirmLabel: `Yes, Delete Logs Older Than ${days} Days`,
   });
 
   if (!r2.confirmed) return;
+
+  if (!r2.value) {
+    await showModal({ icon: 'danger', title: 'Error', message: 'Password is required to delete logs.', type: 'confirm', confirmLabel: 'OK' });
+    return;
+  }
+
+  const verifyRes = await apiVerifyPassword(r2.value);
+  if (!verifyRes.ok) {
+    await showModal({ icon: 'danger', title: 'Access Denied', message: 'Incorrect password.', type: 'confirm', confirmLabel: 'OK' });
+    return;
+  }
 
   try {
     const res = await apiCleanupLogs(days);

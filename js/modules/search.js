@@ -172,11 +172,23 @@ const r = await showModal({
 icon: 'danger',
 title: 'Delete Routing Record',
 message: `Permanently delete routing record for "${itemCode}"? This action cannot be undone.`,
-type: 'confirm',
+type: 'password_prompt',
+inputPlaceholder: 'Enter your password to confirm',
 confirmStyle: 'danger',
 confirmLabel: 'Yes, Delete',
 });
 if (!r.confirmed) return;
+
+if (!r.value) {
+  showModal({ icon: 'danger', title: 'Error', message: 'Password is required to delete a record.', type: 'confirm', confirmLabel: 'OK' });
+  return;
+}
+
+const verifyRes = await apiVerifyPassword(r.value);
+if (!verifyRes.ok) {
+  showModal({ icon: 'danger', title: 'Access Denied', message: 'Incorrect password.', type: 'confirm', confirmLabel: 'OK' });
+  return;
+}
 
 // --- Try API ---
 let apiOk = false;
