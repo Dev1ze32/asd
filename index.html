@@ -666,6 +666,17 @@
       body.dark-mode .admin-table tbody tr:hover td {
         background: #1f343b;
       }
+      body.dark-mode #log-filter-from::-webkit-calendar-picker-indicator,
+      body.dark-mode #log-filter-to::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+      }
+      /* Role Permissions Reference: no zebra striping (this table only) */
+      #role-permissions-table tbody tr:nth-child(even) td {
+        background: #ffffff;
+      }
+      body.dark-mode #role-permissions-table tbody tr:nth-child(even) td {
+        background: #101b20;
+      }
 
       body.dark-mode #routingTable .section-header--routing,
       body.dark-mode #routingTable .section-header--bom,
@@ -898,6 +909,35 @@
         background: rgba(22, 163, 74, 0.15);
         color: #4ade80;
         box-shadow: 0 4px 12px rgba(22, 163, 74, 0.05);
+      }
+      .modal-icon-circle-danger,
+      .modal-icon-circle-warn,
+      .modal-icon-circle-info {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid transparent;
+      }
+      .modal-icon-circle-danger { background: #fff1f2; color: #dc2626; border-color: #fecdd3; }
+      .modal-icon-circle-warn   { background: #fffbeb; color: #d97706; border-color: #fde68a; }
+      .modal-icon-circle-info   { background: #e6f7f7; color: #005c66; border-color: #A4CCD9; }
+      body.dark-mode .modal-icon-circle-danger {
+        background: rgba(220, 38, 38, 0.15);
+        color: #fca5a5;
+        border-color: rgba(220, 38, 38, 0.35);
+      }
+      body.dark-mode .modal-icon-circle-warn {
+        background: rgba(217, 119, 6, 0.15);
+        color: #fbbf24;
+        border-color: rgba(217, 119, 6, 0.35);
+      }
+      body.dark-mode .modal-icon-circle-info {
+        background: rgba(66, 199, 199, 0.15);
+        color: #42c7c7;
+        border-color: rgba(66, 199, 199, 0.35);
       }
 
       .modal-title {
@@ -1483,7 +1523,7 @@
         <div class="manage-sidebar" style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid #e2e8f0;">
 
           <p style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin: 0 0 0.6rem;">Step 1</p>
-          <label for="manageLineSelect" style="display: block; font-size: 0.875rem; font-weight: 600; color: #f1f5f9; margin-bottom: 0.5rem;">
+          <label for="manageLineSelect" style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">
             Select Production Line
           </label>
           <select id="manageLineSelect"
@@ -1501,13 +1541,13 @@
               + Create New Line
             </button>
             <button id="btnEditLine" onclick="handleEditLine()"
-                    style="width: 100%; padding: 0.55rem; border-radius: 7px; font-size: 0.84rem; font-weight: 600; background: #fff; color: #374151; border: 1px solid #d1d5db; cursor: pointer; transition: background 0.15s; display: none;"
-                    onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='#fff'">
+                    style="width: 100%; padding: 0.55rem; border-radius: 7px; font-size: 0.84rem; font-weight: 600; background: #8DBCC7; color: #1e293b; border: none; cursor: pointer; transition: background 0.15s; display: none;"
+                    onmouseover="this.style.background='#A4CCD9'" onmouseout="this.style.background='#8DBCC7'">
               Edit Line Name
             </button>
             <button id="btnDeleteLine" onclick="handleDeleteLine()"
-                    style="width: 100%; padding: 0.55rem; border-radius: 7px; font-size: 0.84rem; font-weight: 600; background: #fff; color: #dc2626; border: 1px solid #fca5a5; cursor: pointer; transition: background 0.15s; display: none;"
-                    onmouseover="this.style.background='#fff1f2'" onmouseout="this.style.background='#fff'">
+                    style="width: 100%; padding: 0.55rem; border-radius: 7px; font-size: 0.84rem; font-weight: 600; background: #8DBCC7; color: #dc2626; border: 1px solid #fca5a5; cursor: pointer; transition: background 0.15s; display: none;"
+                    onmouseover="this.style.background='#A4CCD9'" onmouseout="this.style.background='#8DBCC7'">
               Delete Line
             </button>
           </div>
@@ -1778,7 +1818,7 @@
           </div>
           <div class="admin-section__body" style="padding: 0;">
 
-            <table class="admin-table">
+            <table class="admin-table" id="role-permissions-table">
               <thead>
                 <tr>
                   <th>Role</th>
@@ -1802,7 +1842,7 @@
                   <td>
                     <span style="display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9999px; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca;">ADMIN</span>
                   </td>
-                  <td>Full access. Can do everything a Superuser can, plus: create user accounts, view audit logs, and clean up old log entries.</td>
+                  <td>Full access. Can create user accounts, view audit logs, and clean up old log entries.</td>
                 </tr>
               </tbody>
             </table>
@@ -2028,7 +2068,7 @@
                      oninput="handleDbSearch()">
             </div>
             <button onclick="handleDbSearch()" class="admin-btn admin-btn--primary" style="white-space:nowrap;">
-              &#128269; Search
+              Search
             </button>
           </div>
 
@@ -2303,7 +2343,7 @@
 
   <!-- Layer 1: State & Data -->
   <script src="js/modules/state.js?v=20260630160000" defer></script>
-
+  <script src="js/modules/mock-db.js?v=20260630140000" defer></script>
 
   <!-- Layer 2: Utilities -->
   <script src="js/modules/utils.js?v=20260630140000" defer></script>
@@ -2315,7 +2355,7 @@
   <!-- Layer 4: Feature Modules -->
   <script src="js/modules/routing-form.js?v=20260630140000" defer></script>
   <script src="js/modules/search.js?v=20260630140000" defer></script>
-  <script src="js/modules/manage-activities.js?v=20260701020000" defer></script>
+  <script src="js/modules/manage-activities.js?v=20260630140000" defer></script>
   <script src="js/modules/all-data.js?v=20260630140000" defer></script>
 
   <!-- Layer 5: Admin Modules (admin only, but scripts load for all) -->

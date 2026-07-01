@@ -166,11 +166,11 @@ function showModal(opts) {
     // Icon
     iconWrap.innerHTML = '';
     if (opts.icon === 'danger') {
-      iconWrap.innerHTML = '<div style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:#fff1f2;border:1px solid #fecdd3;"><span style="font-size:1.1rem;color:#dc2626;">&#9888;</span></div>';
+      iconWrap.innerHTML = '<div class="modal-icon-circle-danger"><span style="font-size:1.1rem;">&#9888;</span></div>';
     } else if (opts.icon === 'warn') {
-      iconWrap.innerHTML = '<div style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:#fffbeb;border:1px solid #fde68a;"><span style="font-size:1.1rem;color:#d97706;">&#9888;</span></div>';
+      iconWrap.innerHTML = '<div class="modal-icon-circle-warn"><span style="font-size:1.1rem;">&#9888;</span></div>';
     } else if (opts.icon === 'info') {
-      iconWrap.innerHTML = '<div style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:#e6f7f7;border:1px solid #A4CCD9;"><span style="font-size:1.1rem;color:#005c66;">&#8505;</span></div>';
+      iconWrap.innerHTML = '<div class="modal-icon-circle-info"><span style="font-size:1.1rem;">&#8505;</span></div>';
     }
 
     // Input field

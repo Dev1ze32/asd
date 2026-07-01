@@ -854,6 +854,47 @@ select:disabled,
   border-top: 1px solid var(--gray-100, #f1f5f9);
 }
 
+/* About Us modal always renders in its original (light) theme,
+   even when dark mode is enabled — it uses CSS variables for color
+   that dark mode redefines, so those are pinned back here. */
+body.dark-mode .about-modal__hero {
+  background: linear-gradient(135deg, #00434c, #005c66) !important;
+}
+
+body.dark-mode .about-modal__desc {
+  color: #475569 !important;
+}
+
+body.dark-mode .about-modal__section-title {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .about-modal__section-line {
+  background: #e2e8f0 !important;
+}
+
+body.dark-mode .about-modal__person {
+  background: #f9fafb !important;
+  border-color: #f1f5f9 !important;
+}
+
+body.dark-mode .about-modal__avatar {
+  background: #C4E1E6 !important;
+}
+
+body.dark-mode .about-modal__person-name {
+  color: #334155 !important;
+}
+
+body.dark-mode .about-modal__person-role {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .about-modal__footer {
+  color: #94a3b8 !important;
+  border-top-color: #f1f5f9 !important;
+}
+
 body.dark-mode .excel-table {
   border-color: #000000;
   background: #111f24;
