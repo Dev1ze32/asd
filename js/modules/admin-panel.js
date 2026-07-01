@@ -146,9 +146,9 @@ async function handleCreateUser() {
         const emptyRow = document.getElementById('admin-users-empty');
         if (emptyRow) emptyRow.remove();
 
-        // data.id is returned from API if we modified it to do so, but since we don't know for sure if data.id exists or we just rely on data:
+        // The API returns "user_id" on creation, not "id"
         const user = {
-          id: data.id || 'N/A', // the real ID might need a reload, but we'll show N/A for now if it's missing, or the API might return it
+          id: data.user_id || data.id || 'N/A', 
           username: data.username || username,
           role: data.role || role,
           is_active: true
