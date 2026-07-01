@@ -196,7 +196,13 @@ async function _apiFetch(path, method, body) {
     clearTimeout(timeoutId);
 
     // If the server returns 401 (token expired / invalid), force logout.
-    if (response.status === 401 && typeof Auth !== 'undefined') {
+    // Skip auto-logout for endpoints where 401 simply means "wrong password".
+    if (
+      response.status === 401 && 
+      typeof Auth !== 'undefined' && 
+      !path.includes('/auth/login') && 
+      !path.includes('/auth/verify-password')
+    ) {
       console.warn('[API] 401 Unauthorized — logging out.');
       hideLoading();
       Auth.logout();

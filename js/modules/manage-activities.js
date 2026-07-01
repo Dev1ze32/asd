@@ -101,15 +101,18 @@ function _updateDoneButtonBadge() {
   if (!badge || !btn) return;
 
   const count = _pendingChanges.length;
+  const clearBtn = document.getElementById('btn-manage-clear');
   if (count > 0) {
     badge.textContent = count;
     badge.style.display = 'inline-flex';
     btn.style.opacity = '1';
     btn.style.pointerEvents = 'auto';
+    if (clearBtn) clearBtn.style.display = 'inline-flex';
   } else {
     badge.style.display = 'none';
     btn.style.opacity = '0.55';
     btn.style.pointerEvents = 'none';
+    if (clearBtn) clearBtn.style.display = 'none';
   }
 }
 
@@ -120,6 +123,9 @@ function _clearPendingChanges() {
   _pendingChanges = [];
   _manageSnapshot = null;
   _updateDoneButtonBadge();
+  
+  const banner = document.getElementById('manage-pending-banner');
+  if (banner) banner.style.display = 'none';
 }
 
 
@@ -567,6 +573,9 @@ async function performRefreshManageLines() {
     populateProdLineSelect();
   }
 
+  // Clear any unsaved pending changes since we just pulled fresh data
+  _clearPendingChanges();
+  
   initManageLines(currentSelection || null);
 
   if (btn) {
@@ -933,16 +942,23 @@ async function handleManageDone() {
   if (!_hasPendingChanges()) return;
 
   // Build a human-readable summary list
-  const summaryLines = _pendingChanges.map(c => {
+  const summaryLines = _pendingChanges.map((c, i) => {
+    let text = '';
     switch (c.type) {
-      case 'create_line':     return `• Create line <strong>${c.code}</strong> — ${c.desc}`;
-      case 'edit_line':       return `• Edit line <strong>${c.oldCode}</strong> → <strong>${c.newCode}</strong> (${c.newDesc})`;
-      case 'delete_line':     return `• Delete line <strong>${c.code}</strong>`;
-      case 'add_activity':    return `• Add activity "<strong>${c.activityName}</strong>" to ${c.lineCode}`;
-      case 'rename_activity': return `• Rename activity "<strong>${c.oldName}</strong>" → "<strong>${c.newName}</strong>" (${c.lineCode})`;
-      case 'delete_activity': return `• Delete activity "<strong>${c.activityName}</strong>" from ${c.lineCode}`;
-      default:                return `• Unknown change`;
+      case 'create_line':     text = `• Create line <strong>${c.code}</strong> — ${c.desc}`; break;
+      case 'edit_line':       text = `• Edit line <strong>${c.oldCode}</strong> → <strong>${c.newCode}</strong> (${c.newDesc})`; break;
+      case 'delete_line':     text = `• Delete line <strong>${c.code}</strong>`; break;
+      case 'add_activity':    text = `• Add activity "<strong>${c.activityName}</strong>" to ${c.lineCode}`; break;
+      case 'rename_activity': text = `• Rename activity "<strong>${c.oldName}</strong>" → "<strong>${c.newName}</strong>" (${c.lineCode})`; break;
+      case 'delete_activity': text = `• Delete activity "<strong>${c.activityName}</strong>" from ${c.lineCode}`; break;
+      default:                text = `• Unknown change`; break;
     }
+    return `
+      <li style="font-size:0.82rem;color:#1e293b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:0.4rem 0.7rem;line-height:1.5; display:flex; justify-content:space-between; align-items:center;">
+        <span>${text}</span>
+        <button onclick="removeManagePendingChange(${i})" style="border:none; background:transparent; cursor:pointer; color:#ef4444; font-size:1.1rem; padding:0 0.2rem; display:flex; align-items:center; justify-content:center;" title="Remove this change" onmouseover="this.style.color='#b91c1c'" onmouseout="this.style.color='#ef4444'">&times;</button>
+      </li>
+    `;
   });
 
   const messageHtml = `
@@ -950,7 +966,7 @@ async function handleManageDone() {
       You are about to save <strong>${_pendingChanges.length}</strong> change${_pendingChanges.length !== 1 ? 's' : ''}:
     </div>
     <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0.35rem;max-height:220px;overflow-y:auto;">
-      ${summaryLines.map(l => `<li style="font-size:0.82rem;color:#1e293b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:0.4rem 0.7rem;line-height:1.5;">${l}</li>`).join('')}
+      ${summaryLines.join('')}
     </ul>
     <div style="margin-top:0.75rem; font-size:0.8rem; color:#64748b;">
       Click <strong>Save All Changes</strong> to commit, or <strong>Cancel</strong> to keep editing.
@@ -1180,6 +1196,55 @@ async function confirmDiscardManageChanges() {
   return true;
 }
 
+/**
+ * Handle the explicit "Clear Unsaved" button click in the Manage Lines tab.
+ */
+async function clearManagePendingChanges() {
+  if (!_hasPendingChanges()) return;
+
+  const r = await showModal({
+    icon:         'warn',
+    title:        'Clear Unsaved Changes?',
+    message:      `Are you sure you want to discard ${_pendingChanges.length} unsaved change${_pendingChanges.length !== 1 ? 's' : ''}?`,
+    type:         'confirm',
+    confirmStyle: 'danger',
+    confirmLabel: 'Clear Unsaved',
+  });
+
+  if (!r.confirmed) return;
+
+  _restoreManageSnapshot();
+  _clearPendingChanges();
+  if (typeof populateProdLineSelect === 'function') populateProdLineSelect();
+  
+  // Re-render the current manage lines view
+  const select = document.getElementById('manageLineSelect');
+  initManageLines(select ? select.value : null);
+}
+
+
+/**
+ * Remove a specific pending change from the "Done" summary modal and instantly reload it.
+ */
+window.removeManagePendingChange = function(index) {
+  _pendingChanges.splice(index, 1);
+  _updateDoneButtonBadge();
+  
+  // Close the current modal by simulating a cancel click
+  const cancelBtn = document.getElementById('modalCancelBtn');
+  if (cancelBtn) cancelBtn.click();
+  
+  // Reopen the modal immediately if there are still changes, or clear if empty
+  if (_pendingChanges.length > 0) {
+    setTimeout(handleManageDone, 100);
+  } else {
+    _clearPendingChanges();
+    if (typeof populateProdLineSelect === 'function') populateProdLineSelect();
+    const select = document.getElementById('manageLineSelect');
+    initManageLines(select ? select.value : null);
+  }
+};
+
 
 // Expose globally
 window.initManageLines              = initManageLines;
@@ -1195,3 +1260,4 @@ window.handleEditLine               = handleEditLine;
 window.handleDeleteLine             = handleDeleteLine;
 window.handleManageDone             = handleManageDone;
 window.confirmDiscardManageChanges  = confirmDiscardManageChanges;
+window.clearManagePendingChanges    = clearManagePendingChanges;

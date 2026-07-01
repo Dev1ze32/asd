@@ -506,6 +506,8 @@ async function submitEditUser() {
    Search by item code / SKU, then delete
    ============================================ */
 
+let _stagedForDeletion = [];
+
 /** Live-search the API and render matching rows into the admin db table. */
 async function handleDbSearch() {
   if (!Auth.isAdmin()) return;
@@ -546,8 +548,15 @@ async function handleDbSearch() {
         const type = sanitizeInput(item.product_type || '—');
         const rev  = sanitizeInput(String(item.revision ?? '—').padStart(2, '0'));
         const line = sanitizeInput(item.fg_production_line_code || item.bm_production_line_code || item.production_line_code || '—');
+        
+        const isStaged = _stagedForDeletion.includes(code);
+        const rowBg = isStaged ? 'background-color:#fef2f2;' : '';
+        const btnClass = isStaged ? 'admin-btn' : 'admin-btn admin-btn--danger';
+        const btnStyle = isStaged ? 'padding:0.3rem 0.75rem;font-size:0.75rem;white-space:nowrap;background-color:#94a3b8;color:white;border:none;' : 'padding:0.3rem 0.75rem;font-size:0.75rem;white-space:nowrap;';
+        const btnText = isStaged ? '&#10134; Unstage' : '&#10133; Stage to Delete';
+        
         return `
-          <tr data-item-code="${code}">
+          <tr data-item-code="${code}" style="${rowBg}">
             <td style="font-weight:700;color:#1e293b;font-family:monospace;">${code}</td>
             <td>${sku}</td>
             <td>${type}</td>
@@ -555,10 +564,10 @@ async function handleDbSearch() {
             <td>${line}</td>
             <td style="text-align:center;">
               <button
-                onclick="handleDeleteProduct('${code}', '${sku}')"
-                class="admin-btn admin-btn--danger"
-                style="padding:0.3rem 0.75rem;font-size:0.75rem;white-space:nowrap;">
-                &#128465; Delete
+                onclick="toggleStageForDeletion('${code}')"
+                class="${btnClass}"
+                style="${btnStyle}">
+                ${btnText}
               </button>
             </td>
           </tr>`;
@@ -569,70 +578,87 @@ async function handleDbSearch() {
   }
 }
 
-/**
- * Confirm and permanently delete a product by item code.
- * @param {string} itemCode
- * @param {string} skuDesc - for display in the confirmation
- */
-async function handleDeleteProduct(itemCode, skuDesc) {
+function toggleStageForDeletion(itemCode) {
+  if (_stagedForDeletion.includes(itemCode)) {
+    _stagedForDeletion = _stagedForDeletion.filter(c => c !== itemCode);
+  } else {
+    _stagedForDeletion.push(itemCode);
+  }
+  
+  handleDbSearch();
+  updateBulkDeleteBanner();
+}
+
+function updateBulkDeleteBanner() {
+  const banner = document.getElementById('bulk-delete-banner');
+  const countSpan = document.getElementById('bulk-delete-count');
+  if (!banner || !countSpan) return;
+  
+  if (_stagedForDeletion.length > 0) {
+    countSpan.textContent = _stagedForDeletion.length;
+    banner.style.display = 'flex';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function clearBulkDeletion() {
+  _stagedForDeletion = [];
+  updateBulkDeleteBanner();
+  handleDbSearch();
+}
+
+async function commitBulkDeletion() {
   if (!Auth.isAdmin()) {
     await showModal({ icon:'danger', title:'Access Denied', message:'Only administrators can delete products.', type:'confirm', confirmLabel:'OK' });
     return;
   }
-
-  const errEl = document.getElementById('db-error');
-  const okEl  = document.getElementById('db-success');
-  if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
-  if (okEl)  { okEl.style.display  = 'none'; okEl.textContent  = ''; }
+  
+  if (_stagedForDeletion.length === 0) return;
 
   const result = await showModal({
     icon:         'danger',
-    title:        'Delete Product?',
-    message:      `Permanently delete "${itemCode}"${skuDesc ? ' (' + skuDesc + ')' : ''}?\n\nThis will also delete ALL its activities and revision history. This cannot be undone.`,
-    type:         'confirm',
+    title:        'Commit Bulk Deletion?',
+    message:      `You are about to permanently delete ${_stagedForDeletion.length} staged product(s).\n\nThis will also delete ALL their activities and revision history. This cannot be undone.`,
+    type:         'password_prompt',
+    inputPlaceholder: 'Enter your admin password to confirm',
     confirmStyle: 'danger',
-    confirmLabel: 'Yes, Delete Permanently',
+    confirmLabel: `Yes, Delete ${_stagedForDeletion.length} Items`,
   });
 
   if (!result.confirmed) return;
 
-  // Disable the row button while deleting
-  const rowBtn = document.querySelector(`tr[data-item-code="${itemCode}"] .admin-btn--danger`);
-  if (rowBtn) { rowBtn.disabled = true; rowBtn.textContent = 'Deleting...'; }
-
-  try {
-    const res = await apiDeleteItem(itemCode);
-    if (res.ok) {
-      // Remove the row from the table
-      const row = document.querySelector(`tr[data-item-code="${itemCode}"]`);
-      if (row) row.remove();
-
-      const countEl = document.getElementById('db-result-count');
-      if (countEl) {
-        const remaining = document.querySelectorAll('#db-results-tbody tr[data-item-code]').length;
-        countEl.textContent = remaining > 0
-          ? `${remaining} result${remaining !== 1 ? 's' : ''} found.`
-          : '';
-        if (remaining === 0) {
-          const tbody = document.getElementById('db-results-tbody');
-          if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;font-style:italic;padding:2rem;">All matching products have been deleted.</td></tr>';
-        }
-      }
-
-      if (okEl) { okEl.textContent = `"${itemCode}" has been permanently deleted.`; okEl.style.display = 'block'; }
-      showToast({ type: 'success', title: 'Product Deleted', message: `"${itemCode}" was permanently deleted.` });
-    } else {
-      let msg = 'Failed to delete product.';
-      if (res.status === 404) msg = `"${itemCode}" was not found.`;
-      else if (res.status === 403) msg = 'You do not have permission to delete products.';
-      else if (res.data?.error) msg = res.data.error;
-      if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
-      if (rowBtn) { rowBtn.disabled = false; rowBtn.textContent = '\u{1F5D1} Delete'; }
-    }
-  } catch (err) {
-    if (errEl) { errEl.textContent = 'Network error. Please try again.'; errEl.style.display = 'block'; }
-    if (rowBtn) { rowBtn.disabled = false; rowBtn.textContent = '\u{1F5D1} Delete'; }
+  if (!result.value) {
+    showModal({ icon: 'danger', title: 'Error', message: 'Password is required to delete products.', type: 'confirm', confirmLabel: 'OK' });
+    return;
   }
+
+  const verifyRes = await apiVerifyPassword(result.value);
+  if (!verifyRes.ok) {
+    showModal({ icon: 'danger', title: 'Access Denied', message: 'Incorrect password.', type: 'confirm', confirmLabel: 'OK' });
+    return;
+  }
+
+  // Sequence of API calls
+  let deletedCount = 0;
+  showLoading(`Deleting ${_stagedForDeletion.length} product(s)...`);
+  
+  for (const itemCode of _stagedForDeletion) {
+    try {
+      const res = await apiDeleteItem(itemCode);
+      if (res.ok) deletedCount++;
+    } catch (e) {
+      console.error('Failed to delete', itemCode, e);
+    }
+  }
+  
+  hideLoading();
+  
+  showToast({ type: 'success', title: 'Bulk Deletion Complete', message: `Successfully deleted ${deletedCount} of ${_stagedForDeletion.length} items.` });
+  
+  _stagedForDeletion = [];
+  updateBulkDeleteBanner();
+  handleDbSearch();
 }
 
 /* ============================================
@@ -650,4 +676,6 @@ window.closeEditUserModal       = closeEditUserModal;
 window.submitEditUser           = submitEditUser;
 window.deleteUser               = deleteUser;
 window.handleDbSearch           = handleDbSearch;
-window.handleDeleteProduct      = handleDeleteProduct;
+window.toggleStageForDeletion   = toggleStageForDeletion;
+window.clearBulkDeletion        = clearBulkDeletion;
+window.commitBulkDeletion       = commitBulkDeletion;
