@@ -1616,6 +1616,17 @@
             0
           </span>
         </button>
+        <button id="btn-manage-clear"
+                onclick="clearManagePendingChanges()"
+                style="display:none; align-items:center; gap:0.4rem;
+                       padding:0.55rem 1rem; border-radius:8px; font-size:0.85rem; font-weight:600;
+                       background:transparent; color:#64748b; border:1px solid #cbd5e1; cursor:pointer;
+                       transition:all 0.15s;"
+                onmouseover="this.style.background='#f1f5f9'; this.style.color='#334155'"
+                onmouseout="this.style.background='transparent'; this.style.color='#64748b'"
+                title="Clear all unsaved changes">
+          Clear Unsaved
+        </button>
         <span style="font-size:0.78rem; color:#94a3b8;">
           Changes are staged locally until you click Done.
         </span>
@@ -2381,6 +2392,19 @@
     ├── modules/tabs.js              - Tab controller/router
     └── main.js                      - Entry point
   -->
+
+  <!-- ============================================
+       BULK DELETE BANNER (Admin Database Tab)
+       ============================================ -->
+  <div id="bulk-delete-banner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1e293b; color:white; padding:12px 24px; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.2); z-index:9999; align-items:center; gap:20px; font-family:Inter, sans-serif;">
+    <div style="font-weight:500;">
+      <span id="bulk-delete-count" style="color:#ef4444; font-weight:700; font-size:1.1rem; margin-right:4px;">0</span> items staged for deletion
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button onclick="clearBulkDeletion()" style="background:transparent; border:1px solid #475569; color:#cbd5e1; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85rem; font-weight:500;">Clear</button>
+      <button onclick="commitBulkDeletion()" style="background:#dc2626; border:none; color:white; padding:6px 16px; border-radius:4px; cursor:pointer; font-size:0.85rem; font-weight:600; box-shadow:0 2px 4px rgba(220,38,38,0.3);">Commit Deletions</button>
+    </div>
+  </div>
 
 </body>
 </html>
