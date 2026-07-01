@@ -1522,34 +1522,39 @@
       <div class="manage-layout-grid">
 
         <!-- LEFT SIDEBAR: Line Selector -->
-        <div class="manage-sidebar" style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+        <div class="manage-sidebar line-selector-card">
 
-          <p style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin: 0 0 0.6rem;">Step 1</p>
-          <label for="manageLineSelect" style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">
+          <p class="line-selector-card__step">Step 1</p>
+          <label for="manageLineSelect" class="line-selector-card__title">
             Select Production Line
           </label>
-          <select id="manageLineSelect"
-                  class="dark-mode-input" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 7px; padding: 0.5rem 0.75rem; background: #ffffff; font-size: 0.875rem; color: #1e293b; margin-bottom: 0.75rem; appearance: auto;"
-                  onchange="renderManageActivities()">
-            <option value="" disabled selected>-- Choose Line --</option>
-          </select>
 
-          <div id="manageLineDesc" style="font-size: 0.8rem; font-weight: 500; color: #475569; background: #EBFFD8; border-left: 3px solid #8DBCC7; border-radius: 0 6px 6px 0; padding: 0.45rem 0.7rem; margin-bottom: 1rem; display: none;"></div>
+          <div class="line-selector-card__select-wrap">
+            <select id="manageLineSelect"
+                    class="line-selector-card__select"
+                    onchange="renderManageActivities()">
+              <option value="" disabled selected>-- Choose Line --</option>
+            </select>
+            <span class="line-selector-card__arrow">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </span>
+          </div>
 
-          <div style="border-top: 1px solid #e2e8f0; padding-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
-            <button onclick="handleCreateLine()"
-                    style="width: 100%; padding: 0.55rem; border-radius: 7px; font-size: 0.84rem; font-weight: 600; background: #8DBCC7; color: #1e293b; border: none; cursor: pointer; transition: background 0.15s;"
-                    onmouseover="this.style.background='#A4CCD9'" onmouseout="this.style.background='#8DBCC7'">
-              + Create New Line
+          <div id="manageLineDesc" class="line-selector-card__info" style="display: none;"></div>
+
+          <div class="line-selector-card__divider"></div>
+
+          <div class="line-selector-card__actions">
+            <button onclick="handleCreateLine()" class="line-selector-btn line-selector-btn--primary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              Create New Line
             </button>
-            <button id="btnEditLine" onclick="handleEditLine()"
-                    style="width: 100%; padding: 0.55rem; border-radius: 7px; font-size: 0.84rem; font-weight: 600; background: #8DBCC7; color: #1e293b; border: none; cursor: pointer; transition: background 0.15s; display: none;"
-                    onmouseover="this.style.background='#A4CCD9'" onmouseout="this.style.background='#8DBCC7'">
+            <button id="btnEditLine" onclick="handleEditLine()" class="line-selector-btn line-selector-btn--secondary" style="display: none;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
               Edit Line Name
             </button>
-            <button id="btnDeleteLine" onclick="handleDeleteLine()"
-                    style="width: 100%; padding: 0.55rem; border-radius: 7px; font-size: 0.84rem; font-weight: 600; background: #8DBCC7; color: #dc2626; border: 1px solid #fca5a5; cursor: pointer; transition: background 0.15s; display: none;"
-                    onmouseover="this.style.background='#A4CCD9'" onmouseout="this.style.background='#8DBCC7'">
+            <button id="btnDeleteLine" onclick="handleDeleteLine()" class="line-selector-btn line-selector-btn--danger" style="display: none;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
               Delete Line
             </button>
           </div>
