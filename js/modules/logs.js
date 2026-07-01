@@ -419,22 +419,29 @@ async function handleLogsCleanup() {
   const r1 = await showModal({
     icon: 'warn',
     title: 'Cleanup Audit Logs',
-    message: 'This will permanently delete log entries older than the specified number of days. This action cannot be undone.\n\nEnter the number of days (default: 90):',
-    type: 'prompt',
+    message: 'This will permanently delete log entries older than the selected timeframe. This action cannot be undone.',
+    type: 'select',
+    selectOptions: [
+      { value: '7', label: 'Logs older than 7 days' },
+      { value: '30', label: 'Logs older than 30 days' },
+      { value: '90', label: 'Logs older than 90 days (Default)' },
+      { value: '365', label: 'Logs older than 1 year' },
+      { value: '1', label: 'All logs except today' },
+      { value: '0', label: 'Delete EVERYTHING' }
+    ],
     inputDefault: '90',
-    inputPlaceholder: 'e.g., 30, 60, 90',
     confirmStyle: 'danger',
-    confirmLabel: 'Delete Old Logs',
+    confirmLabel: 'Continue',
   });
 
   if (!r1.confirmed) return;
 
   const days = parseInt(r1.value, 10);
-  if (isNaN(days) || days < 1) {
+  if (isNaN(days) || days < 0) {
     await showModal({
       icon: 'danger',
       title: 'Invalid Input',
-      message: 'Please enter a valid number of days (at least 1).',
+      message: 'Please select a valid timeframe.',
       type: 'confirm',
       confirmLabel: 'OK',
     });
@@ -442,14 +449,17 @@ async function handleLogsCleanup() {
   }
 
   // Confirm again
+  const textMsg = days === 0 ? "delete ALL audit log entries?" : `delete all audit log entries older than ${days} days?`;
+  const confirmMsg = days === 0 ? "Yes, Delete EVERYTHING" : `Yes, Delete Logs Older Than ${days} Days`;
+  
   const r2 = await showModal({
     icon: 'danger',
     title: 'Confirm Permanent Deletion',
-    message: `Are you sure you want to delete all audit log entries older than ${days} days?\n\nThis action is irreversible.`,
+    message: `Are you sure you want to ${textMsg}\n\nThis action is irreversible.`,
     type: 'password_prompt',
     inputPlaceholder: 'Enter your admin password to confirm',
     confirmStyle: 'danger',
-    confirmLabel: `Yes, Delete Logs Older Than ${days} Days`,
+    confirmLabel: confirmMsg,
   });
 
   if (!r2.confirmed) return;
