@@ -968,6 +968,43 @@ function getApiErrorMessage(res, operation, identifier) {
   }
 }
 
+/**
+ * Download the Deployment and Maintenance Manual (Admin Only)
+ */
+async function apiDownloadDeploymentGuide() {
+  const authHeaders = (typeof Auth !== 'undefined') ? Auth.authHeaders() : {};
+  try {
+    const res = await fetch(API_BASE_URL + '/api/auth/docs/deployment', {
+      method: 'GET',
+      headers: {
+        ...authHeaders
+      }
+    });
+    
+    if (res.status === 401 || res.status === 403) {
+      return { ok: false, status: res.status, error: 'Access Denied: Admin role required' };
+    }
+    
+    if (!res.ok) {
+      return { ok: false, status: res.status, error: 'Manual file not found on the server' };
+    }
+    
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ACU_Routing_Deployment_Maintenance_Manual.pdf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+    
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
 /* ============================================
    EXPOSE GLOBALLY
    ============================================ */
@@ -1003,6 +1040,7 @@ window.apiUpdateLineActivity   = apiUpdateLineActivity;
 window.apiDeleteLineActivity   = apiDeleteLineActivity;
 window.apiGetLogs              = apiGetLogs;
 window.apiCleanupLogs          = apiCleanupLogs;
+window.apiDownloadDeploymentGuide = apiDownloadDeploymentGuide;
 window.apiExportExcel          = apiExportExcel;
 // Internal helpers exposed for use in other modules
 window._normalizeApiItem       = _normalizeApiItem;

@@ -661,6 +661,31 @@ async function commitBulkDeletion() {
   handleDbSearch();
 }
 
+/**
+ * Handle the "Download Manual" button click
+ */
+async function handleDownloadManual() {
+  const btn = event.currentTarget || event.target;
+  const originalHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<span style="font-size:1rem;">⏳</span> Downloading...`;
+  
+  const res = await apiDownloadDeploymentGuide();
+  
+  btn.disabled = false;
+  btn.innerHTML = originalHtml;
+  
+  if (!res.ok) {
+    showModal({
+      icon: 'danger',
+      title: 'Download Failed',
+      message: res.error || 'Failed to download the manual.',
+      type: 'confirm',
+      confirmLabel: 'OK'
+    });
+  }
+}
+
 /* ============================================
    EXPOSE GLOBALLY
    ============================================ */
@@ -679,3 +704,4 @@ window.handleDbSearch           = handleDbSearch;
 window.toggleStageForDeletion   = toggleStageForDeletion;
 window.clearBulkDeletion        = clearBulkDeletion;
 window.commitBulkDeletion       = commitBulkDeletion;
+window.handleDownloadManual     = handleDownloadManual;

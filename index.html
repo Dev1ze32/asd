@@ -1741,13 +1741,19 @@
       </div>
 
       <!-- Admin Info Bar -->
-      <div class="admin-info-bar dark-mode-panel" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
+      <div class="admin-info-bar dark-mode-panel" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; justify-content: space-between;">
         <div>
           <p style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin: 0 0 0.2rem;">Signed in as</p>
           <p style="font-size: 0.95rem; font-weight: 600; color: #1e293b; margin: 0;">
             <span id="admin-current-name">--</span>
             <span id="admin-current-role" style="font-size: 0.72rem; background: #fef2f2; color: #dc2626; padding: 0.1rem 0.5rem; border-radius: 9999px; font-weight: 600; border: 1px solid #fecaca; margin-left: 0.4rem;">--</span>
           </p>
+        </div>
+        <div>
+          <button onclick="handleDownloadManual()" class="admin-btn admin-btn--secondary" style="display:flex; align-items:center; gap:0.4rem; padding: 0.5rem 0.8rem; font-size:0.85rem;" title="Download Deployment & Maintenance Manual">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Download Manual
+          </button>
         </div>
       </div>
 
@@ -2347,7 +2353,10 @@
 
   <!-- Layer 1: State & Data -->
   <script src="js/modules/state.js?v=20260630160000" defer></script>
-  <script src="js/modules/mock-db.js?v=20260630140000" defer></script>
+  <!-- 
+    The mock database (mock-db.js) has been completely removed.
+    All data is now served exclusively from the live PostgreSQL database via api-service.js. 
+  -->
 
   <!-- Layer 2: Utilities -->
   <script src="js/modules/utils.js?v=20260630140000" defer></script>
