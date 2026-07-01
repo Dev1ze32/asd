@@ -1134,6 +1134,16 @@ body.dark-mode .line-selector-card__info {
   color: var(--pal-green-light);
 }
 
+/* Dark mode: Create New Line — use the app's established dark-mode teal
+   accent instead of the bright cyan --pioneer-red token. */
+body.dark-mode .line-selector-btn--primary {
+  background: #0b6b78;
+}
+
+body.dark-mode .line-selector-btn--primary:hover {
+  background: #0e8a99;
+}
+
 /* Dark mode: Edit Line Name — dark slate panel, not the light gray-100 token
    used in light mode, to match the reference design. */
 body.dark-mode .line-selector-btn--secondary {
