@@ -1170,3 +1170,37 @@ body.dark-mode .line-selector-btn--danger:hover {
   border-color: rgba(244, 63, 94, 0.5);
   color: #fda4af;
 }
+
+/* ============================================
+   ADD ACTIVITY BUTTON — theme-aware
+   Light mode keeps the original near-black chip
+   look; dark mode swaps to the app's established
+   teal accent (matches Create New Line / search
+   buttons) instead of a near-invisible black chip
+   on a dark background.
+   ============================================ */
+.btn-add-activity {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.84rem;
+  font-weight: 600;
+  background: var(--gray-900);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.btn-add-activity:hover {
+  background: var(--gray-800);
+}
+
+body.dark-mode .btn-add-activity {
+  background: #0b6b78;
+  color: #ffffff;
+}
+
+body.dark-mode .btn-add-activity:hover {
+  background: #0e8a99;
+}
