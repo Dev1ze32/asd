@@ -965,6 +965,7 @@ async function _commitPendingChanges() {
   let successCount = 0;
   let failCount    = 0;
   const errors     = [];
+  const newlyCreatedIds = {}; // Tracks IDs of activities created during this commit loop
 
   // We replay changes in order against the API.
   // The local cache is already up-to-date (changes were applied immediately
@@ -1001,6 +1002,11 @@ async function _commitPendingChanges() {
             // Sync the server-returned activity object (with real id) into local cache
             // Ensure activity_name is present because the API response might not echo it back
             const savedActivity = Object.assign({ activity_name: change.activityName }, res.data || {});
+            
+            if (res.data && res.data.activity_id) {
+              newlyCreatedIds[`${change.lineCode}:${change.activityName}`] = res.data.activity_id;
+            }
+
             const lineActs = lineActivitiesDB[change.lineCode];
             if (lineActs) {
               // Find the locally-added entry (still a plain string or id-less object) and replace
@@ -1020,9 +1026,19 @@ async function _commitPendingChanges() {
           const target = lineActs ? lineActs.find(a =>
             (typeof getLineActivityName === 'function' ? getLineActivityName(a) : String(a)) === change.newName
           ) : null;
-          const activityId = target && typeof getLineActivityId === 'function'
+          
+          let activityId = target && typeof getLineActivityId === 'function'
             ? getLineActivityId(target)
             : null;
+            
+          if (!activityId) {
+             activityId = newlyCreatedIds[`${change.lineCode}:${change.oldName}`];
+          }
+
+          if (newlyCreatedIds[`${change.lineCode}:${change.oldName}`]) {
+            newlyCreatedIds[`${change.lineCode}:${change.newName}`] = newlyCreatedIds[`${change.lineCode}:${change.oldName}`];
+          }
+
           res = await apiUpdateLineActivity(change.lineCode, activityId ?? change.index, { activity_name: change.newName });
           if (!res.ok) { failCount++; errors.push(`Rename "${change.oldName}": ${_apiErrMsg(res)}`); }
           else successCount++;
@@ -1035,9 +1051,13 @@ async function _commitPendingChanges() {
           const target = snapshotActs.find(a =>
             (typeof getLineActivityName === 'function' ? getLineActivityName(a) : String(a)) === change.activityName
           );
-          const activityId = target && typeof getLineActivityId === 'function'
+          let activityId = target && typeof getLineActivityId === 'function'
             ? getLineActivityId(target)
             : null;
+            
+          if (!activityId) {
+             activityId = newlyCreatedIds[`${change.lineCode}:${change.activityName}`];
+          }
             
           res = await apiDeleteLineActivity(change.lineCode, activityId ?? change.index);
           if (!res.ok) { failCount++; errors.push(`Delete "${change.activityName}": ${_apiErrMsg(res)}`); }
