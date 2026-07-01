@@ -481,12 +481,31 @@ function initManageLines(preselectCode = null) {
 }
 
 /**
+ * Confirmation gate for refreshing the Manage Lines dropdown.
+ * Shows a confirm modal before re-fetching from the server, since a refresh
+ * discards any unsaved local-only changes to the line/activity cache.
+ */
+async function refreshManageLines() {
+  const { confirmed } = await showModal({
+    title: 'Refresh Production Lines?',
+    message: 'This will re-fetch production lines and activities from the server. Any unsaved local changes will be overwritten.',
+    icon: 'warn',
+    confirmLabel: 'Refresh',
+    confirmStyle: 'primary'
+  });
+
+  if (!confirmed) return;
+
+  await performRefreshManageLines();
+}
+
+/**
  * Refresh the Manage Lines dropdown — re-fetches production lines (and their
  * activities) from the API into the local cache, then rebuilds the selector.
  * Falls back gracefully to the existing local cache if the API is unreachable.
  * Preserves the currently selected line (if any) after refreshing.
  */
-async function refreshManageLines() {
+async function performRefreshManageLines() {
   const btn = document.getElementById('btn-refresh-manage-lines');
   const select = document.getElementById('manageLineSelect');
   const currentSelection = select ? select.value : null;
@@ -1111,6 +1130,7 @@ async function confirmDiscardManageChanges() {
 // Expose globally
 window.initManageLines              = initManageLines;
 window.refreshManageLines           = refreshManageLines;
+window.performRefreshManageLines    = performRefreshManageLines;
 window.renderManageActivities       = renderManageActivities;
 window.addActivityToLine            = addActivityToLine;
 window.deleteActivity               = deleteActivity;
