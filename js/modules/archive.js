@@ -61,6 +61,9 @@ async function openArchiveModal(itemCode) {
   modal.style.display = 'flex';
   document.body.classList.add('archive-backdrop-blur');
 
+  // Trap focus inside the modal for keyboard accessibility
+  modal._releaseFocus = typeof trapFocus === 'function' ? trapFocus(modal) : function() {};
+
   // ── Fetch the revisions list ───────────────────────────────────────────────
   // API response shape: { revisions: [...], total, page, per_page, total_pages }
   // Each entry: { id, inventory_id, revision, archived_at, archived_by }
@@ -118,7 +121,14 @@ async function openArchiveModal(itemCode) {
  */
 function closeArchiveModal() {
   const modal = document.getElementById('archiveModal');
-  if (modal) modal.style.display = 'none';
+  if (modal) {
+    modal.style.display = 'none';
+    // Release focus trap
+    if (typeof modal._releaseFocus === 'function') {
+      modal._releaseFocus();
+      modal._releaseFocus = null;
+    }
+  }
   document.body.classList.remove('archive-backdrop-blur');
 }
 

@@ -140,24 +140,18 @@ async function handleCreateUser() {
         `Account "${data.username || username}" created successfully with role "${data.role || role}".`
       );
       showToast({ type: 'success', title: 'User Account Created', message: `"${data.username || username}" (${data.role || role}) has been added.` });
-      // Append to DOM dynamically
-      const tbody = document.getElementById('admin-users-tbody');
-      if (tbody) {
-        const emptyRow = document.getElementById('admin-users-empty');
-        if (emptyRow) emptyRow.remove();
 
-        // The API returns "user_id" on creation, not "id"
-        const user = {
-          id: data.user_id || data.id || 'N/A', 
-          username: data.username || username,
-          role: data.role || role,
-          is_active: true
-        };
-        const tr = document.createElement('tr');
-        tr.setAttribute('data-user-id', user.id);
-        tr.innerHTML = _createUserRowHTML(user);
-        tbody.appendChild(tr);
-      }
+      // FIX: Push the new user into the local arrays so search, filter,
+      // and pagination immediately reflect the change without a page refresh.
+      const newUser = {
+        id:        data.user_id || data.id || 'N/A',
+        username:  data.username || username,
+        role:      data.role || role,
+        is_active: true,
+      };
+      adminUsersList.push(newUser);
+      adminUsersFiltered.push(newUser);
+      _renderAdminUsersPage();
 
       _resetCreateUserForm();
     } else {
@@ -419,14 +413,25 @@ function openEditUserModal(id, username, role, isActive) {
   document.getElementById('edit-user-password').value = '';
   document.getElementById('edit-user-role').value = role;
   document.getElementById('edit-user-active').value = isActive ? 'true' : 'false';
-  
+
   const modal = document.getElementById('editUserModal');
-  if (modal) modal.style.display = 'flex';
+  if (modal) {
+    modal.style.display = 'flex';
+    // Trap focus inside the modal for keyboard accessibility
+    modal._releaseFocus = typeof trapFocus === 'function' ? trapFocus(modal) : function() {};
+  }
 }
 
 function closeEditUserModal() {
   const modal = document.getElementById('editUserModal');
-  if (modal) modal.style.display = 'none';
+  if (modal) {
+    modal.style.display = 'none';
+    // Release focus trap
+    if (typeof modal._releaseFocus === 'function') {
+      modal._releaseFocus();
+      modal._releaseFocus = null;
+    }
+  }
 }
 
 async function submitEditUser() {

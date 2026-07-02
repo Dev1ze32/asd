@@ -218,6 +218,9 @@ function showExportModal() {
   // Reset confirm button in case a previous export was interrupted
   _resetExportBtn();
 
+  // Trap focus inside the modal for keyboard accessibility
+  modal._releaseFocus = typeof trapFocus === 'function' ? trapFocus(modal) : function() {};
+
   // Close on backdrop click
   modal.addEventListener('click', _exportModalBackdropClose, { once: true });
 
@@ -233,6 +236,11 @@ function hideExportModal() {
   if (!modal) return;
   modal.classList.remove('is-open');
   document.removeEventListener('keydown', _exportModalEscClose);
+  // Release focus trap
+  if (typeof modal._releaseFocus === 'function') {
+    modal._releaseFocus();
+    modal._releaseFocus = null;
+  }
 }
 
 /** @private — restore confirm button to its default state */

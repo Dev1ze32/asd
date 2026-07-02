@@ -213,6 +213,9 @@ function showModal(opts) {
 
     modal.style.display = 'flex';
 
+    // Trap Tab-key focus within the modal (accessibility fix)
+    var _releaseFocus = typeof trapFocus === 'function' ? trapFocus(modal) : function() {};
+
     // Keyboard: Enter = confirm, Escape = cancel
     function onKey(e) {
       if (e.key === 'Enter')  handleConfirm();
@@ -222,6 +225,7 @@ function showModal(opts) {
 
     function cleanup() {
       modal.style.display = 'none';
+      _releaseFocus();
       document.removeEventListener('keydown', onKey);
       confirmBtn.onclick = null;
       cancelBtn.onclick  = null;
@@ -322,6 +326,9 @@ function showDualInputModal(opts) {
 
     modal.style.display = 'flex';
 
+    // Trap Tab-key focus within the modal (accessibility fix)
+    var _releaseFocusDual = typeof trapFocus === 'function' ? trapFocus(modal) : function() {};
+
     function onKey(e) {
       if (e.key === 'Escape') handleCancel();
     }
@@ -329,6 +336,7 @@ function showDualInputModal(opts) {
 
     function cleanup() {
       modal.style.display = 'none';
+      _releaseFocusDual();
       // Restore inputWrap to its original single-input state for showModal reuse
       inputWrap.innerHTML = '<input id="modalInput" style="width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:0.55rem 0.8rem;font-size:0.875rem;color:#0f172a;box-sizing:border-box;outline:none;" onfocus="this.style.borderColor=\'#005c66\'" onblur="this.style.borderColor=\'#cbd5e1\'">';
       document.removeEventListener('keydown', onKey);
