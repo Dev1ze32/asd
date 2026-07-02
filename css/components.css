@@ -810,7 +810,7 @@ select:disabled,
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 50%;
-  background: var(--pal-teal-soft, #8ab8c6);
+  background: #00434c;
   color: #fff;
   font-size: 0.75rem;
   font-weight: 700;
