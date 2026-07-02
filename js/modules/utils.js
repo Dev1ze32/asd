@@ -116,6 +116,69 @@ function isValidItemCode(code) {
   return code && code.trim().length > 0;
 }
 
+/**
+ * Trap keyboard focus inside a modal element.
+ * Prevents Tab from cycling to elements outside the modal while it is open.
+ *
+ * @param {HTMLElement} modalEl - The modal container to restrict focus to.
+ * @returns {Function} cleanup - Call this function when the modal closes to
+ *                               remove the event listener.
+ */
+function trapFocus(modalEl) {
+  if (!modalEl) return function() {};
+
+  const FOCUSABLE = [
+    'a[href]',
+    'button:not([disabled])',
+    'input:not([disabled])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])',
+  ].join(', ');
+
+  function getFocusable() {
+    return Array.from(modalEl.querySelectorAll(FOCUSABLE)).filter(function(el) {
+      return !el.closest('[style*="display:none"]') && !el.closest('[style*="display: none"]');
+    });
+  }
+
+  function handler(e) {
+    if (e.key !== 'Tab') return;
+    var focusable = getFocusable();
+    if (focusable.length === 0) { e.preventDefault(); return; }
+
+    var first = focusable[0];
+    var last  = focusable[focusable.length - 1];
+
+    if (e.shiftKey) {
+      // Shift+Tab: wrap backward
+      if (document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      // Tab: wrap forward
+      if (document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
+
+  document.addEventListener('keydown', handler);
+
+  // Auto-focus the first focusable element inside the modal
+  var focusable = getFocusable();
+  if (focusable.length > 0) {
+    // Small delay allows modal animations/display to finish before focusing
+    setTimeout(function() { focusable[0].focus(); }, 50);
+  }
+
+  return function cleanup() {
+    document.removeEventListener('keydown', handler);
+  };
+}
+
 // Expose globally
 window.debounce = debounce;
 window.formatCurrency = formatCurrency;
@@ -128,3 +191,4 @@ window.getTypeBadgeClass = getTypeBadgeClass;
 window.getTypeShortCode = getTypeShortCode;
 window.deepClone = deepClone;
 window.isValidItemCode = isValidItemCode;
+window.trapFocus = trapFocus;

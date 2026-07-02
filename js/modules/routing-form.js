@@ -755,9 +755,13 @@ function _validateRoutingForm(itemCode, skuDesc, prodLine, qty) {
 
       if (paxVal === '' || paxVal === null || paxVal === undefined)
         errors.push({ section: rowLabel, field: 'Pax', reason: 'number of workers not entered' });
+      else if (parseFloat(paxVal) < 0)
+        errors.push({ section: rowLabel, field: 'Pax', reason: 'number of workers cannot be negative' });
 
       if (mcVal === '' || mcVal === null || mcVal === undefined)
         errors.push({ section: rowLabel, field: 'Machine', reason: 'machine count not entered' });
+      else if (parseFloat(mcVal) < 0)
+        errors.push({ section: rowLabel, field: 'Machine', reason: 'machine count cannot be negative' });
 
       if (timeVal === '' || timeVal === null || timeVal === undefined || isNaN(timeNum) || timeNum < 0)
         errors.push({ section: rowLabel, field: 'Time', reason: 'time not entered — open the formula field to set a value' });

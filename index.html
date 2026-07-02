@@ -242,9 +242,9 @@
         background-color: #C4E1E6 !important;
       }
       .mode-btn--active {
-        background-color: #8DBCC7 !important;
-        color: #1e293b !important;
-        border-color: #8DBCC7 !important;
+        background-color: #005c66 !important;
+        color: #ffffff !important;
+        border-color: #005c66 !important;
       }
 
       /* ============================================
@@ -2121,7 +2121,10 @@
        80vw wide, full-page backdrop blur, browser-
        style × close, version-per-page pagination.
        ============================================ -->
-  <div id="archiveModal">
+  <div id="archiveModal"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="archiveModalTitle">
     <div class="archive-modal__panel">
 
       <!-- Header -->
@@ -2137,7 +2140,7 @@
             </svg>
           </div>
           <div>
-            <h4 class="archive-modal__heading">
+            <h4 class="archive-modal__heading" id="archiveModalTitle">
               Revision History
               <span class="archive-modal__subtitle">— Item Code: <strong id="archive-modal-item-code"></strong></span>
             </h4>
@@ -2195,10 +2198,13 @@
   <!-- ============================================
        TIME FORMULA MODAL
        ============================================ -->
-  <div id="timeFormulaModal" class="formula-modal modal-backdrop">
+  <div id="timeFormulaModal" class="formula-modal modal-backdrop"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="timeFormulaModalTitle">
     <div class="formula-modal__panel">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
-        <h4 class="formula-modal__title">
+        <h4 class="formula-modal__title" id="timeFormulaModalTitle">
           <span class="formula-modal__fx">&#402;</span>
           Time Formula
         </h4>
@@ -2228,7 +2234,10 @@
   <!-- ============================================
        EXPORT CONFIRMATION MODAL
        ============================================ -->
-  <div id="exportModal" class="custom-modal modal-backdrop">
+  <div id="exportModal" class="custom-modal modal-backdrop"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="exportModalTitle">
     <div class="custom-modal__panel">
       <div id="exportModalIconWrap" class="modal-icon-wrap" style="display:flex; justify-content:center;">
         <div class="modal-icon-circle-success">
@@ -2239,7 +2248,7 @@
           </svg>
         </div>
       </div>
-      <h4 class="modal-title" style="text-align:center;">Export Database</h4>
+      <h4 class="modal-title" id="exportModalTitle" style="text-align:center;">Export Database</h4>
       <p class="modal-message" style="text-align:center;">
         Are you sure you want to export the entire routing database to Excel? This file will contain all products and line activities.
       </p>
@@ -2347,7 +2356,6 @@
 
   <!-- Layer 1: State & Data -->
   <script src="js/modules/state.js?v=20260630160000" defer></script>
-  <script src="js/modules/mock-db.js?v=20260630140000" defer></script>
 
   <!-- Layer 2: Utilities -->
   <script src="js/modules/utils.js?v=20260630140000" defer></script>
@@ -2378,8 +2386,7 @@
     main.js
     ├── modules/auth.js              - Authentication manager (login/logout/JWT)
     ├── modules/api-service.js       - Backend API client (all endpoints + loading)
-    ├── modules/state.js             - App state, constants, enums
-    ├── modules/mock-db.js           - In-memory data store
+    ├── modules/state.js             - App state, constants, enums (includes data cache)
     ├── modules/utils.js             - Helper functions
     ├── modules/calculations.js      - Math engine
     ├── modules/view-controller.js   - View state manager

@@ -611,6 +611,44 @@
 }
 
 /* ================================================================
+   MOBILE SCROLL INDICATOR
+   Shows a subtle right-edge fade on the routing table container
+   to visually hint that users can swipe/scroll right to see
+   the Acumatica BOM columns on small screens.
+   ================================================================ */
+@media (max-width: 767px) {
+  /* Wrap the table container in a positioned parent so the
+     ::after pseudo-element can overlay the right edge */
+  .table-container,
+  .data-table-wrapper {
+    position: relative;
+  }
+
+  /* The fade overlay — only shown when the container is horizontally
+     scrollable (i.e. content is wider than the viewport) */
+  .table-container::after,
+  .data-table-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 3rem;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.82));
+    pointer-events: none; /* clicks pass through to the table */
+    border-radius: 0 8px 8px 0;
+    /* Hide the indicator once the user has scrolled to the right end */
+    z-index: 1;
+  }
+
+  /* In dark mode, match the dark background colour */
+  body.dark-mode .table-container::after,
+  body.dark-mode .data-table-wrapper::after {
+    background: linear-gradient(to right, transparent, rgba(15, 32, 38, 0.85));
+  }
+}
+
+/* ================================================================
    7. PRINT STYLES
    ================================================================ */
 @media print {
