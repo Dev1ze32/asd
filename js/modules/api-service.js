@@ -973,6 +973,40 @@ function getApiErrorMessage(res, operation, identifier) {
   }
 }
 
+/**
+ * Trigger the download of the deployment manual
+ */
+async function apiDownloadDeploymentGuide() {
+  const authHeaders = (typeof Auth !== 'undefined') ? Auth.authHeaders() : {};
+  try {
+    const response = await fetch(API_BASE_URL + '/api/auth/docs/deployment', {
+      method: 'GET',
+      headers: { ...authHeaders }
+    });
+
+    if (response.status === 401 && typeof Auth !== 'undefined') {
+      Auth.logout();
+      return { ok: false, status: 401 };
+    }
+
+    if (!response.ok) {
+      return { ok: false, status: response.status };
+    }
+
+    const blob = await response.blob();
+    const disposition = response.headers.get('Content-Disposition') || '';
+    const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+    const filename = match
+      ? match[1].replace(/['"]/g, '').trim()
+      : 'ACU_Routing_Deployment_Maintenance_Manual.pdf';
+
+    return { ok: true, data: blob, filename };
+  } catch (err) {
+    console.error('[API] Download manual failed:', err);
+    return { ok: false };
+  }
+}
+
 /* ============================================
    EXPOSE GLOBALLY
    ============================================ */
@@ -1009,6 +1043,7 @@ window.apiDeleteLineActivity   = apiDeleteLineActivity;
 window.apiGetLogs              = apiGetLogs;
 window.apiCleanupLogs          = apiCleanupLogs;
 window.apiExportExcel          = apiExportExcel;
+window.apiDownloadDeploymentGuide = apiDownloadDeploymentGuide;
 // Internal helpers exposed for use in other modules
 window._normalizeApiItem       = _normalizeApiItem;
 window._mapItemPayload         = _mapItemPayload;

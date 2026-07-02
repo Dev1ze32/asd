@@ -655,6 +655,41 @@ async function commitBulkDeletion() {
   handleDbSearch();
 }
 
+/**
+ * Handle downloading the deployment manual from the admin panel
+ */
+async function handleDownloadManual() {
+  if (typeof apiDownloadDeploymentGuide !== 'function') {
+    alert('Download API function is missing.');
+    return;
+  }
+  
+  showLoading('Preparing manual for download...');
+  const result = await apiDownloadDeploymentGuide();
+  hideLoading();
+  
+  if (result && result.ok && result.data) {
+    const url = window.URL.createObjectURL(result.data);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = result.filename || 'ACU_Routing_Deployment_Maintenance_Manual.pdf';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+  } else {
+    if (typeof showModal === 'function') {
+      showModal({
+        title: 'Download Failed',
+        message: 'Could not download the deployment manual. It may be missing from the server.',
+        icon: 'danger'
+      });
+    } else {
+      alert('Failed to download manual.');
+    }
+  }
+}
+
 /* ============================================
    EXPOSE GLOBALLY
    ============================================ */
@@ -673,3 +708,4 @@ window.handleDbSearch           = handleDbSearch;
 window.toggleStageForDeletion   = toggleStageForDeletion;
 window.clearBulkDeletion        = clearBulkDeletion;
 window.commitBulkDeletion       = commitBulkDeletion;
+window.handleDownloadManual     = handleDownloadManual;
