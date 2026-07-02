@@ -141,27 +141,10 @@ async function handleCreateUser() {
       );
       showToast({ type: 'success', title: 'User Account Created', message: `"${data.username || username}" (${data.role || role}) has been added.` });
 
-      // FIX: Push the new user into the local arrays so search, filter,
-      // and pagination immediately reflect the change without a page refresh.
-      const newUser = {
-        id:        data.user_id || data.id || 'N/A',
-        username:  data.username || username,
-        role:      data.role || role,
-        is_active: true,
-      };
-      adminUsersList.push(newUser);
-      adminUsersFiltered.push(newUser);
-      _renderAdminUsersPage();
+      // Auto-refresh the Manage Users dashboard so it always reflects the latest data
+      await loadUsersTable();
 
       _resetCreateUserForm();
-
-      await showModal({
-        icon: 'success',
-        title: 'Account Created',
-        message: `Account "${data.username || username}" was created successfully with role "${data.role || role}".`,
-        type: 'confirm',
-        confirmLabel: 'OK',
-      });
     } else {
       // API error
       let msg = 'Failed to create account.';
@@ -302,14 +285,8 @@ async function deleteUser(userId, username) {
     const res = await apiDeleteUser(userId);
     if (res.ok) {
       showToast({ type: 'success', title: 'User Deleted', message: `User "${username}" has been deleted.` });
-      const tbody = document.getElementById('admin-users-tbody');
-      if (tbody) {
-        const row = tbody.querySelector(`tr[data-user-id="${userId}"]`);
-        if (row) row.remove();
-        if (tbody.children.length === 0) {
-          tbody.innerHTML = '<tr id="admin-users-empty"><td colspan="5" style="text-align:center;color:#64748b;">No users found.</td></tr>';
-        }
-      }
+      // Auto-refresh the Manage Users dashboard so it always reflects the latest data
+      await loadUsersTable();
     } else {
       let msg = 'Failed to delete user.';
       if (res.status === 400) msg = res.data?.error || 'Cannot delete this user.';
@@ -487,21 +464,9 @@ async function submitEditUser() {
     const res = await apiUpdateUser(id, payload);
     if (res.ok) {
       closeEditUserModal();
-      
-      // Update DOM dynamically instead of fetching all users
-      const tbody = document.getElementById('admin-users-tbody');
-      if (tbody) {
-        const row = tbody.querySelector(`tr[data-user-id="${id}"]`);
-        if (row) {
-          const updatedUser = {
-            id: id,
-            username: document.getElementById('edit-user-username').textContent,
-            role: role,
-            is_active: isActiveStr === 'true'
-          };
-          row.innerHTML = _createUserRowHTML(updatedUser);
-        }
-      }
+
+      // Auto-refresh the Manage Users dashboard so it always reflects the latest data
+      await loadUsersTable();
 
       await showModal({
         icon: 'success',
