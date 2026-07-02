@@ -154,20 +154,44 @@ async function handleCreateUser() {
       _renderAdminUsersPage();
 
       _resetCreateUserForm();
+
+      await showModal({
+        icon: 'success',
+        title: 'Account Created',
+        message: `Account "${data.username || username}" was created successfully with role "${data.role || role}".`,
+        type: 'confirm',
+        confirmLabel: 'OK',
+      });
     } else {
       // API error
       let msg = 'Failed to create account.';
       if (res.status === 400) msg = res.data?.error || 'Invalid input. Please check all fields.';
       else if (res.status === 401) msg = 'You are not authenticated. Please sign in again.';
       else if (res.status === 403) msg = 'Only administrators can create accounts.';
-      else if (res.status === 409) msg = `Username "${username}" is already taken.`;
+      else if (res.status === 409) msg = `Username "${username}" is already taken. Please choose a different username.`;
       else if (res.status === 429) msg = 'Too many requests. Please wait a moment.';
       else if (res.data?.error) msg = res.data.error;
       _showCreateUserError(msg);
+
+      await showModal({
+        icon: 'danger',
+        title: res.status === 409 ? 'Username Already Exists' : 'Account Creation Failed',
+        message: msg,
+        type: 'confirm',
+        confirmLabel: 'OK',
+      });
     }
   } catch (err) {
     if (btn) { btn.disabled = false; btn.textContent = 'Create Account'; }
-    _showCreateUserError('Network error. Please check your connection and try again.');
+    const msg = 'Network error. Please check your connection and try again.';
+    _showCreateUserError(msg);
+    await showModal({
+      icon: 'danger',
+      title: 'Network Error',
+      message: msg,
+      type: 'confirm',
+      confirmLabel: 'OK',
+    });
   }
 }
 
