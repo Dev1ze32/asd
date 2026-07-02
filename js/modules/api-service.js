@@ -169,7 +169,7 @@ const API_REQUEST_TIMEOUT_MS = 30000; // 30 seconds
  * @param {Object|null} body - Request body (will be JSON-serialized)
  * @returns {Promise<{ok: boolean, status: number, data: any}>}
  */
-async function _apiFetch(path, method, body) {
+async function _apiFetch(path, method, body, extraOptions) {
   // Derive a human-friendly loading message from the path and method
   const loadingMsg = _getLoadingMessage(path, method);
   showLoading(loadingMsg);
@@ -180,6 +180,7 @@ async function _apiFetch(path, method, body) {
   const options = {
     method:  method || 'GET',
     headers: { 'Content-Type': 'application/json', ...authHeaders },
+    ...(extraOptions || {}),
   };
   if (body !== null && body !== undefined) {
     options.body = JSON.stringify(body);
@@ -295,9 +296,13 @@ async function apiRegister(username, password, role) {
   return _apiFetch('/api/auth/register', 'POST', { username, password, role });
 }
 
-/** GET /api/auth/users (admin only) */
+/** GET /api/auth/users (admin only)
+ *  cacheBust: appends a unique timestamp param and requests cache:'no-store'
+ *  so the Manage Users dashboard always reflects the true, latest data
+ *  right after a create/delete (browsers can otherwise serve a stale
+ *  cached response for this exact GET URL). */
 async function apiGetUsers() {
-  return _apiFetch('/api/auth/users');
+  return _apiFetch(`/api/auth/users?_=${Date.now()}`, 'GET', null, { cache: 'no-store' });
 }
 
 /** PATCH /api/auth/users/<user_id> (admin only) */
@@ -968,43 +973,6 @@ function getApiErrorMessage(res, operation, identifier) {
   }
 }
 
-/**
- * Download the Deployment and Maintenance Manual (Admin Only)
- */
-async function apiDownloadDeploymentGuide() {
-  const authHeaders = (typeof Auth !== 'undefined') ? Auth.authHeaders() : {};
-  try {
-    const res = await fetch(API_BASE_URL + '/api/auth/docs/deployment', {
-      method: 'GET',
-      headers: {
-        ...authHeaders
-      }
-    });
-    
-    if (res.status === 401 || res.status === 403) {
-      return { ok: false, status: res.status, error: 'Access Denied: Admin role required' };
-    }
-    
-    if (!res.ok) {
-      return { ok: false, status: res.status, error: 'Manual file not found on the server' };
-    }
-    
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'ACU_Routing_Deployment_Maintenance_Manual.pdf';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
-    
-    return { ok: true };
-  } catch (err) {
-    return { ok: false, error: err.message };
-  }
-}
-
 /* ============================================
    EXPOSE GLOBALLY
    ============================================ */
@@ -1040,7 +1008,6 @@ window.apiUpdateLineActivity   = apiUpdateLineActivity;
 window.apiDeleteLineActivity   = apiDeleteLineActivity;
 window.apiGetLogs              = apiGetLogs;
 window.apiCleanupLogs          = apiCleanupLogs;
-window.apiDownloadDeploymentGuide = apiDownloadDeploymentGuide;
 window.apiExportExcel          = apiExportExcel;
 // Internal helpers exposed for use in other modules
 window._normalizeApiItem       = _normalizeApiItem;

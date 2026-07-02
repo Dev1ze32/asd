@@ -521,15 +521,6 @@ async function handleDbSearch() {
     return;
   }
 
-  if (query.startsWith('/') || query.endsWith('/') || query.includes('//')) {
-    if (errEl) {
-      errEl.textContent = 'Search query cannot start/end with a slash or contain consecutive slashes.';
-      errEl.style.display = 'block';
-    }
-    if (tbody) tbody.innerHTML = '';
-    return;
-  }
-
   if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:1.5rem;">Searching...</td></tr>';
 
   try {
@@ -664,31 +655,6 @@ async function commitBulkDeletion() {
   handleDbSearch();
 }
 
-/**
- * Handle the "Download Manual" button click
- */
-async function handleDownloadManual() {
-  const btn = event.currentTarget || event.target;
-  const originalHtml = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = `<span style="font-size:1rem;">⏳</span> Downloading...`;
-  
-  const res = await apiDownloadDeploymentGuide();
-  
-  btn.disabled = false;
-  btn.innerHTML = originalHtml;
-  
-  if (!res.ok) {
-    showModal({
-      icon: 'danger',
-      title: 'Download Failed',
-      message: res.error || 'Failed to download the manual.',
-      type: 'confirm',
-      confirmLabel: 'OK'
-    });
-  }
-}
-
 /* ============================================
    EXPOSE GLOBALLY
    ============================================ */
@@ -707,4 +673,3 @@ window.handleDbSearch           = handleDbSearch;
 window.toggleStageForDeletion   = toggleStageForDeletion;
 window.clearBulkDeletion        = clearBulkDeletion;
 window.commitBulkDeletion       = commitBulkDeletion;
-window.handleDownloadManual     = handleDownloadManual;
