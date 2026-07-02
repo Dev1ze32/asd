@@ -1,702 +1,344 @@
 /* ============================================
-   ADMIN-PANEL.JS - Admin Panel Module
+   ALL-DATA.JS - Paginated Table View
    Pioneer Adhesives Routing Template System
 
-   Admin-only features:
-   - Create new user accounts (POST /api/auth/register)
-   - View current admin info
-   - System status summary
-
-   This module is only accessible to users with
-   the 'admin' role. The UI tabs are conditionally
-   rendered based on role.
+   Displays all routing records with pagination.
+   Loads from API on init (limit=1000 to get all
+   records), falls back to mock-db on failure.
    ============================================ */
 
 /**
- * Initialize the Admin Panel view.
- * Populates any dynamic content and resets forms.
+ * Load all records from API into local cache, then render.
+ * Passes limit=1000 (API max) to ensure we get all 491 entries.
  */
-function initAdminPanel() {
-  // Ensure only admins can access
-  if (!Auth.isAdmin()) {
-    showModal({
-      icon: 'danger',
-      title: 'Access Denied',
-      message: 'You do not have permission to access the Admin Panel. Admin role is required.',
-      type: 'confirm',
-      confirmLabel: 'OK',
-    }).then(() => {
-      switchTab(AppState.ADD);
-    });
-    return;
-  }
-
-  // Reset the create user form
-  _resetCreateUserForm();
-
-  // Load admin info
-  _loadAdminInfo();
-
-  // Load users table
-  loadUsersTable();
-}
-/* ============================================
-   ADMIN INFO DISPLAY
-   ============================================ */
-
-function _loadAdminInfo() {
-  const user = Auth.getUser();
-  if (!user) return;
-
-  const adminNameEl = document.getElementById('admin-current-name');
-  const adminRoleEl = document.getElementById('admin-current-role');
-
-  if (adminNameEl) adminNameEl.textContent = user.username || 'Unknown';
-  if (adminRoleEl) adminRoleEl.textContent = (user.role || 'Unknown').toUpperCase();
-}
-
-/* ============================================
-   CREATE USER FORM
-   ============================================ */
-
-/**
- * Handle the Create User form submission.
- * Validates inputs and calls POST /api/auth/register.
- */
-async function handleCreateUser() {
-  // Ensure only admins can create users
-  if (!Auth.isAdmin()) {
-    await showModal({
-      icon: 'danger',
-      title: 'Access Denied',
-      message: 'Only administrators can create user accounts.',
-      type: 'confirm',
-      confirmLabel: 'OK',
-    });
-    return;
-  }
-
-  const usernameEl = document.getElementById('new-username');
-  const passwordEl = document.getElementById('new-password');
-  const confirmEl  = document.getElementById('new-password-confirm');
-  const roleEl     = document.getElementById('new-user-role');
-  const btn        = document.getElementById('btn-create-user');
-  const errorEl    = document.getElementById('create-user-error');
-  const successEl  = document.getElementById('create-user-success');
-
-  // Hide previous messages
-  if (errorEl)  { errorEl.style.display = 'none';  errorEl.textContent = ''; }
-  if (successEl) { successEl.style.display = 'none'; successEl.textContent = ''; }
-
-  const username = usernameEl?.value.trim();
-  const password = passwordEl?.value;
-  const confirm  = confirmEl?.value;
-  const role     = roleEl?.value || 'user';
-
-  // ── Validation ──
-  if (!username) {
-    _showCreateUserError('Please enter a username.');
-    usernameEl?.focus();
-    return;
-  }
-  if (username.length < 3) {
-    _showCreateUserError('Username must be at least 3 characters long.');
-    usernameEl?.focus();
-    return;
-  }
-  if (username.length > 50) {
-    _showCreateUserError('Username must not exceed 50 characters.');
-    usernameEl?.focus();
-    return;
-  }
-  if (!password) {
-    _showCreateUserError('Please enter a password.');
-    passwordEl?.focus();
-    return;
-  }
-  if (password.length < 8) {
-    _showCreateUserError('Password must be at least 8 characters long.');
-    passwordEl?.focus();
-    return;
-  }
-  if (password !== confirm) {
-    _showCreateUserError('Passwords do not match.');
-    confirmEl?.focus();
-    return;
-  }
-
-  // ── Submit ──
-  if (btn) { btn.disabled = true; btn.textContent = 'Creating Account...'; }
-
-  try {
-    const res = await apiRegister(username, password, role);
-
-    if (btn) { btn.disabled = false; btn.textContent = 'Create Account'; }
-
-    if (res.ok) {
-      // Success
-      const data = res.data || {};
-      _showCreateUserSuccess(
-        `Account "${data.username || username}" created successfully with role "${data.role || role}".`
-      );
-      showToast({ type: 'success', title: 'User Account Created', message: `"${data.username || username}" (${data.role || role}) has been added.` });
-
-      // FIX: Push the new user into the local arrays so search, filter,
-      // and pagination immediately reflect the change without a page refresh.
-      const newUser = {
-        id:        data.user_id || data.id || 'N/A',
-        username:  data.username || username,
-        role:      data.role || role,
-        is_active: true,
-      };
-      adminUsersList.push(newUser);
-      adminUsersFiltered.push(newUser);
-      _renderAdminUsersPage();
-
-      _resetCreateUserForm();
-    } else {
-      // API error
-      let msg = 'Failed to create account.';
-      if (res.status === 400) msg = res.data?.error || 'Invalid input. Please check all fields.';
-      else if (res.status === 401) msg = 'You are not authenticated. Please sign in again.';
-      else if (res.status === 403) msg = 'Only administrators can create accounts.';
-      else if (res.status === 409) msg = `Username "${username}" is already taken. Please choose a different username.`;
-      else if (res.status === 429) msg = 'Too many requests. Please wait a moment.';
-      else if (res.data?.error) msg = res.data.error;
-      _showCreateUserError(msg);
-
-      await showModal({
-        icon: 'danger',
-        title: res.status === 409 ? 'Username Already Exists' : 'Account Creation Failed',
-        message: msg,
-        type: 'confirm',
-        confirmLabel: 'OK',
-      });
-    }
-  } catch (err) {
-    if (btn) { btn.disabled = false; btn.textContent = 'Create Account'; }
-    const msg = 'Network error. Please check your connection and try again.';
-    _showCreateUserError(msg);
-    await showModal({
-      icon: 'danger',
-      title: 'Network Error',
-      message: msg,
-      type: 'confirm',
-      confirmLabel: 'OK',
-    });
-  }
-}
-
-/**
- * Reset the Create User form to its default state.
- */
-function _resetCreateUserForm() {
-  const usernameEl = document.getElementById('new-username');
-  const passwordEl = document.getElementById('new-password');
-  const confirmEl  = document.getElementById('new-password-confirm');
-  const roleEl     = document.getElementById('new-user-role');
-  const errorEl    = document.getElementById('create-user-error');
-  const successEl  = document.getElementById('create-user-success');
-
-  if (usernameEl) usernameEl.value = '';
-  if (passwordEl) passwordEl.value = '';
-  if (confirmEl)  confirmEl.value = '';
-  if (roleEl)     roleEl.value = 'user';
-  if (errorEl)    { errorEl.style.display = 'none'; errorEl.textContent = ''; }
-  if (successEl)  { successEl.style.display = 'none'; successEl.textContent = ''; }
-}
-
-function _showCreateUserError(message) {
-  const errorEl = document.getElementById('create-user-error');
-  if (errorEl) {
-    errorEl.textContent = message;
-    errorEl.style.display = 'block';
-  }
-}
-
-function _showCreateUserSuccess(message) {
-  const successEl = document.getElementById('create-user-success');
-  if (successEl) {
-    successEl.textContent = message;
-    successEl.style.display = 'block';
-  }
-}
-
-/* ============================================
-   PASSWORD VISIBILITY TOGGLE
-   ============================================ */
-
-function togglePasswordVisibility(inputId, btn) {
-  const input = document.getElementById(inputId);
-  if (!input || !btn) return;
-  if (input.type === 'password') {
-    input.type = 'text';
-    btn.textContent = 'Hide';
-  } else {
-    input.type = 'password';
-    btn.textContent = 'Show';
-  }
-}
-
-/* ============================================
-   MANAGE USERS
-   ============================================ */
-
-function _createUserRowHTML(user) {
-  const roleHtml = user.role === 'admin' 
-    ? `<span style="display:inline-block;font-size:0.72rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:9999px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;">ADMIN</span>`
-    : user.role === 'superuser'
-    ? `<span style="display:inline-block;font-size:0.72rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:9999px;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;">SUPERUSER</span>`
-    : `<span style="display:inline-block;font-size:0.72rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:9999px;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;">USER</span>`;
-  
-  const statusHtml = user.is_active
-    ? `<span style="color:#16a34a;font-weight:600;">Active</span>`
-    : `<span style="color:#dc2626;font-weight:600;">Disabled</span>`;
-
-  return `
-    <td>${sanitizeInput(user.id)}</td>
-    <td style="font-weight:600;color:#1e293b;">${sanitizeInput(user.username)}</td>
-    <td>${roleHtml}</td>
-    <td style="text-align: right; display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem; height: 100%;">
-      <span style="margin-right: 0.5rem;">${statusHtml}</span>
-      <button class="btn btn--secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="openEditUserModal('${sanitizeInput(user.id)}', '${sanitizeInput(user.username)}', '${sanitizeInput(user.role)}', ${user.is_active})">Edit</button>
-      <button class="btn btn--danger" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; background-color: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: 4px; cursor: pointer;" onclick="deleteUser('${sanitizeInput(user.id)}', '${sanitizeInput(user.username)}')">Delete</button>
-    </td>
-  `;
-}
-
-async function deleteUser(userId, username) {
-  if (typeof showModal !== 'function') return;
-
-  const result = await showModal({
-    icon: 'danger',
-    title: 'Delete User',
-    message: `Are you sure you want to delete user "${username}"? This cannot be undone.`,
-    type: 'password_prompt',
-    inputPlaceholder: 'Enter your admin password to confirm',
-    confirmStyle: 'danger',
-    confirmLabel: 'Yes, Delete',
-  });
-  if (!result.confirmed) return;
-
-  if (!result.value) {
-    showModal({ icon: 'danger', title: 'Error', message: 'Password is required to delete a user.', type: 'confirm', confirmLabel: 'OK' });
-    return;
-  }
-
-  const verifyRes = await apiVerifyPassword(result.value);
-  if (!verifyRes.ok) {
-    showModal({ icon: 'danger', title: 'Access Denied', message: 'Incorrect password.', type: 'confirm', confirmLabel: 'OK' });
-    return;
+async function loadAndRenderAllData() {
+  // Show a loading indicator
+  const tbody = document.getElementById('allDataTableBody');
+  if (tbody) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="p-6 text-center text-gray-500 italic">
+          Loading records from server...
+        </td>
+      </tr>`;
   }
 
   try {
-    const res = await apiDeleteUser(userId);
-    if (res.ok) {
-      showToast({ type: 'success', title: 'User Deleted', message: `User "${username}" has been deleted.` });
-      const tbody = document.getElementById('admin-users-tbody');
-      if (tbody) {
-        const row = tbody.querySelector(`tr[data-user-id="${userId}"]`);
-        if (row) row.remove();
-        if (tbody.children.length === 0) {
-          tbody.innerHTML = '<tr id="admin-users-empty"><td colspan="5" style="text-align:center;color:#64748b;">No users found.</td></tr>';
+    // Use limit=1000 (API max) so we retrieve every record, not just the default 50
+    // API response shape: { total, limit, offset, results: [...] }
+    const res = await apiGetItems('', 1000);
+    const items = res.ok && res.data && Array.isArray(res.data.results)
+      ? res.data.results
+      : null;
+
+    if (items) {
+      // Sync API response into local mock-db cache using normalized fields
+      items.forEach(item => {
+        const key = (item.inventory_id || item.item_code || '').toUpperCase();
+        if (!key) return;
+
+        // Normalize API item to internal format before caching
+        const normalized = _normalizeApiItem(item);
+        if (normalized) {
+          saveRoutingRecord(key, normalized);
         }
-      }
-    } else {
-      let msg = 'Failed to delete user.';
-      if (res.status === 400) msg = res.data?.error || 'Cannot delete this user.';
-      else if (res.status === 403) msg = 'You do not have permission to delete users.';
-      else if (res.data?.error) msg = res.data.error;
-      
-      if (typeof showModal === 'function') {
-        await showModal({
-          icon: 'danger',
-          title: 'Error',
-          message: msg,
-          type: 'confirm',
-          confirmLabel: 'OK',
-        });
-      } else {
-        alert(msg);
-      }
-    }
-  } catch (err) {
-    if (typeof showModal === 'function') {
-      await showModal({
-        icon: 'danger',
-        title: 'Network Error',
-        message: 'Could not connect to the server to delete the user.',
-        type: 'confirm',
-        confirmLabel: 'OK',
       });
+      console.log(`[API] Loaded ${items.length} items into local cache. (API total: ${res.data.total})`);
     } else {
-      alert('Network error.');
+      console.warn('[API] Could not load items (status ' + res.status + '), using local cache.');
     }
+  } catch (_) {
+    console.warn('[API] Unreachable — displaying local cache.');
   }
+  renderAllData();
 }
 
-let adminUsersList = [];
-let adminUsersFiltered = [];
-let adminUsersCurrentPage = 1;
-const adminUsersPerPage = 20;
+/**
+ * Triggered when any filter dropdown or search input changes.
+ */
+function applyAllDataFilters() {
+  App.currentPage = 1;
+  renderAllData();
+}
 
-async function loadUsersTable() {
-  const tbody = document.getElementById('admin-users-tbody');
-  if (!tbody) return;
+/**
+ * Render the paginated data table from local cache.
+ */
+function renderAllData() {
+  let dbArray = getAllRoutingRecords();
 
-  try {
-    const res = await apiGetUsers();
-    if (res.ok && Array.isArray(res.data)) {
-      adminUsersList = res.data;
-      const searchInput = document.getElementById('admin-users-search');
-      if (searchInput) searchInput.value = '';
-      adminUsersFiltered = [...adminUsersList];
-      adminUsersCurrentPage = 1;
-      _renderAdminUsersPage();
-    } else {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#dc2626;">Failed to load users.</td></tr>';
-    }
-  } catch (err) {
-    console.error("Error loading users:", err);
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#dc2626;">Error loading users.</td></tr>';
+  // Apply Filters
+  const filterSku = document.getElementById('alldata-filter-sku')?.value.trim().toUpperCase() || '';
+  const filterLine = document.getElementById('alldata-filter-line')?.value || '';
+  const filterType = document.getElementById('alldata-filter-type')?.value || '';
+
+  if (filterSku) {
+    dbArray = dbArray.filter(item => {
+      const sku = (item.revision_descr || item.skuDesc || '').toUpperCase();
+      return sku.includes(filterSku);
+    });
   }
-}
+  if (filterLine) {
+    dbArray = dbArray.filter(item => {
+      const line = item.production_line_code || item.fg_production_line_code || item.bm_production_line_code || item.prodLine || '';
+      return line === filterLine;
+    });
+  }
+  if (filterType) {
+    dbArray = dbArray.filter(item => {
+      // product_type usually comes in as "Finished Good (FG)" or "Base Material (BM)"
+      const type = (item.product_type || item.mode || '').toUpperCase();
+      if (filterType === 'FG') return type.includes('FG') || type.includes('FINISHED');
+      if (filterType === 'BM') return type.includes('BM') || type.includes('BASE');
+      return true;
+    });
+  }
 
-function handleAdminUsersSearch() {
-  const query = (document.getElementById('admin-users-search')?.value || '').toLowerCase();
-  adminUsersFiltered = adminUsersList.filter(u => u.username.toLowerCase().includes(query) || String(u.id).includes(query));
-  adminUsersCurrentPage = 1;
-  _renderAdminUsersPage();
-}
+  const totalItems = dbArray.length;
+  const totalPages = Math.ceil(totalItems / App.itemsPerPage) || 1;
 
-function _renderAdminUsersPage() {
-  const tbody = document.getElementById('admin-users-tbody');
-  const pageInfo = document.getElementById('admin-users-page-info');
-  const prevBtn = document.getElementById('admin-users-prev');
-  const nextBtn = document.getElementById('admin-users-next');
-  
+  if (App.currentPage < 1) App.currentPage = 1;
+  if (App.currentPage > totalPages) App.currentPage = totalPages;
+
+  const startIndex = (App.currentPage - 1) * App.itemsPerPage;
+  const endIndex = Math.min(startIndex + App.itemsPerPage, totalItems);
+  const paginatedData = dbArray.slice(startIndex, endIndex);
+  const tbody = document.getElementById('allDataTableBody');
+
   if (!tbody) return;
   tbody.innerHTML = '';
 
-  const totalItems = adminUsersFiltered.length;
-  const totalPages = Math.ceil(totalItems / adminUsersPerPage) || 1;
-  
-  if (adminUsersCurrentPage > totalPages) adminUsersCurrentPage = totalPages;
-  if (adminUsersCurrentPage < 1) adminUsersCurrentPage = 1;
+  if (paginatedData.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="p-6 text-center text-gray-500 italic">
+          No records found in database.
+        </td>
+      </tr>`;
+  } else {
+    paginatedData.forEach(item => {
+      const tr = document.createElement('tr');
 
-  if (totalItems === 0) {
-    tbody.innerHTML = '<tr id="admin-users-empty"><td colspan="5" style="text-align:center;color:#64748b;">No users found.</td></tr>';
-    if (pageInfo) pageInfo.textContent = 'Page 1 of 1 (0 total)';
-    if (prevBtn) prevBtn.disabled = true;
-    if (nextBtn) nextBtn.disabled = true;
-    return;
-  }
+      // Support both internal and raw API field names
+      const itemCode    = item.inventory_id || item.itemCode || 'N/A';
+      const skuDesc     = item.revision_descr || item.skuDesc || '';
+      // production_line_code may come from fg or bm fields
+      const lineCode    = item.production_line_code
+                        || item.fg_production_line_code
+                        || item.bm_production_line_code
+                        || item.prodLine
+                        || '';
+      const productType  = item.product_type || '';
+      const typeCode    = getTypeShortCode(productType);
+      const badgeClass  = getTypeBadgeClass(productType);
 
-  const startIdx = (adminUsersCurrentPage - 1) * adminUsersPerPage;
-  const endIdx = startIdx + adminUsersPerPage;
-  const paginated = adminUsersFiltered.slice(startIdx, endIdx);
-
-  paginated.forEach(user => {
-    const tr = document.createElement('tr');
-    tr.setAttribute('data-user-id', user.id);
-    tr.innerHTML = _createUserRowHTML(user);
-    tbody.appendChild(tr);
-  });
-
-  if (pageInfo) pageInfo.textContent = `Page ${adminUsersCurrentPage} of ${totalPages} (${totalItems} total)`;
-  if (prevBtn) prevBtn.disabled = adminUsersCurrentPage <= 1;
-  if (nextBtn) nextBtn.disabled = adminUsersCurrentPage >= totalPages;
-}
-
-function prevAdminUsersPage() {
-  if (adminUsersCurrentPage > 1) {
-    adminUsersCurrentPage--;
-    _renderAdminUsersPage();
-  }
-}
-
-function nextAdminUsersPage() {
-  const totalPages = Math.ceil(adminUsersFiltered.length / adminUsersPerPage);
-  if (adminUsersCurrentPage < totalPages) {
-    adminUsersCurrentPage++;
-    _renderAdminUsersPage();
-  }
-}
-
-function openEditUserModal(id, username, role, isActive) {
-  document.getElementById('edit-user-id').value = id;
-  document.getElementById('edit-user-username').textContent = username;
-  document.getElementById('edit-user-password').value = '';
-  document.getElementById('edit-user-role').value = role;
-  document.getElementById('edit-user-active').value = isActive ? 'true' : 'false';
-
-  const modal = document.getElementById('editUserModal');
-  if (modal) {
-    modal.style.display = 'flex';
-    // Trap focus inside the modal for keyboard accessibility
-    modal._releaseFocus = typeof trapFocus === 'function' ? trapFocus(modal) : function() {};
-  }
-}
-
-function closeEditUserModal() {
-  const modal = document.getElementById('editUserModal');
-  if (modal) {
-    modal.style.display = 'none';
-    // Release focus trap
-    if (typeof modal._releaseFocus === 'function') {
-      modal._releaseFocus();
-      modal._releaseFocus = null;
-    }
-  }
-}
-
-async function submitEditUser() {
-  const btn = document.getElementById('editUserSaveBtn');
-  const id = document.getElementById('edit-user-id').value;
-  const password = document.getElementById('edit-user-password').value;
-  const role = document.getElementById('edit-user-role').value;
-  const isActiveStr = document.getElementById('edit-user-active').value;
-
-  const payload = {
-    role: role,
-    is_active: isActiveStr === 'true'
-  };
-  if (password.trim() !== '') {
-    if (password.length < 8) {
-      await showModal({
-        icon: 'danger',
-        title: 'Validation Error',
-        message: 'Password must be at least 8 characters long.',
-        type: 'confirm'
-      });
-      return;
-    }
-    payload.password = password;
-  }
-
-  try {
-    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
-    const res = await apiUpdateUser(id, payload);
-    if (res.ok) {
-      closeEditUserModal();
-      
-      // Update DOM dynamically instead of fetching all users
-      const tbody = document.getElementById('admin-users-tbody');
-      if (tbody) {
-        const row = tbody.querySelector(`tr[data-user-id="${id}"]`);
-        if (row) {
-          const updatedUser = {
-            id: id,
-            username: document.getElementById('edit-user-username').textContent,
-            role: role,
-            is_active: isActiveStr === 'true'
-          };
-          row.innerHTML = _createUserRowHTML(updatedUser);
-        }
-      }
-
-      await showModal({
-        icon: 'success',
-        title: 'Success',
-        message: 'User updated successfully.',
-        type: 'confirm'
-      });
-    } else {
-      if (btn) { btn.disabled = false; btn.textContent = 'Save Changes'; }
-      let msg = res.data?.error || 'Failed to update user';
-      await showModal({
-        icon: 'danger',
-        title: 'Update Failed',
-        message: msg,
-        type: 'confirm'
-      });
-    }
-  } catch (err) {
-    if (btn) { btn.disabled = false; btn.textContent = 'Save Changes'; }
-    await showModal({
-      icon: 'danger',
-      title: 'Error',
-      message: 'Network error. Please try again.',
-      type: 'confirm'
+      tr.innerHTML = `
+        <td class="col-item-code">${sanitizeInput(itemCode)}</td>
+        <td>${sanitizeInput(skuDesc)}</td>
+        <td>${sanitizeInput(lineCode)}</td>
+        <td><span class="badge ${badgeClass}">${typeCode}</span></td>
+        <td class="text-center">
+          <button class="link-action btn-view-detail"
+                  data-item-code="${sanitizeInput(itemCode)}"
+                  type="button">
+            View Details
+          </button>
+        </td>`;
+      tbody.appendChild(tr);
     });
   }
+
+  // FIX (MEDIUM-002): Attach a single delegated listener to the tbody instead of
+  // embedding item codes in inline onclick handlers.  The listener reads the item
+  // code from a data-attribute, which is never executed as JavaScript.
+  if (tbody && !tbody.dataset.listenerBound) {
+    tbody.dataset.listenerBound = 'true';
+    tbody.addEventListener('click', function(e) {
+      const btn = e.target.closest('.btn-view-detail');
+      if (!btn) return;
+      const code = btn.getAttribute('data-item-code');
+      if (code) viewFromAllData(code);
+    });
+  }
+
+  const paginationInfo = document.getElementById('pagination-info');
+  if (paginationInfo) {
+    paginationInfo.textContent =
+      `Showing ${totalItems === 0 ? 0 : startIndex + 1} to ${endIndex} of ${totalItems} entries`;
+  }
+
+  const btnPrev = document.getElementById('btn-prev-page');
+  const btnNext = document.getElementById('btn-next-page');
+  if (btnPrev) btnPrev.disabled = App.currentPage === 1;
+  if (btnNext) btnNext.disabled = App.currentPage === totalPages || totalPages === 0;
 }
+
+/**
+ * Change the current page.
+ */
+function changePage(delta) {
+  App.currentPage += delta;
+  renderAllData();
+}
+
+/**
+ * View a record's details from the All Data table.
+ */
+function viewFromAllData(itemCode) {
+  if (!itemCode) return;
+  switchTab(AppState.LOOKUP);
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value = itemCode;
+  performSearch();
+}
+
+window.loadAndRenderAllData = loadAndRenderAllData;
+window.applyAllDataFilters = applyAllDataFilters;
+window.renderAllData        = renderAllData;
+window.changePage           = changePage;
+window.viewFromAllData      = viewFromAllData;
 
 /* ============================================
-   DATABASE MANAGEMENT (Admin Only)
-   Search by item code / SKU, then delete
+   EXPORT TO EXCEL — Database tab only
+   Calls GET /api/export — the server returns a
+   ready-made .xlsx blob (one row per activity,
+   mirroring the ACU Routing template structure).
+   Requires superuser or admin role.
    ============================================ */
 
-let _stagedForDeletion = [];
+/**
+ * Open the export confirmation modal.
+ * Only reachable from the Database tab button.
+ */
+function showExportModal() {
+  const modal = document.getElementById('exportModal');
+  if (!modal) return;
+  modal.classList.add('is-open');
 
-/** Live-search the API and render matching rows into the admin db table. */
-async function handleDbSearch() {
-  if (!Auth.isAdmin()) return;
+  // Reset confirm button in case a previous export was interrupted
+  _resetExportBtn();
 
-  const query   = (document.getElementById('db-search-input')?.value || '').trim();
-  const tbody   = document.getElementById('db-results-tbody');
-  const countEl = document.getElementById('db-result-count');
-  const errEl   = document.getElementById('db-error');
-  const okEl    = document.getElementById('db-success');
+  // Trap focus inside the modal for keyboard accessibility
+  modal._releaseFocus = typeof trapFocus === 'function' ? trapFocus(modal) : function() {};
 
-  if (errEl)  { errEl.style.display  = 'none'; errEl.textContent  = ''; }
-  if (okEl)   { okEl.style.display   = 'none'; okEl.textContent   = ''; }
+  // Close on backdrop click
+  modal.addEventListener('click', _exportModalBackdropClose, { once: true });
 
-  if (!query) {
-    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;font-style:italic;padding:2rem;">Search for a product above to see results.</td></tr>';
-    if (countEl) countEl.textContent = '';
+  // Close on Escape key
+  document.addEventListener('keydown', _exportModalEscClose);
+}
+
+/**
+ * Close the export confirmation modal.
+ */
+function hideExportModal() {
+  const modal = document.getElementById('exportModal');
+  if (!modal) return;
+  modal.classList.remove('is-open');
+  document.removeEventListener('keydown', _exportModalEscClose);
+  // Release focus trap
+  if (typeof modal._releaseFocus === 'function') {
+    modal._releaseFocus();
+    modal._releaseFocus = null;
+  }
+}
+
+/** @private — restore confirm button to its default state */
+function _resetExportBtn() {
+  const btn = document.getElementById('btn-export-confirm');
+  if (!btn) return;
+  btn.disabled = false;
+  btn.innerHTML = `
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2.2"
+         stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/>
+      <line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+    Download Excel`;
+}
+
+/** @private — close modal when clicking the backdrop (not the panel) */
+function _exportModalBackdropClose(e) {
+  if (e.target && e.target.id === 'exportModal') {
+    hideExportModal();
+  }
+}
+
+/** @private — close modal on Escape key */
+function _exportModalEscClose(e) {
+  if (e.key === 'Escape') hideExportModal();
+}
+
+/**
+ * Call GET /api/export, receive the server-generated .xlsx blob,
+ * and trigger a browser download.
+ * Requires superuser or admin role — shows a denial modal for plain users.
+ */
+async function handleExportConfirm() {
+  // ── Role guard: export requires superuser or admin ─────────────────────
+  const role = ((typeof Auth !== 'undefined' && Auth.getUser()) || {}).role || '';
+  if (role === 'user') {
+    hideExportModal();
+    showModal({
+      icon:         'danger',
+      title:        'Access Denied',
+      message:      'Exporting the database requires Superuser or Admin role. Contact your administrator.',
+      type:         'confirm',
+      confirmLabel: 'OK',
+    });
     return;
   }
 
-  if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:1.5rem;">Searching...</td></tr>';
+  // ── Disable button and show loading state ──────────────────────────────
+  const btn = document.getElementById('btn-export-confirm');
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
 
-  try {
-    const res = await apiGetItems(query, 100);
-    const items = res.ok && res.data && Array.isArray(res.data.results) ? res.data.results : [];
+  // ── Call the API export endpoint ───────────────────────────────────────
+  const res = await apiExportExcel();
 
-    if (items.length === 0) {
-      if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;font-style:italic;padding:2rem;">No products found matching your search.</td></tr>';
-      if (countEl) countEl.textContent = '';
-      return;
-    }
+  if (!res.ok || !res.data) {
+    // Restore button before showing the error
+    _resetExportBtn();
+    hideExportModal();
 
-    if (countEl) countEl.textContent = `${items.length} result${items.length !== 1 ? 's' : ''} found.`;
+    const errMsg = res.status === 403
+      ? 'You do not have permission to export the database. Superuser or Admin role required.'
+      : res.status === 0
+        ? 'Could not reach the server. Please check your connection and try again.'
+        : getApiErrorMessage(res, 'export database');
 
-    if (tbody) {
-      tbody.innerHTML = items.map(item => {
-        const code = sanitizeInput(item.inventory_id || item.item_code || '—');
-        const sku  = sanitizeInput(item.revision_descr || item.sku_desc || '—');
-        const type = sanitizeInput(item.product_type || '—');
-        const rev  = sanitizeInput(String(item.revision ?? '—').padStart(2, '0'));
-        const line = sanitizeInput(item.fg_production_line_code || item.bm_production_line_code || item.production_line_code || '—');
-        
-        const isStaged = _stagedForDeletion.includes(code);
-        const rowBg = isStaged ? 'background-color:#fef2f2;' : '';
-        const btnClass = isStaged ? 'admin-btn' : 'admin-btn admin-btn--danger';
-        const btnStyle = isStaged ? 'padding:0.3rem 0.75rem;font-size:0.75rem;white-space:nowrap;background-color:#94a3b8;color:white;border:none;' : 'padding:0.3rem 0.75rem;font-size:0.75rem;white-space:nowrap;';
-        const btnText = isStaged ? '&#10134; Unstage' : '&#10133; Stage to Delete';
-        
-        return `
-          <tr data-item-code="${code}" style="${rowBg}">
-            <td style="font-weight:700;color:#1e293b;font-family:monospace;">${code}</td>
-            <td>${sku}</td>
-            <td>${type}</td>
-            <td style="text-align:center;">Rev. ${rev}</td>
-            <td>${line}</td>
-            <td style="text-align:center;">
-              <button
-                onclick="toggleStageForDeletion('${code}')"
-                class="${btnClass}"
-                style="${btnStyle}">
-                ${btnText}
-              </button>
-            </td>
-          </tr>`;
-      }).join('');
-    }
-  } catch (err) {
-    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#dc2626;padding:2rem;">Error contacting server. Please try again.</td></tr>';
-  }
-}
-
-function toggleStageForDeletion(itemCode) {
-  if (_stagedForDeletion.includes(itemCode)) {
-    _stagedForDeletion = _stagedForDeletion.filter(c => c !== itemCode);
-  } else {
-    _stagedForDeletion.push(itemCode);
-  }
-  
-  handleDbSearch();
-  updateBulkDeleteBanner();
-}
-
-function updateBulkDeleteBanner() {
-  const banner = document.getElementById('bulk-delete-banner');
-  const countSpan = document.getElementById('bulk-delete-count');
-  if (!banner || !countSpan) return;
-  
-  if (_stagedForDeletion.length > 0) {
-    countSpan.textContent = _stagedForDeletion.length;
-    banner.style.display = 'flex';
-  } else {
-    banner.style.display = 'none';
-  }
-}
-
-function clearBulkDeletion() {
-  _stagedForDeletion = [];
-  updateBulkDeleteBanner();
-  handleDbSearch();
-}
-
-async function commitBulkDeletion() {
-  if (!Auth.isAdmin()) {
-    await showModal({ icon:'danger', title:'Access Denied', message:'Only administrators can delete products.', type:'confirm', confirmLabel:'OK' });
+    await showModal({
+      icon:         'danger',
+      title:        'Export Failed',
+      message:      errMsg,
+      type:         'confirm',
+      confirmLabel: 'OK',
+    });
     return;
   }
-  
-  if (_stagedForDeletion.length === 0) return;
 
-  const result = await showModal({
-    icon:         'danger',
-    title:        'Commit Bulk Deletion?',
-    message:      `You are about to permanently delete ${_stagedForDeletion.length} staged product(s).\n\nThis will also delete ALL their activities and revision history. This cannot be undone.`,
-    type:         'password_prompt',
-    inputPlaceholder: 'Enter your admin password to confirm',
-    confirmStyle: 'danger',
-    confirmLabel: `Yes, Delete ${_stagedForDeletion.length} Items`,
+  // ── Trigger browser download from the returned blob ────────────────────
+  const url = URL.createObjectURL(res.data);
+  const a   = document.createElement('a');
+  a.href     = url;
+  a.download = res.filename || 'Pioneer_Routing_Export.xlsx';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  // ── Clean up and notify ────────────────────────────────────────────────
+  _resetExportBtn();
+  hideExportModal();
+  showToast({
+    type:    'success',
+    title:   'Export Complete',
+    message: `Database exported as "${a.download}".`,
   });
-
-  if (!result.confirmed) return;
-
-  if (!result.value) {
-    showModal({ icon: 'danger', title: 'Error', message: 'Password is required to delete products.', type: 'confirm', confirmLabel: 'OK' });
-    return;
-  }
-
-  const verifyRes = await apiVerifyPassword(result.value);
-  if (!verifyRes.ok) {
-    showModal({ icon: 'danger', title: 'Access Denied', message: 'Incorrect password.', type: 'confirm', confirmLabel: 'OK' });
-    return;
-  }
-
-  // Sequence of API calls
-  let deletedCount = 0;
-  showLoading(`Deleting ${_stagedForDeletion.length} product(s)...`);
-  
-  for (const itemCode of _stagedForDeletion) {
-    try {
-      const res = await apiDeleteItem(itemCode);
-      if (res.ok) deletedCount++;
-    } catch (e) {
-      console.error('Failed to delete', itemCode, e);
-    }
-  }
-  
-  hideLoading();
-  
-  showToast({ type: 'success', title: 'Bulk Deletion Complete', message: `Successfully deleted ${deletedCount} of ${_stagedForDeletion.length} items.` });
-  
-  _stagedForDeletion = [];
-  updateBulkDeleteBanner();
-  handleDbSearch();
 }
 
-/* ============================================
-   EXPOSE GLOBALLY
-   ============================================ */
-window.initAdminPanel           = initAdminPanel;
-window.handleCreateUser         = handleCreateUser;
-window.togglePasswordVisibility = togglePasswordVisibility;
-window.loadUsersTable           = loadUsersTable;
-window.handleAdminUsersSearch   = handleAdminUsersSearch;
-window.prevAdminUsersPage       = prevAdminUsersPage;
-window.nextAdminUsersPage       = nextAdminUsersPage;
-window.openEditUserModal        = openEditUserModal;
-window.closeEditUserModal       = closeEditUserModal;
-window.submitEditUser           = submitEditUser;
-window.deleteUser               = deleteUser;
-window.handleDbSearch           = handleDbSearch;
-window.toggleStageForDeletion   = toggleStageForDeletion;
-window.clearBulkDeletion        = clearBulkDeletion;
-window.commitBulkDeletion       = commitBulkDeletion;
+window.showExportModal     = showExportModal;
+window.hideExportModal     = hideExportModal;
+window.handleExportConfirm = handleExportConfirm;
