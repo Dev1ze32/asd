@@ -718,8 +718,16 @@ function _validateRoutingForm(itemCode, skuDesc, prodLine, qty) {
   const errors = [];
 
   // ── Header / top-of-form fields ──
-  if (!itemCode)
+  if (!itemCode) {
     errors.push({ section: 'Header', field: 'Item Code', reason: 'required — cannot be blank' });
+  } else {
+    if (itemCode.startsWith('/'))
+      errors.push({ section: 'Header', field: 'Item Code', reason: 'cannot start with a slash (/)' });
+    if (itemCode.endsWith('/'))
+      errors.push({ section: 'Header', field: 'Item Code', reason: 'cannot end with a slash (/)' });
+    if (itemCode.includes('//'))
+      errors.push({ section: 'Header', field: 'Item Code', reason: 'cannot contain consecutive slashes (//)' });
+  }
 
   if (!skuDesc)
     errors.push({ section: 'Header', field: 'SKU Description', reason: 'required — cannot be blank' });

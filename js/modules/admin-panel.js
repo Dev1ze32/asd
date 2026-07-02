@@ -527,6 +527,15 @@ async function handleDbSearch() {
     return;
   }
 
+  if (query.startsWith('/') || query.endsWith('/') || query.includes('//')) {
+    if (errEl) {
+      errEl.textContent = 'Search query cannot start/end with a slash or contain consecutive slashes.';
+      errEl.style.display = 'block';
+    }
+    if (tbody) tbody.innerHTML = '';
+    return;
+  }
+
   if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:1.5rem;">Searching...</td></tr>';
 
   try {

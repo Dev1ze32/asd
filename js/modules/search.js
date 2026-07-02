@@ -24,6 +24,12 @@ statusLabel.className = 'search-status search-status--error';
 return;
 }
 
+if (query.startsWith('/') || query.endsWith('/') || query.includes('//')) {
+statusLabel.textContent = 'Item code cannot start/end with a slash or contain consecutive slashes.';
+statusLabel.className = 'search-status search-status--error';
+return;
+}
+
 // --- Try API first ---
 let data = null;
 try {
