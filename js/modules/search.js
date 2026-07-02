@@ -88,6 +88,14 @@ statusLabel.className = 'search-status search-status--error';
 clearForm();
 setFormEditable(false);
 _setUpdateActionButtonsVisible(false);
+
+showModal({
+  icon: 'warn',
+  title: 'Item Not Found',
+  message: `No record found for item code "${query}". It may not exist or the item code is incorrect.`,
+  type: 'alert',
+  confirmLabel: 'OK'
+});
 }
 }
 
