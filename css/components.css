@@ -763,6 +763,7 @@ select:disabled,
 .about-modal__section-title {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.875rem;
   font-size: 0.6875rem;
   font-weight: 700;
@@ -879,7 +880,7 @@ body.dark-mode .about-modal__person {
 }
 
 body.dark-mode .about-modal__avatar {
-  background: #00434c !important;
+  background: #C4E1E6 !important;
 }
 
 body.dark-mode .about-modal__person-name {
