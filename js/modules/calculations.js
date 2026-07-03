@@ -115,20 +115,25 @@ function calculateRow(pax, machine, time, qty) {
   var safeTime = Math.max(time, 0);
 
   var runTimeRaw = safeQty !== 0 ? (safeTime / safeQty) : 0;
-  var runTime = Math.round(runTimeRaw * 1e5) / 1e5;
+  
+  // Excel forcefully rounds up the Run Time to 5 decimal places
+  var runTime = Math.ceil(runTimeRaw * 1e5) / 1e5;
 
-  var laborMin = safePax * safeTime;
-  var mcMin = safeMachine * safeTime;
+  var laborMin = Math.round((safePax * safeTime) * 1e5) / 1e5;
+  var mcMin = Math.round((safeMachine * safeTime) * 1e5) / 1e5;
 
-  // FIX: Apply Excel formula -> ROUNDUP(1 / ROUND(Run Time * Pax, 5), 0)
   var dlUnits = 0;
   if (safeTime > 0) {
-    var roundedDlBase = Math.round((runTime * safePax) * 1e5) / 1e5;
-    if (roundedDlBase > 0) {
-      dlUnits = Math.ceil(1 / roundedDlBase);
+    var dlBase = runTime * safePax;
+    if (dlBase > 0) {
+      // Excel uses normal rounding (ROUND, not ROUNDUP) for DL (UNITS/1 MIN)
+      // based on the already rounded Run Time
+      var exactDl = 1 / dlBase;
+      dlUnits = Math.round(exactDl);
     }
   }
 
+  // BOM costs are calculated using the 5-decimal rounded runTime
   var dl = runTime * safePax;
   var voh = runTime;
   var foh = runTime;
