@@ -75,7 +75,8 @@ function renderAllData() {
   if (filterSku) {
     dbArray = dbArray.filter(item => {
       const sku = (item.revision_descr || item.skuDesc || '').toUpperCase();
-      return sku.includes(filterSku);
+      const code = (item.inventory_id || item.item_code || item.itemCode || '').toUpperCase();
+      return sku.includes(filterSku) || code.includes(filterSku);
     });
   }
   if (filterLine) {
