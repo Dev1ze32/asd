@@ -366,7 +366,7 @@ async function saveRoutingDocument() {
   var record = {
     inventory_id:         itemCode,
     revision_descr:       skuDesc,
-    qty:                  parseFloat(qty) || 1,
+    qty:                  isNaN(parseFloat(qty)) ? 0 : parseFloat(qty),
     notes:                notes,
     production_line_code: lineCode,
     production_line:      lineName,
@@ -469,8 +469,8 @@ async function saveRoutingDocument() {
       });
 
       // 1b. Check if any product-level fields changed
-      const origQty = App.currentRecord ? (parseFloat(App.currentRecord.qty) || 1) : 1;
-      const newQty  = parseFloat(record.qty) || 1;
+      const origQty = App.currentRecord ? (isNaN(parseFloat(App.currentRecord.qty)) ? 0 : parseFloat(App.currentRecord.qty)) : 0;
+      const newQty  = isNaN(parseFloat(record.qty)) ? 0 : parseFloat(record.qty);
       
       const productChanged = !App.currentRecord ||
         String(record.revision_descr || '') !== String(App.currentRecord.revision_descr || '') ||

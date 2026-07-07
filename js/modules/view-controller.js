@@ -98,7 +98,7 @@ function clearForm() {
   const fields = {
     'itemCode':   '',
     'skuDesc':    '',
-    'qtyInput':   '1',
+    'qtyInput':   '',
     'prodLine':   '',
     'lineDesc':   '',
     'notesInput': ''
@@ -157,7 +157,7 @@ function saveTabFormState(tabKey) {
 
   const itemCode = document.getElementById('itemCode')?.value  || '';
   const skuDesc  = document.getElementById('skuDesc')?.value   || '';
-  const qty      = document.getElementById('qtyInput')?.value  || '1';
+  const qty      = document.getElementById('qtyInput')?.value  || '';
   const prodLine = document.getElementById('prodLine')?.value  || '';
   const notes    = document.getElementById('notesInput')?.value || '';
   const mode     = App.currentMode || 'FG';
