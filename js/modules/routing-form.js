@@ -307,7 +307,9 @@ async function saveRoutingDocument() {
   var qtyInput = document.getElementById('qtyInput');
   var currentQty = parseFloat(qtyInput?.value) || 1;
 
-  document.querySelectorAll('#tableBody tr').forEach(function(row) {
+  var validActs = typeof getLineActivities === 'function' ? getLineActivities(prodLine) : [];
+
+  document.querySelectorAll('#tableBody tr').forEach(function(row, index) {
     var activityName = row.querySelector('.activity-select')?.value.trim();
     var pax          = parseFloat(row.querySelector('.pax-input')?.value)     || 0;
     var machine      = parseFloat(row.querySelector('.machine-input')?.value) || 0;
@@ -315,6 +317,9 @@ async function saveRoutingDocument() {
     var actId        = row.dataset.id || '';
 
     if (activityName) {
+      // Find metadata from validActs
+      var matchedAct = validActs.find(a => a.activity_name === activityName) || {};
+
       // Recalculate precisely for payload
       var computed = typeof calculateRow === 'function' ? calculateRow(pax, machine, time, currentQty) : {};
       
@@ -322,6 +327,11 @@ async function saveRoutingDocument() {
         id:            actId ? parseInt(actId, 10) : undefined,
         activities:    activityName,  // internal name kept for local cache
         activity_name: activityName,  // API field name
+        type:          matchedAct.type || 'Labor',
+        item_id:       matchedAct.item_id || activityName,
+        class:         matchedAct.class || 'DL',
+        class_1:       matchedAct.class_1 || 'DL',
+        sort_order:    index + 1,
         pax:           pax,
         machine:       machine,
         time_min:      time,
@@ -524,6 +534,7 @@ async function saveRoutingDocument() {
           type: act.type || 'Labor',
           class: act.class || 'DL',
           class_1: act.class_1 || 'DL',
+          item_id: act.item_id || act.activity_name || '',
           sort_order: act.sort_order
         })),
         activities_deleted: toDelete
