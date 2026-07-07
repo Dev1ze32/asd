@@ -105,18 +105,18 @@ async function openApprovalModal(id) {
     if (app.action === 'UPDATE' && liveData) {
       html += `
         <div class="diff-container" style="flex-direction: column;">
-          <div class="diff-box diff-box--old">
-            <h4>
-              Before (Live Database)
-            </h4>
-            ${_buildRecordTableHtml(liveData, null, 'old')}
-          </div>
-          <div class="diff-box diff-box--new">
-            <h4>
-              After (Proposed Changes)
-            </h4>
-            ${_buildRecordTableHtml(app.payload, liveData, 'new')}
-          </div>
+            <div class="diff-box diff-box--old">
+              <h4>
+                Before (Live Database)
+              </h4>
+              ${_buildRecordTableHtml(liveData, app.payload, 'old')}
+            </div>
+            <div class="diff-box diff-box--new">
+              <h4>
+                After (Proposed Changes)
+              </h4>
+              ${_buildRecordTableHtml(app.payload, liveData, 'update')}
+            </div>
         </div>
       `;
     } else {
@@ -142,7 +142,7 @@ function _buildRecordTableHtml(record, compareRecord = null, mode = 'new') {
   const getDiffClass = (val, compareVal) => {
     if (!compareRecord) return '';
     if (String(val || '') !== String(compareVal || '')) {
-      return mode === 'new' ? 'diff-val--new' : 'diff-val--old';
+      return (mode === 'new' || mode === 'update') ? 'diff-val--new' : 'diff-val--old';
     }
     return '';
   };
@@ -153,8 +153,28 @@ function _buildRecordTableHtml(record, compareRecord = null, mode = 'new') {
   const qty = record.quantity ?? record.qty;
   const cQty = compareRecord ? (compareRecord.quantity ?? compareRecord.qty) : undefined;
 
+  let revisionHtml = '';
+  if (mode === 'new') {
+    revisionHtml = '<span>00</span>';
+  } else if (mode === 'old') {
+    revisionHtml = `<span>${sanitizeInput(record.revision || '-')}</span>`;
+  } else if (mode === 'update' && compareRecord) {
+    const oldRev = compareRecord.revision || '00';
+    let newRev = oldRev;
+    const parsed = parseInt(oldRev, 10);
+    if (!isNaN(parsed) && String(parsed) === String(Number(oldRev))) {
+      newRev = String(parsed + 1).padStart(2, '0');
+    } else if (!isNaN(parsed)) {
+       newRev = String(parsed + 1).padStart(2, '0');
+    }
+    revisionHtml = `<span class="diff-val--old">${sanitizeInput(oldRev)}</span> <span style="margin:0 0.5rem; color:#94a3b8;">➔</span> <span class="diff-val--new">${sanitizeInput(newRev)}</span>`;
+  }
+
   let html = `
     <div style="display: grid; grid-template-columns: 120px 1fr; gap: 1rem; margin-bottom: 2rem; align-items: baseline;">
+      <div style="font-weight: 600; font-size: 0.85rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Revision</div>
+      <div style="font-size: 0.95rem; display:flex; align-items:center;">${revisionHtml || '-'}</div>
+
       <div style="font-weight: 600; font-size: 0.85rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Description</div>
       <div style="font-size: 0.95rem;"><span class="${getDiffClass(record.revision_descr, compareRecord?.revision_descr)}">${sanitizeInput(record.revision_descr || '-')}</span></div>
 

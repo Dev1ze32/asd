@@ -1348,7 +1348,6 @@ body.dark-mode .diff-val--new {
 .diff-val--old {
   background-color: #fee2e2;
   color: #991b1b;
-  text-decoration: line-through;
   border-radius: 4px;
   padding: 0.1rem 0.3rem;
 }
