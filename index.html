@@ -1269,6 +1269,23 @@
                 Archive
               </button>
             </div>
+            <!-- Export button — LOOKUP tab only, shown after a record is found -->
+            <div id="lookup-export-button-container" style="display:none;">
+              <button onclick="showLookupExportModal(document.getElementById('searchInput')?.value.trim())"
+                      class="btn btn--success"
+                      id="btn-lookup-export"
+                      title="Export this product's routing data to Excel"
+                      style="display:inline-flex; align-items:center; gap:0.45rem; padding:0.52rem 1rem; font-size:0.82rem; font-weight:700;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export to Excel
+              </button>
+            </div>
           </div>
         </div>
         <div id="search-status" class="search-status"></div>
@@ -2422,7 +2439,7 @@
   <script src="js/modules/auth.js?v=20260630160000" defer></script>
 
   <!-- Layer 0b: API Service -->
-  <script src="js/modules/api-service.js?v=20260630140000" defer></script>
+  <script src="js/modules/api-service.js?v=20260707083900" defer></script>
 
   <!-- Layer 1: State & Data -->
   <script src="js/modules/state.js?v=20260630160000" defer></script>
@@ -2436,9 +2453,9 @@
 
   <!-- Layer 4: Feature Modules -->
   <script src="js/modules/routing-form.js?v=20260630140000" defer></script>
-  <script src="js/modules/search.js?v=20260630140000" defer></script>
+  <script src="js/modules/search.js?v=20260707083900" defer></script>
   <script src="js/modules/manage-activities.js?v=20260630140000" defer></script>
-  <script src="js/modules/all-data.js?v=20260703140000" defer></script>
+  <script src="js/modules/all-data.js?v=20260707083900" defer></script>
 
   <!-- Layer 5: Admin Modules (admin only, but scripts load for all) -->
   <script src="js/modules/admin-panel.js?v=20260630160000" defer></script>

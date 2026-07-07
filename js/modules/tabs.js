@@ -250,6 +250,10 @@ saveBtn.classList.remove('hidden');
 if (typeof _setUpdateActionButtonsVisible === 'function') {
   _setUpdateActionButtonsVisible(false);
 }
+// ADD mode: also hide lookup export button
+if (typeof _setLookupExportButtonVisible === 'function') {
+  _setLookupExportButtonVisible(false);
+}
 // Show Clear button in ADD mode
 if (typeof _setClearBtnVisible === 'function') _setClearBtnVisible(true);
 // ADD mode: hide notes field, show normal form inputs, hide lookup display
@@ -284,6 +288,10 @@ const restored = restoreTabFormState(AppState.LOOKUP);
 if (!restored) {
 clearForm();
 setFormEditable(false);
+// No record loaded yet — keep export button hidden
+if (typeof _setLookupExportButtonVisible === 'function') {
+  _setLookupExportButtonVisible(false);
+}
 if (searchStatus) {
 searchStatus.textContent = '';
 searchStatus.className   = 'search-status';

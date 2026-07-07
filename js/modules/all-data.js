@@ -343,3 +343,142 @@ async function handleExportConfirm() {
 window.showExportModal     = showExportModal;
 window.hideExportModal     = hideExportModal;
 window.handleExportConfirm = handleExportConfirm;
+
+/* ============================================
+   LOOKUP EXPORT — Single-product variant
+   Uses the same #exportModal but re-labels the
+   heading/message for a specific item code.
+   ============================================ */
+
+/** @private — which mode the export modal is currently in */
+let _exportModalMode = 'all'; // 'all' | 'item'
+let _exportModalItemCode = '';
+
+/**
+ * Open the export modal scoped to a specific item code (Lookup tab).
+ * @param {string} itemCode - The item code to export.
+ */
+function showLookupExportModal(itemCode) {
+  if (!itemCode) return;
+
+  _exportModalMode     = 'item';
+  _exportModalItemCode = itemCode.trim().toUpperCase();
+
+  const modal    = document.getElementById('exportModal');
+  const titleEl  = document.getElementById('exportModalTitle');
+  const msgEl    = modal ? modal.querySelector('.modal-message') : null;
+
+  if (titleEl)  titleEl.textContent = 'Export to Excel';
+  if (msgEl)    msgEl.textContent   =
+    `Are you sure you want to export the routing data for "${_exportModalItemCode}" to Excel? ` +
+    `This file will contain the product information and all its line activities.`;
+
+  showExportModal();
+}
+
+/**
+ * Restore modal labels to the full-database defaults (called by hideExportModal).
+ * @private
+ */
+function _restoreExportModalDefaults() {
+  const modal   = document.getElementById('exportModal');
+  const titleEl = document.getElementById('exportModalTitle');
+  const msgEl   = modal ? modal.querySelector('.modal-message') : null;
+
+  if (titleEl) titleEl.textContent = 'Export Database';
+  if (msgEl)   msgEl.textContent   =
+    'Are you sure you want to export the entire routing database to Excel? ' +
+    'This file will contain all products and line activities.';
+
+  _exportModalMode     = 'all';
+  _exportModalItemCode = '';
+}
+
+// Wrap hideExportModal to also restore defaults when dismissed
+const _origHideExportModal = hideExportModal;
+window.hideExportModal = function() {
+  _origHideExportModal();
+  _restoreExportModalDefaults();
+};
+
+// Wrap handleExportConfirm to dispatch to the right endpoint
+const _origHandleExportConfirm = handleExportConfirm;
+window.handleExportConfirm = async function() {
+  if (_exportModalMode === 'item') {
+    await _handleLookupExportConfirm();
+  } else {
+    await _origHandleExportConfirm();
+  }
+};
+
+/**
+ * @private — item-scoped export confirm handler
+ */
+async function _handleLookupExportConfirm() {
+  // ── Role guard: export requires superuser or admin ─────────────────────
+  const role = ((typeof Auth !== 'undefined' && Auth.getUser()) || {}).role || '';
+  if (role === 'user') {
+    hideExportModal();
+    showModal({
+      icon:         'danger',
+      title:        'Access Denied',
+      message:      'Exporting data requires Superuser or Admin role. Contact your administrator.',
+      type:         'confirm',
+      confirmLabel: 'OK',
+    });
+    return;
+  }
+
+  const itemCode = _exportModalItemCode;
+  if (!itemCode) { hideExportModal(); return; }
+
+  // ── Disable button and show loading state ──────────────────────────────
+  const btn = document.getElementById('btn-export-confirm');
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+
+  // ── Call the API export endpoint ───────────────────────────────────────
+  const res = await apiExportExcelItem(itemCode);
+
+  if (!res.ok || !res.data) {
+    _resetExportBtn();
+    hideExportModal();
+
+    const errMsg = res.status === 403
+      ? 'You do not have permission to export. Superuser or Admin role required.'
+      : res.status === 404
+        ? `No routing record found for item code "${itemCode}".`
+        : res.status === 0
+          ? 'Could not reach the server. Please check your connection and try again.'
+          : getApiErrorMessage(res, 'export item', itemCode);
+
+    await showModal({
+      icon:         'danger',
+      title:        'Export Failed',
+      message:      errMsg,
+      type:         'confirm',
+      confirmLabel: 'OK',
+    });
+    return;
+  }
+
+  // ── Trigger browser download from the returned blob ────────────────────
+  const url = URL.createObjectURL(res.data);
+  const a   = document.createElement('a');
+  a.href     = url;
+  a.download = res.filename || `Pioneer_Routing_${itemCode}.xlsx`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  // ── Clean up and notify ────────────────────────────────────────────────
+  _resetExportBtn();
+  hideExportModal();
+  showToast({
+    type:    'success',
+    title:   'Export Complete',
+    message: `"${a.download}" downloaded successfully.`,
+  });
+}
+
+window.showLookupExportModal = showLookupExportModal;

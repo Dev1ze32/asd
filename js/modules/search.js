@@ -73,13 +73,15 @@ revisionInputEl.textContent = data.revision ? 'Rev. ' + data.revision : '—';
 }
 
 if (isUpdate) {
-const itemCodeEl = document.getElementById('itemCode');
-if (itemCodeEl) itemCodeEl.disabled = true;
-_setUpdateActionButtonsVisible(true);
+  const itemCodeEl = document.getElementById('itemCode');
+  if (itemCodeEl) itemCodeEl.disabled = true;
+  _setUpdateActionButtonsVisible(true);
+  _setLookupExportButtonVisible(false);
 } else {
-// LOOKUP mode: populate plain-text display spans
-_populateLookupDisplay(data);
-_setUpdateActionButtonsVisible(false);
+  // LOOKUP mode: populate plain-text display spans
+  _populateLookupDisplay(data);
+  _setUpdateActionButtonsVisible(false);
+  _setLookupExportButtonVisible(true);
 }
 } else {
 App.currentRecord = null;
@@ -88,6 +90,7 @@ statusLabel.className = 'search-status search-status--error';
 clearForm();
 setFormEditable(false);
 _setUpdateActionButtonsVisible(false);
+_setLookupExportButtonVisible(false);
 
 showModal({
   icon: 'warn',
@@ -109,6 +112,16 @@ const el = document.getElementById('update-action-buttons');
 if (el) el.style.display = visible ? 'flex' : 'none';
   const archiveEl = document.getElementById('archive-button-container');
   if (archiveEl) archiveEl.style.display = visible ? 'flex' : 'none';
+}
+
+/**
+ * Show or hide the Lookup Export button.
+ * Displayed only in LOOKUP mode after a record is found.
+ * @param {boolean} visible
+ */
+function _setLookupExportButtonVisible(visible) {
+  const el = document.getElementById('lookup-export-button-container');
+  if (el) el.style.display = visible ? 'flex' : 'none';
 }
 
 /**
@@ -297,9 +310,10 @@ const lineCode = data.production_line_code
 set('ld-lineDesc', LINE_DESCRIPTIONS[lineCode] || data.production_line || '');
 }
 
-window.performSearch                  = performSearch;
-window.handleSearchKeypress           = handleSearchKeypress;
-window.quickSearch                    = quickSearch;
-window._setUpdateActionButtonsVisible = _setUpdateActionButtonsVisible;
-window.handleUpdateItem               = handleUpdateItem;
-window.handleRefreshItem              = handleRefreshItem;
+window.performSearch                   = performSearch;
+window.handleSearchKeypress            = handleSearchKeypress;
+window.quickSearch                     = quickSearch;
+window._setUpdateActionButtonsVisible  = _setUpdateActionButtonsVisible;
+window._setLookupExportButtonVisible   = _setLookupExportButtonVisible;
+window.handleUpdateItem                = handleUpdateItem;
+window.handleRefreshItem               = handleRefreshItem;
