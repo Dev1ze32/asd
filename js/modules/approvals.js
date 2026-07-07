@@ -9,7 +9,7 @@ async function fetchPendingApprovals() {
   const tbody = document.getElementById('pending-approvals-tbody');
   if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading pending approvals...</td></tr>';
-  
+
   try {
     const res = await _apiFetch(`/api/approvals?_=${Date.now()}`, 'GET');
     if (res.ok) {
@@ -18,7 +18,7 @@ async function fetchPendingApprovals() {
     } else {
       tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Failed to load.</td></tr>';
     }
-  } catch(e) {
+  } catch (e) {
     console.error(e);
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Error loading.</td></tr>';
   }
@@ -36,7 +36,7 @@ async function _fetchApprovalsCount() {
       currentPendingApprovals = res.data || [];
       _updateApprovalsBadge();
     }
-  } catch(e) {
+  } catch (e) {
     // Silently ignore background poll errors
   }
 }
@@ -54,12 +54,12 @@ function renderPendingApprovals() {
   if (!tbody) return;
   tbody.innerHTML = '';
   _updateApprovalsBadge();
-  
+
   if (currentPendingApprovals.length === 0) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;font-style:italic;padding:2rem;">No pending approvals. All caught up!</td></tr>';
     return;
   }
-  
+
   currentPendingApprovals.forEach(app => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -84,24 +84,24 @@ async function openApprovalModal(id) {
   selectedApprovalId = id;
   const app = currentPendingApprovals.find(a => a.id === id);
   if (!app) return;
-  
+
   const modal = document.getElementById('approval-modal');
   const modalBody = document.getElementById('approval-modal-body');
   const title = document.getElementById('approval-modal-title');
-  
+
   title.textContent = `Review ${app.action}: ${app.inventory_id}`;
   modalBody.innerHTML = '<div style="text-align:center;padding:3rem;"><span class="spinner" style="display:inline-block;width:24px;height:24px;border:3px solid #ccc;border-top-color:#0b6b78;border-radius:50%;animation:spin 1s linear infinite;"></span></div>';
   modal.classList.remove('hidden');
-  
+
   try {
     let liveData = null;
     if (app.action === 'UPDATE') {
       const res = await apiGetItem(app.inventory_id);
       if (res.ok) liveData = res.data;
     }
-    
+
     let html = '';
-    
+
     if (app.action === 'UPDATE' && liveData) {
       html += `
         <div class="diff-container" style="flex-direction: column;">
@@ -130,9 +130,9 @@ async function openApprovalModal(id) {
         </div>
       `;
     }
-    
+
     modalBody.innerHTML = html;
-  } catch(e) {
+  } catch (e) {
     console.error(e);
     modalBody.innerHTML = '<div style="color:red;padding:2rem;text-align:center;">Error generating diff view.</div>';
   }
@@ -141,7 +141,7 @@ async function openApprovalModal(id) {
 function _buildRecordTableHtml(record, compareRecord = null, mode = 'new') {
   const getDiffClass = (val, compareVal) => {
     if (!compareRecord) return '';
-    if (String(val||'') !== String(compareVal||'')) {
+    if (String(val || '') !== String(compareVal || '')) {
       return mode === 'new' ? 'diff-val--new' : 'diff-val--old';
     }
     return '';
@@ -149,7 +149,7 @@ function _buildRecordTableHtml(record, compareRecord = null, mode = 'new') {
 
   const pLine = record.production_line_code || record.bm_production_line_code || record.fg_production_line_code;
   const cLine = compareRecord ? (compareRecord.production_line_code || compareRecord.bm_production_line_code || compareRecord.fg_production_line_code) : undefined;
-  
+
   const qty = record.quantity ?? record.qty;
   const cQty = compareRecord ? (compareRecord.quantity ?? compareRecord.qty) : undefined;
 
@@ -168,7 +168,7 @@ function _buildRecordTableHtml(record, compareRecord = null, mode = 'new') {
       <div style="font-size: 0.95rem;"><span class="${getDiffClass(record.notes, compareRecord?.notes)}">${sanitizeInput(record.notes || '-')}</span></div>
     </div>
   `;
-  
+
   if (record.activities && record.activities.length > 0) {
     html += `
       <h5 class="diff-section-title">Activities</h5>
@@ -200,7 +200,7 @@ function _buildRecordTableHtml(record, compareRecord = null, mode = 'new') {
       const compAct = compareRecord?.activities?.[i] || {};
       const actName = act.activity_name || act.activities;
       const compActName = compAct.activity_name || compAct.activities;
-      
+
       html += `
         <tr>
           <td class="w-activity bg-activity-green"><span class="${getDiffClass(actName, compActName)}">${sanitizeInput(actName || '-')}</span></td>
@@ -223,7 +223,7 @@ function _buildRecordTableHtml(record, compareRecord = null, mode = 'new') {
   } else {
     html += `<p class="diff-empty-state">No activities defined.</p>`;
   }
-  
+
   return html;
 }
 
@@ -238,11 +238,11 @@ async function handleApproveApproval() {
   btn.disabled = true;
   const originalText = btn.innerHTML;
   btn.textContent = 'Approving...';
-  
+
   try {
     const res = await _apiFetch(`/api/approvals/${selectedApprovalId}/approve`, 'POST');
     if (res.ok) {
-      showToast({type: 'success', title: 'Approved', message: 'Changes have been merged into the live database.'});
+      showToast({ type: 'success', title: 'Approved', message: 'Changes have been merged into the live database.' });
       closeApprovalModal();
       fetchPendingApprovals();
     } else {
@@ -252,9 +252,9 @@ async function handleApproveApproval() {
         type: 'confirm', confirmLabel: 'OK'
       });
     }
-  } catch(e) {
+  } catch (e) {
     console.error(e);
-    await showModal({icon: 'danger', title: 'Error', message: 'Network error approving request.', type: 'confirm', confirmLabel: 'OK'});
+    await showModal({ icon: 'danger', title: 'Error', message: 'Network error approving request.', type: 'confirm', confirmLabel: 'OK' });
   } finally {
     btn.disabled = false;
     btn.innerHTML = originalText;
@@ -264,7 +264,7 @@ async function handleApproveApproval() {
 async function handleRejectApproval() {
   if (!selectedApprovalId) return;
   const btn = document.getElementById('btn-reject-approval');
-  
+
   try {
     const confirm = await showModal({
       icon: 'warning', title: 'Reject Request',
@@ -272,12 +272,12 @@ async function handleRejectApproval() {
       type: 'confirm', confirmLabel: 'Yes, Reject', confirmStyle: 'danger'
     });
     if (!confirm.confirmed) return;
-    
+
     btn.disabled = true;
-    
+
     const res = await _apiFetch(`/api/approvals/${selectedApprovalId}/reject`, 'POST');
     if (res.ok) {
-      showToast({type: 'success', title: 'Rejected', message: 'The request was successfully rejected.'});
+      showToast({ type: 'success', title: 'Rejected', message: 'The request was successfully rejected.' });
       closeApprovalModal();
       fetchPendingApprovals();
     } else {
@@ -287,11 +287,123 @@ async function handleRejectApproval() {
         type: 'confirm', confirmLabel: 'OK'
       });
     }
-  } catch(e) {
+  } catch (e) {
     console.error(e);
-    await showModal({icon: 'danger', title: 'Error', message: 'Network error rejecting request.', type: 'confirm', confirmLabel: 'OK'});
+    await showModal({ icon: 'danger', title: 'Error', message: 'Network error rejecting request.', type: 'confirm', confirmLabel: 'OK' });
   } finally {
     btn.disabled = false;
+  }
+}
+
+/* ============================================
+   Real-time badge updates via Server-Sent Events
+   ============================================
+
+   /api/approvals/stream is admin-only (only admins can approve/reject),
+   so this only ever connects when the logged-in user's role is 'admin'.
+
+   We can't use the native EventSource API here because EventSource has
+   no way to attach an Authorization header, and this backend authenticates
+   every request via a Bearer JWT (see routes/utils/decorators.py). Instead
+   we open the stream with fetch() (which does support custom headers) and
+   read the response body as a stream, parsing "data: ..." lines ourselves.
+*/
+
+let _approvalsSSEAbort = null;   // AbortController for the current stream
+let _approvalsSSEReconnectTimer = null;
+
+function _isAdmin() {
+  return (typeof Auth !== 'undefined') && Auth.isAdmin();
+}
+
+function _handleApprovalsSSEMessage(rawEventBlock) {
+  // Each SSE event is one or more lines; only "data:" lines carry payload.
+  // Lines starting with ":" are comments (our heartbeat) and are ignored.
+  let dataStr = '';
+  for (const line of rawEventBlock.split('\n')) {
+    if (line.startsWith('data:')) {
+      dataStr += line.slice(5).trim();
+    }
+  }
+  if (!dataStr) return;
+
+  let payload;
+  try {
+    payload = JSON.parse(dataStr);
+  } catch (e) {
+    return;
+  }
+
+  if (payload && payload.type === 'approvals_changed') {
+    // A submission/approval/rejection happened somewhere — refresh the
+    // badge (and the backing array) silently, without touching the table.
+    _fetchApprovalsCount();
+  }
+}
+
+async function _connectApprovalsSSE() {
+  if (_approvalsSSEAbort) return; // already connected
+  if (!_isAdmin()) return;
+
+  // Same header helper _apiFetch uses — {} if not logged in yet, which will
+  // simply get a 401 and fall into the catch block below to retry shortly.
+  const authHeaders = (typeof Auth !== 'undefined') ? Auth.authHeaders() : {};
+  _approvalsSSEAbort = new AbortController();
+
+  try {
+    const res = await fetch(API_BASE_URL + '/api/approvals/stream', {
+      method: 'GET',
+      headers: { ...authHeaders, Accept: 'text/event-stream' },
+      signal: _approvalsSSEAbort.signal,
+    });
+
+    if (!res.ok || !res.body) {
+      throw new Error(`SSE connect failed with status ${res.status}`);
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+
+      // SSE events are separated by a blank line ("\n\n")
+      let sepIndex;
+      while ((sepIndex = buffer.indexOf('\n\n')) >= 0) {
+        const rawEvent = buffer.slice(0, sepIndex);
+        buffer = buffer.slice(sepIndex + 2);
+        _handleApprovalsSSEMessage(rawEvent);
+      }
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      console.warn('Approvals SSE stream disconnected, will retry:', e);
+    }
+  } finally {
+    _approvalsSSEAbort = null;
+    // Reconnect after a short delay as long as the user is still an admin.
+    // This also covers the initial case where the token isn't ready yet.
+    if (_isAdmin() && !_approvalsSSEReconnectTimer) {
+      _approvalsSSEReconnectTimer = setTimeout(() => {
+        _approvalsSSEReconnectTimer = null;
+        _connectApprovalsSSE();
+      }, 5000);
+    }
+  }
+}
+
+function _disconnectApprovalsSSE() {
+  if (_approvalsSSEAbort) {
+    _approvalsSSEAbort.abort();
+    _approvalsSSEAbort = null;
+  }
+  if (_approvalsSSEReconnectTimer) {
+    clearTimeout(_approvalsSSEReconnectTimer);
+    _approvalsSSEReconnectTimer = null;
   }
 }
 
@@ -310,57 +422,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Keep the notification badge live: retry shortly after load in case
-  // Auth's role check resolves asynchronously, then poll periodically so
-  // the count reflects new Add/Update submissions made by other users
-  // without requiring the admin to click into the tab.
+  // Keep the notification badge live in real time via SSE: retry shortly
+  // after load in case Auth's role check resolves asynchronously.
   //
-  // NOTE: The background poll uses _fetchApprovalsCount() (silent, badge-only)
-  // instead of fetchPendingApprovals() so the table never flashes "Loading..."
-  // while the user is idle. The full table is only re-rendered when the user
-  // clicks the Approvals tab.
-  const POLL_INTERVAL_MS = 60000;   // silent badge refresh every 60s
+  // NOTE: incoming SSE messages call _fetchApprovalsCount() (silent,
+  // badge-only) instead of fetchPendingApprovals() so the table never
+  // flashes "Loading..." while the user is idle. The full table is only
+  // re-rendered when the user clicks the Approvals tab.
   const RETRY_INTERVAL_MS = 1000;   // retry every 1s until role is known
   const MAX_RETRIES = 15;           // give up after 15s if never admin
   let retries = 0;
-  let pollTimer = null;
 
-  function _isAdmin() {
-    return ((typeof Auth !== 'undefined' && Auth.getUser()) || {}).role === 'admin';
-  }
-
-  function _startPolling() {
-    if (pollTimer) return;
-    // Use the silent _fetchApprovalsCount so the table never re-renders
-    // in the background — only the badge number updates quietly.
-    pollTimer = setInterval(() => {
-      if (_isAdmin()) {
-        _fetchApprovalsCount();
-      } else {
-        clearInterval(pollTimer);
-        pollTimer = null;
-      }
-    }, POLL_INTERVAL_MS);
-  }
-
-  function _attemptInitialFetch() {
+  function _attemptInitialConnect() {
     if (_isAdmin()) {
       fetchPendingApprovals();
-      _startPolling();
+      _connectApprovalsSSE();
       return;
     }
     retries++;
     if (retries < MAX_RETRIES) {
-      setTimeout(_attemptInitialFetch, RETRY_INTERVAL_MS);
+      setTimeout(_attemptInitialConnect, RETRY_INTERVAL_MS);
     }
   }
 
-  _attemptInitialFetch();
+  _attemptInitialConnect();
 
-  // When the tab/window regains focus, do a silent badge-only refresh
-  // instead of a full table re-render so switching back to the tab
-  // doesn't flash "Loading..." unexpectedly.
+  // When the tab/window regains focus, do a silent badge-only refresh in
+  // case the SSE connection dropped while the tab was backgrounded, and
+  // make sure the stream is (re)connected.
   window.addEventListener('focus', () => {
-    if (_isAdmin()) _fetchApprovalsCount();
+    if (_isAdmin()) {
+      _fetchApprovalsCount();
+      _connectApprovalsSSE();
+    }
   });
+
+  // Clean up the stream on logout/navigation away, if your app fires this.
+  window.addEventListener('beforeunload', _disconnectApprovalsSSE);
 });
