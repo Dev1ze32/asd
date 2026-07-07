@@ -293,12 +293,49 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Also fetch once on load so the notification badge shows the current
-  // count without requiring the admin to open the tab first.
-  setTimeout(() => {
-    const role = ((typeof Auth !== 'undefined' && Auth.getUser()) || {}).role || '';
-    if (role === 'admin') {
+  // Keep the notification badge live: retry shortly after load in case
+  // Auth's role check resolves asynchronously, then poll periodically so
+  // the count reflects new Add/Update submissions made by other users
+  // without requiring the admin to click into the tab.
+  const POLL_INTERVAL_MS = 20000;   // refresh every 20s while page is open
+  const RETRY_INTERVAL_MS = 1000;   // retry every 1s until role is known
+  const MAX_RETRIES = 15;           // give up after 15s if never admin
+  let retries = 0;
+  let pollTimer = null;
+
+  function _isAdmin() {
+    return ((typeof Auth !== 'undefined' && Auth.getUser()) || {}).role === 'admin';
+  }
+
+  function _startPolling() {
+    if (pollTimer) return;
+    pollTimer = setInterval(() => {
+      if (_isAdmin()) {
+        fetchPendingApprovals();
+      } else {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+    }, POLL_INTERVAL_MS);
+  }
+
+  function _attemptInitialFetch() {
+    if (_isAdmin()) {
       fetchPendingApprovals();
+      _startPolling();
+      return;
     }
-  }, 300);
+    retries++;
+    if (retries < MAX_RETRIES) {
+      setTimeout(_attemptInitialFetch, RETRY_INTERVAL_MS);
+    }
+  }
+
+  _attemptInitialFetch();
+
+  // Also refresh immediately when the tab/window regains focus, so
+  // switching back from another tab shows an up-to-date count right away.
+  window.addEventListener('focus', () => {
+    if (_isAdmin()) fetchPendingApprovals();
+  });
 });
