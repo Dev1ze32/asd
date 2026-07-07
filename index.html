@@ -9,7 +9,8 @@
   <!-- ============================================
        STYLESHEETS - Modular CSS Architecture
        ============================================ -->
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/main.css?v=20260706173000">
+  <link rel="stylesheet" href="css/components.css?v=20260706174000">
  
 
   <!--
@@ -1202,6 +1203,7 @@
         <button id="tab-logs"     onclick="switchTab('LOGS')"     class="nav-tab nav-tab--inactive" style="display:none;">System Logs</button>
         <button id="tab-manage"   onclick="switchTab('MANAGE')"   class="nav-tab nav-tab--inactive" style="display:none;">Manage Lines</button>
         <button id="tab-database" onclick="switchTab('DATABASE')" class="nav-tab nav-tab--inactive" style="display:none;">Delete Product</button>
+        <button id="tab-approvals" onclick="switchTab('APPROVALS')" class="nav-tab nav-tab--inactive" style="display:none; font-weight: 700;">Pending Approvals</button>
       </nav>
     </div>
 
@@ -1894,6 +1896,68 @@
         </div>
       </div>
 
+    </div> <!-- End view-admin -->
+
+    <!-- ============================================
+         VIEW 7: PENDING APPROVALS
+         Admin-only approvals panel
+         ============================================ -->
+    <div id="view-approvals" class="hidden view-card">
+      <div class="manage-page-header">
+        <div>
+          <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--gray-800); margin: 0 0 0.2rem;">Pending Approvals</h3>
+          <p style="font-size: 0.82rem; color: #64748b; margin: 0;">Review and approve pending routing changes.</p>
+        </div>
+        <span style="display: inline-flex; align-items: center; gap: 0.35rem; background-color: #fef2f2; color: #dc2626; padding: 0.3rem 0.85rem; border-radius: 9999px; font-size: 0.78rem; font-weight: 600; border: 1px solid #fecaca; letter-spacing: 0.01em;">
+          &#9881; Admin Only
+        </span>
+      </div>
+
+      <!-- NEW: Pending Approvals Section -->
+      <div class="admin-section" style="margin-top: 1.5rem;">
+        <div class="admin-section__header" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          <p class="admin-section__title" style="margin: 0;">Pending Requests</p>
+          <div style="flex: 1; max-width: 300px;">
+            <button class="btn btn--secondary" onclick="if(typeof fetchPendingApprovals === 'function') fetchPendingApprovals()" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; float: right;">Refresh</button>
+          </div>
+        </div>
+        <div class="admin-section__body" style="padding: 0; overflow-x: auto;">
+          <table class="admin-table" id="pending-approvals-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Item Code</th>
+                <th>Action</th>
+                <th>Requested By</th>
+                <th>Date</th>
+                <th style="text-align: right;">Review</th>
+              </tr>
+            </thead>
+            <tbody id="pending-approvals-tbody">
+              <!-- Populated by approvals.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- APPROVALS MODAL -->
+      <div id="approval-modal" class="modal-backdrop hidden" style="position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 2rem;">
+        <div class="modal-content diff-modal-content">
+          <div class="modal-header diff-modal-header">
+            <h3 class="modal-title" id="approval-modal-title">Review Pending Changes</h3>
+            <button class="modal-close" onclick="closeApprovalModal()">&times;</button>
+          </div>
+          <div class="modal-body diff-modal-body" id="approval-modal-body">
+            <!-- Diff content injected here -->
+          </div>
+          <div class="modal-footer diff-modal-footer">
+            <button class="btn btn--secondary" onclick="closeApprovalModal()">Cancel</button>
+            <button class="btn btn--danger" id="btn-reject-approval" onclick="handleRejectApproval()">Reject</button>
+            <button class="btn btn--primary" id="btn-approve-approval" onclick="handleApproveApproval()">Approve &amp; Apply</button>
+          </div>
+        </div>
+      </div>
+
     </div>
       <!-- Database Management section moved to its own tab (view-database) -->
 
@@ -2379,6 +2443,7 @@
   <!-- Layer 5: Admin Modules (admin only, but scripts load for all) -->
   <script src="js/modules/admin-panel.js?v=20260630160000" defer></script>
   <script src="js/modules/logs.js?v=20260630140000" defer></script>
+  <script src="js/modules/approvals.js?v=20260706160000" defer></script>
 
   <!-- Archive viewer (UPDATE tab only, read-only revision history) -->
   <script src="js/modules/archive.js?v=20260630140000" defer></script>

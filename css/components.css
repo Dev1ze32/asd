@@ -34,9 +34,14 @@
   white-space: nowrap;
 }
 
-.excel-table tr:last-child td { border-bottom: none; }
+.excel-table tr:last-child td {
+  border-bottom: none;
+}
+
 .excel-table th:last-child,
-.excel-table td:last-child { border-right: none; }
+.excel-table td:last-child {
+  border-right: none;
+}
 
 .excel-table tbody tr:hover td:not(.bg-red-50):not(.cell-bom):not(.cell-computed) {
   background-color: var(--gray-100);
@@ -60,15 +65,51 @@
 }
 
 .excel-table th.w-activity,
-.excel-table td.w-activity { width: 16rem; text-align: left; padding-left: var(--space-3); }
+.excel-table td.w-activity {
+  width: 16rem;
+  text-align: left;
+  padding-left: var(--space-3);
+}
 
-.excel-table th.w-pax, .excel-table td.w-pax { width: 4rem; }
-.excel-table th.w-machine, .excel-table td.w-machine { width: 4rem; }
-.excel-table th.w-time, .excel-table td.w-time { width: 6rem; }
-.excel-table th.w-runtime, .excel-table td.w-runtime { width: 6rem; background: #fff; }
-.excel-table th.w-unit, .excel-table td.w-unit { width: 4rem; background: #fff; }
-.excel-table th.w-labor, .excel-table td.w-labor { width: 6rem; background: #fff; }
-.excel-table th.w-mc, .excel-table td.w-mc { width: 6rem; background: #fff; border-right: 1px solid #000000; }
+.excel-table th.w-pax,
+.excel-table td.w-pax {
+  width: 4rem;
+}
+
+.excel-table th.w-machine,
+.excel-table td.w-machine {
+  width: 4rem;
+}
+
+.excel-table th.w-time,
+.excel-table td.w-time {
+  width: 6rem;
+}
+
+.excel-table th.w-runtime,
+.excel-table td.w-runtime {
+  width: 6rem;
+  background: #fff;
+}
+
+.excel-table th.w-unit,
+.excel-table td.w-unit {
+  width: 4rem;
+  background: #fff;
+}
+
+.excel-table th.w-labor,
+.excel-table td.w-labor {
+  width: 6rem;
+  background: #fff;
+}
+
+.excel-table th.w-mc,
+.excel-table td.w-mc {
+  width: 6rem;
+  background: #fff;
+  border-right: 1px solid #000000;
+}
 
 .excel-table th.w-bom-activity,
 .excel-table td.w-bom-activity {
@@ -78,10 +119,33 @@
   background-color: var(--bom-cell);
 }
 
-.excel-table th.w-dl-units, .excel-table td.w-dl-units { width: 6rem; background-color: var(--bom-cell); }
-.excel-table th.w-dl, .excel-table td.w-dl { width: 5rem; background-color: var(--bom-cell); }
-.excel-table th.w-voh, .excel-table td.w-voh { width: 5rem; background-color: var(--bom-cell); }
-.excel-table th.w-foh, .excel-table td.w-foh { width: 5rem; background-color: var(--bom-cell); }
+.excel-table th.w-dl-units,
+.excel-table td.w-dl-units {
+  width: 6rem;
+  background-color: var(--bom-cell);
+}
+
+.excel-table th.w-dl,
+.excel-table td.w-dl {
+  width: 5rem;
+  background-color: var(--bom-cell);
+}
+
+.excel-table th.w-voh,
+.excel-table td.w-voh {
+  width: 5rem;
+  background-color: var(--bom-cell);
+}
+
+.excel-table th.w-foh,
+.excel-table td.w-foh {
+  width: 5rem;
+  background-color: var(--bom-cell);
+}
+
+.excel-table td.cell-bom {
+  background-color: var(--bom-cell);
+}
 
 .excel-table tfoot tr {
   font-weight: 700;
@@ -945,7 +1009,7 @@ body.dark-mode .action-column {
   color: #f0f6f7;
 }
 
-body.dark-mode .cell-bom,
+body.dark-mode .excel-table td.cell-bom,
 body.dark-mode .excel-table th.w-bom-activity,
 body.dark-mode .excel-table td.w-bom-activity,
 body.dark-mode .excel-table th.w-dl-units,
@@ -956,7 +1020,7 @@ body.dark-mode .excel-table th.w-voh,
 body.dark-mode .excel-table td.w-voh,
 body.dark-mode .excel-table th.w-foh,
 body.dark-mode .excel-table td.w-foh {
-  background: #203238;
+  background: #101b20;
   color: #f0f6f7;
 }
 
@@ -1204,4 +1268,223 @@ body.dark-mode .btn-add-activity {
 
 body.dark-mode .btn-add-activity:hover {
   background: #0e8a99;
+}
+
+/* =========================================
+   APPROVAL DIFF UI (Light & Dark Mode)
+   Re-based on the brand tokens (base.css) so
+   this modal follows whatever palette the app
+   is on, instead of a fixed generic slate/blue
+   theme that could drift out of sync.
+   ========================================= */
+.diff-container {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.diff-box {
+  flex: 1;
+  min-width: 320px;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 1.5rem;
+  background: #ffffff;
+}
+
+body.dark-mode .diff-box {
+  background: var(--gray-100);
+  border-color: var(--pal-teal-dark);
+}
+
+.diff-box--old h4 {
+  color: #dc2626;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+body.dark-mode .diff-box--old h4 {
+  color: #fca5a5;
+}
+
+.diff-box--new h4 {
+  color: var(--pioneer-red-dark);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+body.dark-mode .diff-box--new h4 {
+  color: var(--pal-green-light);
+}
+
+.diff-val--new {
+  background-color: var(--pal-green-light);
+  font-weight: 700;
+  color: var(--pioneer-red-dark);
+  border-radius: 4px;
+  padding: 0.1rem 0.3rem;
+}
+
+body.dark-mode .diff-val--new {
+  background-color: var(--pal-teal-mid);
+  color: var(--pal-green-light);
+}
+
+.diff-val--old {
+  background-color: #fee2e2;
+  color: #991b1b;
+  text-decoration: line-through;
+  border-radius: 4px;
+  padding: 0.1rem 0.3rem;
+}
+
+body.dark-mode .diff-val--old {
+  background-color: rgba(220, 38, 38, 0.2);
+  color: #fca5a5;
+}
+
+.diff-section-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.95rem;
+  color: var(--gray-700);
+}
+
+body.dark-mode .diff-section-title {
+  color: var(--gray-600);
+}
+
+.diff-empty-state {
+  font-size: 0.85rem;
+  color: var(--gray-500);
+  font-style: italic;
+}
+
+body.dark-mode .diff-empty-state {
+  color: var(--gray-400);
+}
+
+.diff-modal-content {
+  max-width: 1100px;
+  width: 95%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  border: 1px solid var(--gray-200);
+}
+
+body.dark-mode .diff-modal-content {
+  background: var(--pal-teal-night);
+  border-color: var(--pal-teal-dark);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5);
+}
+
+.diff-modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--gray-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--gray-50);
+}
+
+body.dark-mode .diff-modal-header {
+  background: var(--pal-teal-ink);
+  border-bottom-color: var(--pal-teal-dark);
+}
+
+.diff-modal-body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 1.5rem;
+}
+
+.diff-modal-footer {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid var(--gray-200);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background: var(--gray-50);
+}
+
+body.dark-mode .diff-modal-footer {
+  background: var(--pal-teal-ink);
+  border-top-color: var(--pal-teal-dark);
+}
+
+/* -----------------------------------------
+   Fix: the ROUTING DETAILS / ACUMATICA BOM
+   table rendered inside the approval modal
+   reuses the same .excel-table / .cell-bom /
+   .section-header--bom classes as the main
+   routing table, but only #routingTable had
+   dark-mode overrides. Inside the modal those
+   cells were staying at their light-mode teal
+   fill, which reads as a harsh, glowing block
+   against the dark modal background. These
+   rules give the modal's copy of that table
+   the same dark treatment.
+   ----------------------------------------- */
+body.dark-mode #approval-modal-body .section-header--routing,
+body.dark-mode #approval-modal-body .section-header--bom,
+body.dark-mode #approval-modal-body thead .col-del,
+body.dark-mode #approval-modal-body tfoot tr td,
+body.dark-mode #approval-modal-body tfoot tr td.cell-bom {
+  background-color: var(--pal-teal-ink) !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode #approval-modal-body thead tr:nth-child(2) th:not(.th-bom),
+body.dark-mode #approval-modal-body thead tr:nth-child(2) th.th-bom {
+  background-color: var(--pal-teal-mid) !important;
+  color: var(--gray-800) !important;
+}
+
+body.dark-mode #approval-modal-body td.bg-excel-yellow,
+body.dark-mode #approval-modal-body td.bg-activity-green {
+  background-color: var(--gray-100) !important;
+  color: var(--gray-800) !important;
+}
+
+body.dark-mode #approval-modal-body td.cell-bom,
+body.dark-mode #approval-modal-body th.w-bom-activity,
+body.dark-mode #approval-modal-body td.w-bom-activity,
+body.dark-mode #approval-modal-body th.w-dl-units,
+body.dark-mode #approval-modal-body td.w-dl-units,
+body.dark-mode #approval-modal-body th.w-dl,
+body.dark-mode #approval-modal-body td.w-dl,
+body.dark-mode #approval-modal-body th.w-voh,
+body.dark-mode #approval-modal-body td.w-voh,
+body.dark-mode #approval-modal-body th.w-foh,
+body.dark-mode #approval-modal-body td.w-foh {
+  background-color: var(--pal-teal-soft) !important;
+  color: var(--gray-800) !important;
+}
+
+body.dark-mode #approval-modal-body .cell-computed,
+body.dark-mode #approval-modal-body .action-column {
+  background-color: var(--gray-50) !important;
+  color: var(--gray-800) !important;
+}
+
+body.dark-mode #approval-modal-body .excel-table {
+  border-color: var(--pal-teal-dark);
+}
+
+body.dark-mode #approval-modal-body .excel-table th,
+body.dark-mode #approval-modal-body .excel-table td {
+  border-color: var(--pal-teal-dark) !important;
 }

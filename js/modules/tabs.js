@@ -26,7 +26,8 @@ const TAB_ELEMENTS = {
 [AppState.ALLDATA]:  'tab-alldata',
 [AppState.ADMIN]:    'tab-admin',
 [AppState.LOGS]:     'tab-logs',
-[AppState.DATABASE]: 'tab-database'
+[AppState.DATABASE]: 'tab-database',
+'APPROVALS':         'tab-approvals'
 };
 
 /**
@@ -35,7 +36,8 @@ const TAB_ELEMENTS = {
 const VIEW_ELEMENTS = {
 [AppState.ADMIN]:    'view-admin',
 [AppState.LOGS]:     'view-logs',
-[AppState.DATABASE]: 'view-database'
+[AppState.DATABASE]: 'view-database',
+'APPROVALS':         'view-approvals'
 };
 
 const TAB_PAGE_TITLES = {
@@ -47,6 +49,7 @@ const TAB_PAGE_TITLES = {
 [AppState.ADMIN]:    'Admin Panel',
 [AppState.LOGS]:     'System Logs',
 [AppState.DATABASE]: 'Database Management',
+'APPROVALS':         'Pending Approvals',
 };
 
 const ROUTING_TABS = [
@@ -68,7 +71,7 @@ const previousState = App.currentState;
 const role = (Auth.getUser() || {}).role || '';
 
 // --- Guard: admin-only tabs ---
-if ((tabId === AppState.ADMIN || tabId === AppState.LOGS || tabId === AppState.DATABASE) && role !== 'admin') {
+if ((tabId === AppState.ADMIN || tabId === AppState.LOGS || tabId === AppState.DATABASE || tabId === 'APPROVALS') && role !== 'admin') {
 showModal({
 icon: 'danger',
 title: 'Access Denied',
@@ -175,6 +178,7 @@ const viewAllData  = document.getElementById('view-alldata');
 const viewAdmin    = document.getElementById('view-admin');
 const viewLogs     = document.getElementById('view-logs');
 const viewDatabase = document.getElementById('view-database');
+const viewApprovals = document.getElementById('view-approvals');
 
 // Hide all views first
 if (viewRouting)  viewRouting.classList.add('hidden');
@@ -183,6 +187,7 @@ if (viewAllData)  viewAllData.classList.add('hidden');
 if (viewAdmin)    viewAdmin.classList.add('hidden');
 if (viewLogs)     viewLogs.classList.add('hidden');
 if (viewDatabase) viewDatabase.classList.add('hidden');
+if (viewApprovals) viewApprovals.classList.add('hidden');
 
 switch (state) {
 case AppState.ADD:
@@ -208,6 +213,9 @@ showLogsView(viewLogs);
 break;
 case AppState.DATABASE:
 showDatabaseView();
+break;
+case 'APPROVALS':
+if (viewApprovals) viewApprovals.classList.remove('hidden');
 break;
 default:
 console.warn('Unknown tab state:', state);

@@ -602,6 +602,7 @@ function _refreshAdminTabs() {
     'tab-manage':   ['admin'],
     'tab-alldata':  ['superuser', 'user'],
     'tab-admin':    ['admin'],
+    'tab-approvals':['admin'],
     'tab-logs':     ['admin'],
     'tab-database': ['admin'],
   };

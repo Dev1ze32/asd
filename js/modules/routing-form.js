@@ -363,6 +363,45 @@ async function saveRoutingDocument() {
 
   const isUpdate = App.currentState === AppState.UPDATE;
 
+  // ── SUPER USER APPROVAL INTERCEPT ──────────────────────────────────────────
+  const currentUserRole = ((typeof Auth !== 'undefined' && Auth.getUser()) || {}).role || '';
+  if (currentUserRole === 'superuser') {
+    const confirmSave = await showModal({
+      icon: 'info', title: 'Submit for Approval',
+      message: `As a Super User, your changes to ${itemCode} will be submitted for Admin approval. Proceed?`,
+      type: 'confirm', confirmLabel: 'Submit', confirmStyle: 'primary'
+    });
+    if (!confirmSave.confirmed) return false;
+    
+    const payload = {
+      inventory_id: itemCode,
+      action: isUpdate ? 'UPDATE' : 'ADD',
+      payload: record
+    };
+    
+    const res = await _apiFetch('/api/approvals', 'POST', payload);
+    if (!res.ok) {
+      await showModal({
+        icon: 'danger', title: 'Submission Failed',
+        message: res.data?.error || 'Failed to submit approval request.',
+        type: 'confirm', confirmLabel: 'OK',
+      });
+      return false;
+    }
+    
+    showToast({ type: 'success', title: 'Submitted', message: `Approval request for ${itemCode} has been sent to Admins.` });
+    
+    // Cleanup UI
+    _resetFormToPristine();
+    App.currentMode = null;
+    App.currentRecord = null;
+    App.currentState = AppState.VIEW;
+    document.getElementById('routing-form-view').classList.add('hidden');
+    if (typeof performSearch === 'function') performSearch(true);
+    return true;
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   // --- Try API first ---
   try {
     if (!isUpdate) {
