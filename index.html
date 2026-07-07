@@ -1350,7 +1350,7 @@
             <p style="margin:0 0 0.5rem;"><strong>SKU Description:</strong> <span id="ld-skuDesc" style="font-weight:500;"></span></p>
             <p style="margin:0 0 0.5rem;"><strong>FG Qty/Unit:</strong> <span id="ld-qty" style="font-weight:500;"></span></p>
             <p style="margin:0 0 0.5rem;"><strong>Notes:</strong> <span id="ld-notes" style="font-weight:500;"></span></p>
-            <p style="margin:0;"><strong>Revision:</strong> <span id="ld-revision" style="font-weight:500;"></span></p>
+            <p style="margin:0;"><strong>Revision:</strong> <span id="ld-revision" style="font-weight:500;"></span> &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Last Updated:</strong> <span id="ld-updatedAt" style="font-weight:500; color: #475569;"></span></p>
           </div>
           <div>
             <p style="margin:0 0 0.5rem;"><strong>Template Mode:</strong> <span id="ld-mode" style="font-weight:500;"></span></p>
@@ -1413,16 +1413,30 @@
                    readonly
                    class="bg-gray-50 text-gray-600">
           </div>
-          <!-- Revision: shown in UPDATE mode only — read-only display, not an input -->
+          <!-- Revision & Last Updated: shown in UPDATE mode only — read-only display, not an input -->
           <div class="form-group hide-in-add" id="revisionGroup">
-            <label class="text-gray-500">Revision</label>
-            <p id="revisionInput"
-               class="bg-gray-50 text-gray-600"
-               style="margin:0; padding:0.45rem 0.65rem; border:1px solid #e2e8f0;
-                      border-radius:6px; font-size:0.875rem; font-weight:500;
-                      min-height:2.25rem; display:flex; align-items:center;">
-              —
-            </p>
+            <div style="display: flex; gap: 1rem; align-items: flex-end;">
+              <div style="flex: 0 0 auto; width: 6rem;">
+                <label class="text-gray-500" style="white-space: nowrap; margin-bottom: 0.5rem; display: block;">Revision</label>
+                <p id="revisionInput"
+                   class="bg-gray-50 text-gray-600"
+                   style="margin:0; padding:0.45rem 0.65rem; border:1px solid #e2e8f0;
+                          border-radius:6px; font-size:0.875rem; font-weight:500;
+                          min-height:2.25rem; display:flex; align-items:center;">
+                  —
+                </p>
+              </div>
+              <div style="flex: 1;">
+                <label class="text-gray-500" style="white-space: nowrap; margin-bottom: 0.5rem; display: block;">Last Updated</label>
+                <p id="updatedAtDisplay"
+                   class="bg-gray-50 text-gray-600"
+                   style="margin:0; padding:0.45rem 0.65rem; border:1px solid #e2e8f0;
+                          border-radius:6px; font-size:0.875rem; font-weight:500;
+                          min-height:2.25rem; display:flex; align-items:center;">
+                  —
+                </p>
+              </div>
+            </div>
           </div>
         </div>
         </div><!-- end form-grid -->
@@ -2439,7 +2453,7 @@
   <script src="js/modules/auth.js?v=20260630160000" defer></script>
 
   <!-- Layer 0b: API Service -->
-  <script src="js/modules/api-service.js?v=20260707083900" defer></script>
+  <script src="js/modules/api-service.js?v=20260707090000" defer></script>
 
   <!-- Layer 1: State & Data -->
   <script src="js/modules/state.js?v=20260630160000" defer></script>
@@ -2453,7 +2467,7 @@
 
   <!-- Layer 4: Feature Modules -->
   <script src="js/modules/routing-form.js?v=20260630140000" defer></script>
-  <script src="js/modules/search.js?v=20260707083900" defer></script>
+  <script src="js/modules/search.js?v=20260707090000" defer></script>
   <script src="js/modules/manage-activities.js?v=20260630140000" defer></script>
   <script src="js/modules/all-data.js?v=20260707083900" defer></script>
 

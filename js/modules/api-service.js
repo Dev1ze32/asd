@@ -605,6 +605,9 @@ function _normalizeApiItem(apiItem) {
     total_dl:        apiItem.total_dl        || 0,
     total_voh:       apiItem.total_voh       || 0,
     total_foh:       apiItem.total_foh       || 0,
+    // Timestamps
+    created_at: apiItem.created_at || null,
+    updated_at: apiItem.updated_at || null,
   };
 
   // Normalize activities: map activity_name → activities for UI compatibility

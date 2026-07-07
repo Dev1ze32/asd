@@ -69,8 +69,12 @@ refreshAllActivityDropdowns();
 // Populate revision field (UPDATE tab shows it as a read-only display)
 const revisionInputEl = document.getElementById('revisionInput');
 if (revisionInputEl) {
-revisionInputEl.textContent = data.revision ? 'Rev. ' + data.revision : '—';
+  revisionInputEl.textContent = data.revision ? 'Rev. ' + data.revision : '—';
 }
+
+// Populate timestamps in UPDATE mode
+const updatedAtEl = document.getElementById('updatedAtDisplay');
+if (updatedAtEl) updatedAtEl.textContent = _formatTimestamp(data.updated_at);
 
 if (isUpdate) {
   const itemCodeEl = document.getElementById('itemCode');
@@ -281,6 +285,30 @@ performSearch();
 }
 
 /**
+ * Format an ISO timestamp string to a human-readable local date+time.
+ * e.g. "2026-07-07T01:06:00+08:00" → "Jul 7, 2026, 1:06 AM"
+ * Returns '—' if the value is null/undefined/empty.
+ * @param {string|null} isoString
+ * @returns {string}
+ */
+function _formatTimestamp(isoString) {
+  if (!isoString) return '—';
+  try {
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleString(undefined, {
+      year:   'numeric',
+      month:  'short',
+      day:    'numeric',
+      hour:   'numeric',
+      minute: '2-digit',
+    });
+  } catch (_) {
+    return '—';
+  }
+}
+
+/**
 * Populate the LOOKUP plain-text display spans from a record.
 * @param {Object} data - The routing record
 */
@@ -307,7 +335,8 @@ const lineCode = data.production_line_code
 || data.fg_production_line_code
 || data.bm_production_line_code
 || '';
-set('ld-lineDesc', LINE_DESCRIPTIONS[lineCode] || data.production_line || '');
+set('ld-lineDesc',   LINE_DESCRIPTIONS[lineCode] || data.production_line || '');
+set('ld-updatedAt',  _formatTimestamp(data.updated_at));
 }
 
 window.performSearch                   = performSearch;
