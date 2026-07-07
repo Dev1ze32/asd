@@ -866,6 +866,76 @@ async function apiExportExcel() {
   }
 }
 
+/**
+ * GET /api/export?item_code=XXX
+ * Download a single product's routing data as a server-generated .xlsx file.
+ * Same Excel template as the full export, filtered to one item.
+ * Requires superuser or admin role.
+ *
+ * @param {string} itemCode - The inventory ID / item code to export.
+ * Returns { ok, status, data: Blob, filename } on success.
+ * Returns { ok: false, status, data: null }    on error.
+ */
+async function apiExportExcelItem(itemCode) {
+  showLoading('Generating Excel export…');
+  const authHeaders = (typeof Auth !== 'undefined') ? Auth.authHeaders() : {};
+
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), API_REQUEST_TIMEOUT_MS);
+
+  try {
+    const url      = API_BASE_URL + '/api/export?item_code=' + encodeURIComponent(itemCode);
+    const response = await fetch(url, {
+      method:  'GET',
+      headers: { ...authHeaders },
+      signal:  controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    hideLoading();
+
+    if (response.status === 401 && typeof Auth !== 'undefined') {
+      console.warn('[API] 401 Unauthorized — logging out.');
+      Auth.logout();
+      return { ok: false, status: 401, data: null };
+    }
+
+    if (!response.ok) {
+      let data = null;
+      try { data = await response.json(); } catch (_) {}
+      return { ok: false, status: response.status, data };
+    }
+
+    const blob = await response.blob();
+
+    const disposition = response.headers.get('Content-Disposition') || '';
+    const match       = disposition.match(/filename[^;=\n]*=((['""]).*?\2|[^;\n]*)/);
+    const filename    = match
+      ? match[1].replace(/['"]/g, '').trim()
+      : `Pioneer_Routing_${itemCode}.xlsx`;
+
+    return { ok: true, status: response.status, data: blob, filename };
+  } catch (err) {
+    clearTimeout(timeoutId);
+    hideLoading();
+
+    if (err && err.name === 'AbortError') {
+      console.error('[API] Export request timed out.');
+      if (typeof showModal === 'function') {
+        showModal({
+          icon: 'danger', title: 'Export Timed Out',
+          message: 'The export did not complete in time. Please try again.',
+          type: 'confirm', confirmLabel: 'OK',
+        });
+      }
+      return { ok: false, status: 0, data: null };
+    }
+
+    console.error('[API] Export network error:', err);
+    return { ok: false, status: 0, data: null, filename: null };
+  }
+}
+
 /* ============================================
    LOGS (ADMIN ONLY)
    ============================================ */
@@ -1043,6 +1113,7 @@ window.apiDeleteLineActivity   = apiDeleteLineActivity;
 window.apiGetLogs              = apiGetLogs;
 window.apiCleanupLogs          = apiCleanupLogs;
 window.apiExportExcel          = apiExportExcel;
+window.apiExportExcelItem      = apiExportExcelItem;
 window.apiDownloadDeploymentGuide = apiDownloadDeploymentGuide;
 // Internal helpers exposed for use in other modules
 window._normalizeApiItem       = _normalizeApiItem;
