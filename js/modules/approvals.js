@@ -11,7 +11,7 @@ async function fetchPendingApprovals() {
   tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading pending approvals...</td></tr>';
   
   try {
-    const res = await _apiFetch('/api/approvals', 'GET');
+    const res = await _apiFetch(`/api/approvals?_=${Date.now()}`, 'GET');
     if (res.ok) {
       currentPendingApprovals = res.data || [];
       renderPendingApprovals();

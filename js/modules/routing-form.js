@@ -412,8 +412,13 @@ async function saveRoutingDocument() {
     // Cleanup UI
     clearForm();
     App.currentRecord = null;
-    
-    if (typeof switchTab === 'function') {
+
+    // Only switch tabs if we're not already on Add — calling switchTab()
+    // here even when already active was tearing down and rebuilding the
+    // whole routing view (nav tab classes, table rows, etc.), causing a
+    // visible flicker on every submission. clearForm() above already
+    // resets the form, so no navigation is needed in that case.
+    if (App.currentState !== AppState.ADD && typeof switchTab === 'function') {
       switchTab(AppState.ADD);
     }
     return true;
