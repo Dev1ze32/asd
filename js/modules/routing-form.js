@@ -305,7 +305,8 @@ async function saveRoutingDocument() {
   // Collect activities from table
   var activities = [];
   var qtyInput = document.getElementById('qtyInput');
-  var currentQty = parseFloat(qtyInput?.value) || 1;
+  var currentQty = parseFloat(qtyInput?.value);
+  if (isNaN(currentQty)) currentQty = 0;
 
   var validActs = typeof getLineActivities === 'function' ? getLineActivities(prodLine) : [];
 
@@ -620,7 +621,11 @@ function loadDataIntoForm(data) {
 
   if (itemCodeEl) itemCodeEl.value = data.inventory_id || '';
   if (skuDescEl)  skuDescEl.value  = data.revision_descr || '';
-  if (qtyInputEl) qtyInputEl.value = data.qty || data.quantity || 1;
+  if (qtyInputEl) {
+    var qtyVal = data.qty;
+    if (qtyVal === undefined || qtyVal === null) qtyVal = data.quantity;
+    qtyInputEl.value = (qtyVal === undefined || qtyVal === null) ? '' : qtyVal;
+  }
 
   const notesInputEl = document.getElementById('notesInput');
   if (notesInputEl) notesInputEl.value = data.notes || '';
@@ -793,8 +798,8 @@ function _validateRoutingForm(itemCode, skuDesc, prodLine, qty) {
     errors.push({ section: 'Header', field: 'Production Line', reason: 'required — please select a line' });
 
   const qtyNum = parseFloat(qty);
-  if (qty === '' || qty === null || qty === undefined || isNaN(qtyNum) || qtyNum <= 0)
-    errors.push({ section: 'Header', field: 'Quantity', reason: 'must be a number greater than zero' });
+  if (qty === '' || qty === null || qty === undefined || isNaN(qtyNum) || qtyNum < 0)
+    errors.push({ section: 'Header', field: 'Quantity', reason: 'must be a number, 0 or greater' });
 
   // ── Activity table rows ──
   const rows = document.querySelectorAll('#tableBody tr');
