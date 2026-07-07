@@ -1526,6 +1526,7 @@ body.dark-mode .diff-modal-footer .btn--danger:hover {
 }
 
 body.dark-mode .diff-modal-footer .btn--primary {
+  color: var(--pal-teal-night);
   box-shadow: 0 0 0 1px rgba(66, 199, 199, 0.4), 0 0 16px rgba(66, 199, 199, 0.45);
 }
 
