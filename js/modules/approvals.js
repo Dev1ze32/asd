@@ -24,10 +24,19 @@ async function fetchPendingApprovals() {
   }
 }
 
+function _updateApprovalsBadge() {
+  const badge = document.getElementById('approvals-badge');
+  if (!badge) return;
+  const count = currentPendingApprovals.length;
+  badge.textContent = count > 99 ? '99+' : String(count);
+  badge.classList.toggle('hidden', count === 0);
+}
+
 function renderPendingApprovals() {
   const tbody = document.getElementById('pending-approvals-tbody');
   if (!tbody) return;
   tbody.innerHTML = '';
+  _updateApprovalsBadge();
   
   if (currentPendingApprovals.length === 0) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;font-style:italic;padding:2rem;">No pending approvals. All caught up!</td></tr>';
@@ -283,4 +292,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 100);
     });
   }
+
+  // Also fetch once on load so the notification badge shows the current
+  // count without requiring the admin to open the tab first.
+  setTimeout(() => {
+    const role = ((typeof Auth !== 'undefined' && Auth.getUser()) || {}).role || '';
+    if (role === 'admin') {
+      fetchPendingApprovals();
+    }
+  }, 300);
 });

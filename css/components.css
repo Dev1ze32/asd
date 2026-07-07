@@ -1709,3 +1709,31 @@ body.dark-mode #approval-modal-body .excel-table th,
 body.dark-mode #approval-modal-body .excel-table td {
   border-color: var(--pal-teal-dark) !important;
 }
+/* -----------------------------------------
+   Pending Approvals tab — notification badge
+   showing the live count of pending requests.
+   Sits inline with the tab label; red pill on
+   light backgrounds, slightly desaturated on
+   dark mode to match the app's toned-down
+   dark-mode red used for the Reject button.
+   ----------------------------------------- */
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background-color: var(--status-red);
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.35);
+}
+
+body.dark-mode .tab-badge {
+  background-color: #e05656;
+  box-shadow: 0 0 0 1px rgba(224, 86, 86, 0.4);
+}
