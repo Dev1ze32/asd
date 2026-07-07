@@ -24,6 +24,23 @@ async function fetchPendingApprovals() {
   }
 }
 
+/**
+ * Silent background poll — only refreshes the badge count.
+ * Does NOT touch the table DOM, so there is no visual flash or "Loading..."
+ * flicker when the user is idle on the page.
+ */
+async function _fetchApprovalsCount() {
+  try {
+    const res = await _apiFetch(`/api/approvals?_=${Date.now()}`, 'GET');
+    if (res.ok) {
+      currentPendingApprovals = res.data || [];
+      _updateApprovalsBadge();
+    }
+  } catch(e) {
+    // Silently ignore background poll errors
+  }
+}
+
 function _updateApprovalsBadge() {
   const badge = document.getElementById('approvals-badge');
   if (!badge) return;
@@ -297,7 +314,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Auth's role check resolves asynchronously, then poll periodically so
   // the count reflects new Add/Update submissions made by other users
   // without requiring the admin to click into the tab.
-  const POLL_INTERVAL_MS = 20000;   // refresh every 20s while page is open
+  //
+  // NOTE: The background poll uses _fetchApprovalsCount() (silent, badge-only)
+  // instead of fetchPendingApprovals() so the table never flashes "Loading..."
+  // while the user is idle. The full table is only re-rendered when the user
+  // clicks the Approvals tab.
+  const POLL_INTERVAL_MS = 60000;   // silent badge refresh every 60s
   const RETRY_INTERVAL_MS = 1000;   // retry every 1s until role is known
   const MAX_RETRIES = 15;           // give up after 15s if never admin
   let retries = 0;
@@ -309,9 +331,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function _startPolling() {
     if (pollTimer) return;
+    // Use the silent _fetchApprovalsCount so the table never re-renders
+    // in the background — only the badge number updates quietly.
     pollTimer = setInterval(() => {
       if (_isAdmin()) {
-        fetchPendingApprovals();
+        _fetchApprovalsCount();
       } else {
         clearInterval(pollTimer);
         pollTimer = null;
@@ -333,9 +357,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   _attemptInitialFetch();
 
-  // Also refresh immediately when the tab/window regains focus, so
-  // switching back from another tab shows an up-to-date count right away.
+  // When the tab/window regains focus, do a silent badge-only refresh
+  // instead of a full table re-render so switching back to the tab
+  // doesn't flash "Loading..." unexpectedly.
   window.addEventListener('focus', () => {
-    if (_isAdmin()) fetchPendingApprovals();
+    if (_isAdmin()) _fetchApprovalsCount();
   });
 });
