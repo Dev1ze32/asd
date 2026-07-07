@@ -29,18 +29,17 @@ function evaluateFormula(input) {
 
   var s = String(input).trim();
 
-  // Not a formula - try plain number
-  if (!s.startsWith('=')) {
-    var parsed = parseFloat(s);
-    return isNaN(parsed) ? 0 : parsed;
-  }
+  var expr = s.startsWith('=') ? s.slice(1) : s;
 
-  // Formula mode - remove '=' prefix
-  var expr = s.slice(1);
+  // If it's empty, return 0
+  if (!expr) {
+    return 0;
+  }
 
   // Security validation: only allow digits, decimal points, operators, parentheses, whitespace
   if (!/^[0-9+\-*/().\s]+$/.test(expr)) {
-    return 0;
+    var parsed = parseFloat(s);
+    return isNaN(parsed) ? 0 : parsed;
   }
 
   try {
@@ -53,7 +52,8 @@ function evaluateFormula(input) {
     }
     return result;
   } catch (e) {
-    return 0;
+    var parsed = parseFloat(s);
+    return isNaN(parsed) ? 0 : parsed;
   }
 }
 
@@ -68,8 +68,10 @@ function evaluateTimeFormula(input) {
   // Store the original formula/expression for re-editing
   if (rawValue.trim().startsWith('=')) {
     input.setAttribute('data-formula', rawValue.trim());
+    input.dataset.rawFormula = rawValue.trim();
   } else {
     input.removeAttribute('data-formula');
+    delete input.dataset.rawFormula;
   }
 
   // Display the result
@@ -124,17 +126,18 @@ function calculateRow(pax, machine, time, qty) {
 
   var dlUnits = 0;
   if (safeTime > 0) {
-    var dlBase = runTime * safePax;
+    var dlBaseRaw = runTime * safePax;
+    var dlBase = Math.round(dlBaseRaw * 1e5) / 1e5; // ROUND((F16*C16), 5)
     if (dlBase > 0) {
-      // Excel uses normal rounding (ROUND, not ROUNDUP) for DL (UNITS/1 MIN)
-      // based on the already rounded Run Time
+      // Excel formula: =IFERROR(ROUNDUP(1/(ROUND((F16*C16),5)),0),"")
       var exactDl = 1 / dlBase;
-      dlUnits = Math.round(exactDl);
+      dlUnits = Math.ceil(exactDl); // ROUNDUP(..., 0)
     }
   }
 
   // BOM costs are calculated using the 5-decimal rounded runTime
-  var dl = runTime * safePax;
+  // Excel formula: =IFERROR(ROUND((F16*C16),5),"")
+  var dl = Math.round((runTime * safePax) * 1e5) / 1e5;
   var voh = runTime;
   var foh = runTime;
 
@@ -176,7 +179,17 @@ function calculateAll() {
 
     var pax = parseFloat(paxInput?.value) || 0;
     var machine = parseFloat(machineInput?.value) || 0;
-    var time = parseFloat(timeInput?.value) || 0;
+    
+    // Read high-precision time from formula if it exists, otherwise parse the value
+    var time = 0;
+    if (timeInput) {
+      var rawFormula = timeInput.dataset.rawFormula || timeInput.getAttribute('data-formula');
+      if (rawFormula) {
+        time = evaluateFormula(rawFormula);
+      } else {
+        time = parseFloat(timeInput.value) || 0;
+      }
+    }
 
     var calc = calculateRow(pax, machine, time, qty);
 
