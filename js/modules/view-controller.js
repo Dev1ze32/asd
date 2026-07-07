@@ -112,6 +112,12 @@ function clearForm() {
   const tableBody = document.getElementById('tableBody');
   if (tableBody) tableBody.innerHTML = '';
 
+  const revInput = document.getElementById('revisionInputText');
+  if (revInput) revInput.textContent = '—';
+
+  const updatedDisplay = document.getElementById('updatedAtDisplay');
+  if (updatedDisplay) updatedDisplay.textContent = '(Last Updated: —)';
+
   // Add empty rows for ADD mode
   if (App.currentState === AppState.ADD) {
     addRow('', '', '', '');

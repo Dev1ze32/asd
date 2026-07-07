@@ -67,14 +67,14 @@ refreshAllActivityDropdowns();
 }
 
 // Populate revision field (UPDATE tab shows it as a read-only display)
-const revisionInputEl = document.getElementById('revisionInput');
+const revisionInputEl = document.getElementById('revisionInputText');
 if (revisionInputEl) {
   revisionInputEl.textContent = data.revision ? 'Rev. ' + data.revision : '—';
 }
 
 // Populate timestamps in UPDATE mode
 const updatedAtEl = document.getElementById('updatedAtDisplay');
-if (updatedAtEl) updatedAtEl.textContent = _formatTimestamp(data.updated_at);
+if (updatedAtEl) updatedAtEl.textContent = data.updated_at ? '(Last Updated: ' + _formatTimestamp(data.updated_at) + ')' : '(Last Updated: —)';
 
 if (isUpdate) {
   const itemCodeEl = document.getElementById('itemCode');
@@ -336,7 +336,7 @@ const lineCode = data.production_line_code
 || data.bm_production_line_code
 || '';
 set('ld-lineDesc',   LINE_DESCRIPTIONS[lineCode] || data.production_line || '');
-set('ld-updatedAt',  _formatTimestamp(data.updated_at));
+set('ld-updatedAt',  data.updated_at ? '(Last Updated: ' + _formatTimestamp(data.updated_at) + ')' : '(Last Updated: —)');
 }
 
 window.performSearch                   = performSearch;

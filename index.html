@@ -1350,7 +1350,7 @@
             <p style="margin:0 0 0.5rem;"><strong>SKU Description:</strong> <span id="ld-skuDesc" style="font-weight:500;"></span></p>
             <p style="margin:0 0 0.5rem;"><strong>FG Qty/Unit:</strong> <span id="ld-qty" style="font-weight:500;"></span></p>
             <p style="margin:0 0 0.5rem;"><strong>Notes:</strong> <span id="ld-notes" style="font-weight:500;"></span></p>
-            <p style="margin:0;"><strong>Revision:</strong> <span id="ld-revision" style="font-weight:500;"></span></p>
+            <p style="margin:0;"><strong>Revision:</strong> <span id="ld-revision" style="font-weight:500;"></span><span id="ld-updatedAt" style="font-size:0.85em; color:#64748b; margin-left:0.5rem; font-style:italic;">(Last Updated: —)</span></p>
           </div>
           <div>
             <p style="margin:0 0 0.5rem;"><strong>Template Mode:</strong> <span id="ld-mode" style="font-weight:500;"></span></p>
@@ -1416,13 +1416,14 @@
           <!-- Revision: shown in UPDATE mode only — read-only display, not an input -->
           <div class="form-group hide-in-add" id="revisionGroup">
             <label class="text-gray-500">Revision</label>
-            <p id="revisionInput"
+            <div id="revisionInput"
                class="bg-gray-50 text-gray-600"
                style="margin:0; padding:0.45rem 0.65rem; border:1px solid #e2e8f0;
                       border-radius:6px; font-size:0.875rem; font-weight:500;
-                      min-height:2.25rem; display:flex; align-items:center;">
-              —
-            </p>
+                      min-height:2.25rem; display:flex; align-items:center; gap: 0.5rem;">
+              <span id="revisionInputText">—</span>
+              <span id="updatedAtDisplay" style="font-size:0.85em; color:#64748b; font-weight:normal; font-style:italic;">(Last Updated: —)</span>
+            </div>
           </div>
         </div>
         </div><!-- end form-grid -->
