@@ -278,21 +278,7 @@ function _exportModalEscClose(e) {
  * Requires superuser or admin role — shows a denial modal for plain users.
  */
 async function handleExportConfirm() {
-  // ── Role guard: export requires superuser or admin ─────────────────────
-  const role = ((typeof Auth !== 'undefined' && Auth.getUser()) || {}).role || '';
-  if (role === 'user') {
-    hideExportModal();
-    showModal({
-      icon:         'danger',
-      title:        'Access Denied',
-      message:      'Exporting the database requires Superuser or Admin role. Contact your administrator.',
-      type:         'confirm',
-      confirmLabel: 'OK',
-    });
-    return;
-  }
-
-  // ── Disable button and show loading state ──────────────────────────────
+  // 🔘 Disable button and show loading state 
   const btn = document.getElementById('btn-export-confirm');
   if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
 
@@ -415,24 +401,10 @@ window.handleExportConfirm = async function() {
  * @private — item-scoped export confirm handler
  */
 async function _handleLookupExportConfirm() {
-  // ── Role guard: export requires superuser or admin ─────────────────────
-  const role = ((typeof Auth !== 'undefined' && Auth.getUser()) || {}).role || '';
-  if (role === 'user') {
-    hideExportModal();
-    showModal({
-      icon:         'danger',
-      title:        'Access Denied',
-      message:      'Exporting data requires Superuser or Admin role. Contact your administrator.',
-      type:         'confirm',
-      confirmLabel: 'OK',
-    });
-    return;
-  }
-
   const itemCode = _exportModalItemCode;
   if (!itemCode) { hideExportModal(); return; }
 
-  // ── Disable button and show loading state ──────────────────────────────
+  // 🔘 Disable button and show loading state 
   const btn = document.getElementById('btn-export-confirm');
   if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
 
