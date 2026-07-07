@@ -1481,12 +1481,12 @@ body:not(.dark-mode) .diff-modal-header .modal-close:active {
    and a subtle brand-colored border so changed
    fields are unmistakable. Bright mode only. */
 body:not(.dark-mode) .diff-val--new {
-  background-color: #b8e986;
-  color: var(--pal-teal-ink);
-  font-weight: 800;
-  border: 1.5px solid var(--pioneer-red-dark);
-  box-shadow: 0 0 0 2px rgba(58, 143, 163, 0.12);
-  padding: 0.15rem 0.45rem;
+  background-color: #ffffff;
+  color: var(--pioneer-red-dark);
+  font-weight: 700;
+  border-left: 3px solid var(--pioneer-red-dark);
+  border-radius: 3px;
+  padding: 0.1rem 0.4rem;
 }
 
 /* -----------------------------------------

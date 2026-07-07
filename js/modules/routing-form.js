@@ -349,13 +349,20 @@ async function saveRoutingDocument() {
 
   // Build record (internal format)
   var isBM = App.currentMode === 'BM';
+  var lineCode = prodLine || '';
+  var lineName = LINE_DESCRIPTIONS[lineCode] || lineCode;
+  
   var record = {
     inventory_id:         itemCode,
     revision_descr:       skuDesc,
     qty:                  parseFloat(qty) || 1,
     notes:                notes,
-    production_line_code: prodLine,
-    production_line:      LINE_DESCRIPTIONS[prodLine] || prodLine,
+    production_line_code: lineCode,
+    production_line:      lineName,
+    fg_production_line_code: isBM ? null : lineCode,
+    fg_production_line:      isBM ? null : lineName,
+    bm_production_line_code: isBM ? lineCode : null,
+    bm_production_line:      isBM ? lineName : null,
     product_type:         isBM ? 'Base Material (BM)' : 'Finished Good (FG)',
     activities:           activities,
     ...totals
@@ -392,12 +399,12 @@ async function saveRoutingDocument() {
     showToast({ type: 'success', title: 'Submitted', message: `Approval request for ${itemCode} has been sent to Admins.` });
     
     // Cleanup UI
-    _resetFormToPristine();
-    App.currentMode = null;
+    clearForm();
     App.currentRecord = null;
-    App.currentState = AppState.VIEW;
-    document.getElementById('routing-form-view').classList.add('hidden');
-    if (typeof performSearch === 'function') performSearch(true);
+    
+    if (typeof switchTab === 'function') {
+      switchTab(AppState.ADD);
+    }
     return true;
   }
   // ─────────────────────────────────────────────────────────────────────────
