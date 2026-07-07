@@ -1426,6 +1426,70 @@ body.dark-mode .diff-modal-footer {
 }
 
 /* -----------------------------------------
+   Approval modal header — matched to the
+   same "premium" header treatment used by
+   the Archive (Revision History) modal, so
+   both popups share one visual language.
+   Bright mode only; dark mode already has
+   its own tuned header (pal-teal-ink) above
+   and is left untouched.
+   ----------------------------------------- */
+body:not(.dark-mode) .diff-modal-header {
+  background: var(--bom-header);
+  border-bottom: none;
+}
+
+body:not(.dark-mode) .diff-modal-header .modal-title {
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 800;
+}
+
+/* Bigger, themed close button — sized to
+   suit the modal, styled like the Archive
+   modal's round close button. Bright mode
+   only; dark mode keeps its existing look. */
+body:not(.dark-mode) .diff-modal-header .modal-close {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.22);
+  color: #1e293b;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+}
+
+body:not(.dark-mode) .diff-modal-header .modal-close:hover {
+  background: rgba(255, 255, 255, 0.42);
+}
+
+body:not(.dark-mode) .diff-modal-header .modal-close:active {
+  transform: scale(0.94);
+}
+
+/* Make the "After (Proposed Changes)" highlighted
+   values pop more — stronger fill, bold weight,
+   and a subtle brand-colored border so changed
+   fields are unmistakable. Bright mode only. */
+body:not(.dark-mode) .diff-val--new {
+  background-color: #b8e986;
+  color: var(--pal-teal-ink);
+  font-weight: 800;
+  border: 1.5px solid var(--pioneer-red-dark);
+  box-shadow: 0 0 0 2px rgba(58, 143, 163, 0.12);
+  padding: 0.15rem 0.45rem;
+}
+
+/* -----------------------------------------
    Fix: the ROUTING DETAILS / ACUMATICA BOM
    table rendered inside the approval modal
    reuses the same .excel-table / .cell-bom /
