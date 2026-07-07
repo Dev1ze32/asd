@@ -1452,17 +1452,17 @@ body:not(.dark-mode) .diff-modal-header .modal-title {
   font-weight: 800;
 }
 
-/* Bigger, themed close button — sized to
-   suit the modal, styled like the Archive
-   modal's round close button. Bright mode
-   only; dark mode keeps its existing look. */
-body:not(.dark-mode) .diff-modal-header .modal-close {
+/* -----------------------------------------
+   Approval modal — Close button (×)
+   Shared shape/layout for both themes; color
+   treatment branches per-mode below so it
+   always reads clean against the header and
+   the gradient behind it.
+   ----------------------------------------- */
+.diff-modal-header .modal-close {
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.22);
-  color: #1e293b;
   font-size: 1.4rem;
   font-weight: 700;
   line-height: 1;
@@ -1471,15 +1471,58 @@ body:not(.dark-mode) .diff-modal-header .modal-close {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background 0.15s, transform 0.1s;
+  transition: background 0.18s ease, border-color 0.18s ease,
+    transform 0.12s ease, box-shadow 0.18s ease;
+}
+
+/* Light mode: soft white "glass" circle on the
+   teal header — clean, cohesive, high-contrast
+   dark glyph. */
+body:not(.dark-mode) .diff-modal-header .modal-close {
+  border: none;
+  background: rgba(255, 255, 255, 0.28);
+  color: #1e293b;
 }
 
 body:not(.dark-mode) .diff-modal-header .modal-close:hover {
-  background: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.48);
+  transform: scale(1.06);
 }
 
 body:not(.dark-mode) .diff-modal-header .modal-close:active {
-  transform: scale(0.94);
+  background: rgba(255, 255, 255, 0.6);
+  transform: scale(0.92);
+}
+
+body:not(.dark-mode) .diff-modal-header .modal-close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.35);
+}
+
+/* Dark mode: desaturated neon-cyan accent that
+   matches the dark theme's existing teal/cyan
+   palette — visible without glare against the
+   dark gradient. */
+body.dark-mode .diff-modal-header .modal-close {
+  border: 1px solid rgba(66, 199, 199, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+  color: #8fefef;
+}
+
+body.dark-mode .diff-modal-header .modal-close:hover {
+  background: rgba(66, 199, 199, 0.18);
+  border-color: rgba(66, 199, 199, 0.6);
+  transform: scale(1.06);
+}
+
+body.dark-mode .diff-modal-header .modal-close:active {
+  background: rgba(66, 199, 199, 0.28);
+  transform: scale(0.92);
+}
+
+body.dark-mode .diff-modal-header .modal-close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(66, 199, 199, 0.45);
 }
 
 /* Adaptive text-highlight ("marker") effect for
