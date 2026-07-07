@@ -153,7 +153,9 @@ if (!success) return;
 // ── Auto-reload: re-fetch the saved record so the form shows the latest
 //    data (bumped revision number, server-assigned activity IDs, etc.)
 //    without requiring a manual page refresh. ──────────────────────────────
-await performSearch();
+if (App.currentState === AppState.UPDATE) {
+    await performSearch();
+}
 }
 
 /**
@@ -320,7 +322,7 @@ if (el) el.textContent = val || '';
 
 set('ld-itemCode', data.inventory_id || '');
 set('ld-skuDesc',  data.revision_descr || '');
-set('ld-qty',      data.qty || data.quantity || 1);
+set('ld-qty',      data.quantity ?? data.qty ?? 0);
 set('ld-notes',    data.notes || '');
 set('ld-revision', data.revision ? 'Rev. ' + data.revision : '—');
 set('ld-mode',     data.product_type

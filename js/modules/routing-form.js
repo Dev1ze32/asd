@@ -367,6 +367,7 @@ async function saveRoutingDocument() {
     inventory_id:         itemCode,
     revision_descr:       skuDesc,
     qty:                  isNaN(parseFloat(qty)) ? 0 : parseFloat(qty),
+    quantity:             isNaN(parseFloat(qty)) ? 0 : parseFloat(qty),
     notes:                notes,
     production_line_code: lineCode,
     production_line:      lineName,

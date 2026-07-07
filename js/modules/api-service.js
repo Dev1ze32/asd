@@ -482,7 +482,7 @@ function _mapItemPayload(record) {
     inventory_id:   record.inventory_id || record.itemCode || '',
     revision_descr: record.revision_descr || record.skuDesc || '',
     product_type:   record.product_type || 'Finished Good (FG)',
-    quantity:       record.qty || record.quantity || 1,
+    quantity:       record.quantity ?? record.qty ?? 0,
     notes:          record.notes || '',
   };
 
@@ -551,7 +551,7 @@ function _mapItemMetaPayload(record) {
   const body = {
     revision_descr: record.revision_descr || record.skuDesc || '',
     product_type:   record.product_type || 'Finished Good (FG)',
-    quantity:       record.qty || record.quantity || 1,
+    quantity:       record.quantity ?? record.qty ?? 0,
     notes:          record.notes || '',
   };
 
@@ -591,7 +591,7 @@ function _normalizeApiItem(apiItem) {
     revision:             apiItem.revision,
     notes:                apiItem.notes || '',
     product_type:         apiItem.product_type || 'Finished Good (FG)',
-    qty:                  apiItem.quantity || 1,
+    qty:                  apiItem.quantity ?? 0,
     production_line_code: lineCode,
     production_line:      lineName,
     // Keep raw API fields too for reference
