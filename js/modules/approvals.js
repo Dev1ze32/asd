@@ -177,10 +177,10 @@ function _buildRecordTableHtml(record, compareRecord = null, mode = 'new') {
       
       html += `
         <tr>
-          <td class="w-activity"><span class="${getDiffClass(actName, compActName)}">${sanitizeInput(actName || '-')}</span></td>
-          <td class="w-pax" style="text-align:center;"><span class="${getDiffClass(act.pax, compAct.pax)}">${act.pax || 0}</span></td>
-          <td class="w-machine" style="text-align:center;"><span class="${getDiffClass(act.machine, compAct.machine)}">${act.machine || 0}</span></td>
-          <td class="w-time" style="text-align:right;"><span class="${getDiffClass(act.time_min, compAct.time_min)}">${act.time_min || 0}</span></td>
+          <td class="w-activity bg-activity-green"><span class="${getDiffClass(actName, compActName)}">${sanitizeInput(actName || '-')}</span></td>
+          <td class="w-pax bg-activity-green" style="text-align:center;"><span class="${getDiffClass(act.pax, compAct.pax)}">${act.pax || 0}</span></td>
+          <td class="w-machine bg-activity-green" style="text-align:center;"><span class="${getDiffClass(act.machine, compAct.machine)}">${act.machine || 0}</span></td>
+          <td class="w-time bg-activity-green" style="text-align:right;"><span class="${getDiffClass(act.time_min, compAct.time_min)}">${act.time_min || 0}</span></td>
           <td class="w-runtime" style="text-align:right;"><span class="${getDiffClass(act.run_time, compAct.run_time)}">${act.run_time || 0}</span></td>
           <td class="w-unit" style="text-align:center;">UNIT</td>
           <td class="w-labor" style="text-align:right;"><span class="${getDiffClass(act.labor_min, compAct.labor_min)}">${act.labor_min || 0}</span></td>
