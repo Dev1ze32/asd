@@ -1335,8 +1335,14 @@ body.dark-mode .diff-box--new h4 {
 }
 
 body.dark-mode .diff-val--new {
-  background-color: var(--pal-teal-mid);
-  color: var(--pal-green-light);
+  background-color: rgba(66, 199, 199, 0.22);
+  color: #8fefef;
+  font-weight: 700;
+  border-radius: 3px;
+  padding: 0.05rem 0.35rem;
+  box-shadow: inset 0 0 0 1px rgba(66, 199, 199, 0.4);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 .diff-val--old {
@@ -1378,7 +1384,7 @@ body.dark-mode .diff-empty-state {
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: var(--app-gradient);
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
   overflow: hidden;
@@ -1386,7 +1392,7 @@ body.dark-mode .diff-empty-state {
 }
 
 body.dark-mode .diff-modal-content {
-  background: var(--pal-teal-night);
+  background: var(--app-gradient);
   border-color: var(--pal-teal-dark);
   box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5);
 }
@@ -1476,17 +1482,22 @@ body:not(.dark-mode) .diff-modal-header .modal-close:active {
   transform: scale(0.94);
 }
 
-/* Make the "After (Proposed Changes)" highlighted
-   values pop more — stronger fill, bold weight,
-   and a subtle brand-colored border so changed
-   fields are unmistakable. Bright mode only. */
+/* Adaptive text-highlight ("marker") effect for
+   changed values in the After (Proposed Changes)
+   box. Light mode uses a warm, vibrant amber
+   highlight for strong readable contrast against
+   the green/teal table cells. Dark mode swaps to
+   a desaturated neon-cyan tint (matching the dark
+   theme's accent color) so it still pops without
+   glare. */
 body:not(.dark-mode) .diff-val--new {
-  background-color: #ffffff;
-  color: var(--pioneer-red-dark);
+  background-color: #fde68a;
+  color: #78350f;
   font-weight: 700;
-  border-left: 3px solid var(--pioneer-red-dark);
   border-radius: 3px;
-  padding: 0.1rem 0.4rem;
+  padding: 0.05rem 0.35rem;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 /* -----------------------------------------
